@@ -95,7 +95,7 @@
       <p>Entries recorded: <b id="ledger-count">...</b></p>
       <p>Latest fingerprint:<br><span class="hash" id="ledger-head">...</span></p>
       <h2>Latest entries</h2>
-      <ol id="ledger-recent" class="log"></ol>
+      <ol id="ledger-recent" class="log ledger-list"></ol>
       <p class="small">Raw data: <a href="/api/ledger">/api/ledger</a></p>
     </div>
 
@@ -112,6 +112,7 @@
       <b>Hi, <span id="who"></span>!</b><br>
       [ <a href="#pull">Daily Pull</a> ]
       [ <a href="#" id="nav-mine">My Guestbook</a> ]
+      [ <a href="#trades" id="nav-trades">Trades</a> ]
       [ <a href="#codes">Save Codes</a> ]
       [ <a href="#about">About</a> ]
       [ <a href="#" id="logout">Log Out</a> ]
@@ -139,6 +140,19 @@
         <h2>&raquo; My Button Collection &laquo;</h2>
         <div id="page-collection" class="grid"></div>
       </div>
+      <div class="panel" id="trade-panel" hidden>
+        <h2>&raquo; Trade with <span class="tb-name"></span> &laquo;</h2>
+        <p class="center"><button type="button" id="trade-open">Propose a Trade!</button></p>
+        <div id="trade-builder" hidden>
+          <p class="small">Pick up to 3 of yours and up to 3 of theirs. Your buttons stay locked until they answer (or 7 days pass). Ultras can't be traded.</p>
+          <h3>You give:</h3>
+          <div id="tb-give" class="grid"></div>
+          <h3>You get from <span class="tb-name"></span>:</h3>
+          <div id="tb-want" class="grid"></div>
+          <label>Note (optional):<br><input id="tb-note" maxlength="200" autocomplete="off"></label>
+          <p class="sign-buttons"><button type="button" id="tb-send">Send Offer!</button> <button type="button" id="tb-close">Never mind</button></p>
+        </div>
+      </div>
       <div class="panel" id="guestbook-panel">
         <h2>&raquo; Sign &amp; Read My Guestbook &laquo;</h2>
         <form id="sign-form" hidden>
@@ -155,6 +169,22 @@
         </form>
         <p class="small bot-toggle"><label><input type="checkbox" id="show-bots" checked> show bot messages</label></p>
         <div id="page-guestbook"></div>
+      </div>
+    </div>
+
+    <!-- trades -->
+    <div id="view-trades" class="view" hidden>
+      <div class="panel">
+        <h2>&raquo; Offers 4 You &laquo;</h2>
+        <div id="tr-in"></div>
+      </div>
+      <div class="panel">
+        <h2>&raquo; Offers You Sent &laquo;</h2>
+        <div id="tr-out"></div>
+      </div>
+      <div class="panel">
+        <h2>&raquo; Trade History &laquo;</h2>
+        <div id="tr-past"></div>
       </div>
     </div>
 
@@ -208,10 +238,22 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.8</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.9</span>
   </p>
 
 </main>
+<!-- in-game dialog window -->
+<div id="dialog" class="dialog-backdrop" hidden>
+  <div class="dialog-window" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <div class="dialog-title" id="dialog-title">88x31 cLuB says...</div>
+    <div class="dialog-body">
+      <div id="dialog-pic" class="dialog-pic"></div>
+      <p id="dialog-text"></p>
+      <input id="dialog-input" autocomplete="off" hidden>
+    </div>
+    <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
+  </div>
+</div>
 <script src="app.js"></script>
 </body>
 </html>

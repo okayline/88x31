@@ -7,5 +7,9 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   context.waitUntil(runBotsIfDue(env).catch((e) => console.log("bots failed", e)));
   const user = await currentUser(env, request);
-  return json({ user: user ? { id: user.id, name: user.name } : null });
+  if (!user) return json({ user: null });
+  const row = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM trades WHERE to_user = ? AND status = 'open' AND expires_at > ?"
+  ).bind(user.id, Math.floor(Date.now() / 1000)).first();
+  return json({ user: { id: user.id, name: user.name }, trades_waiting: row ? row.n : 0 });
 }

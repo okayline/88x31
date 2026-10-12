@@ -96,11 +96,14 @@ CREATE TABLE IF NOT EXISTS trades (
   from_user    INTEGER NOT NULL REFERENCES users(id),
   to_user      INTEGER NOT NULL REFERENCES users(id),
   kind         TEXT NOT NULL DEFAULT 'trade',   -- trade | gift
-  status       TEXT NOT NULL DEFAULT 'open',    -- open | accepted | declined | cancelled
+  status       TEXT NOT NULL DEFAULT 'open',    -- open | accepted | declined | cancelled | expired
   message      TEXT,
   created_at   INTEGER NOT NULL,
-  resolved_at  INTEGER
+  resolved_at  INTEGER,
+  lock_token   INTEGER,                         -- locks the offerer's buttons while open (lib/trades.js)
+  expires_at   INTEGER
 );
+CREATE INDEX IF NOT EXISTS idx_trades_token ON trades(lock_token);
 CREATE INDEX IF NOT EXISTS idx_trades_to ON trades(to_user, status);
 CREATE INDEX IF NOT EXISTS idx_trades_from ON trades(from_user, status);
 

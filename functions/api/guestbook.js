@@ -5,6 +5,7 @@
 //   owner and stays shown next to your message. One signature per guestbook per day.
 import { json, readJson, currentUser, rateLimit, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
+import { listTrades } from "../../lib/trades.js";
 import { today, userByName, transferStatements, newLockToken, lockedBy } from "../../lib/game.js";
 
 export async function onRequestGet({ request, env }) {
@@ -22,7 +23,9 @@ export async function onRequestGet({ request, env }) {
      WHERE g.page_user = ? ORDER BY g.created_at DESC, g.id DESC LIMIT 100`
   ).bind(owner.id).all();
 
-  return json({ owner, entries: results });
+  const trades = (await listTrades(env, owner.id, { status: "accepted", limit: 30 }))
+    .map((t) => ({ id: t.id, at: t.resolved_at, from_name: t.from_name, to_name: t.to_name, give: t.give, want: t.want }));
+  return json({ owner, entries: results, trades });
 }
 
 export async function onRequestPost({ request, env }) {

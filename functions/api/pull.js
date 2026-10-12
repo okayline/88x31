@@ -1,9 +1,14 @@
 // Daily pull: 3 banners shown, keep 1, optionally pass one of the others to another player.
-// GET  /api/pull -> { day, status, options: [design...], kept_index, passed_index, passed_to, odds }
+// Players get PULLS_PER_DAY packs a day. Each pack is a row in daily_pulls keyed by
+// "YYYY-MM-DD" (the first) or "YYYY-MM-DD#2", "#3"... ; only one is open at a time.
+// Bonus packs (from picking a BONUS PACK card) are "YYYY-MM-DD#b1", "#b2"... and don't count
+// toward the daily limit. A bonus pack never contains another bonus card.
+// GET  /api/pull -> { day, status, options: [design...], kept_index, passed_index, passed_to, odds,
+//                     pull_number, pulls_per_day }
 // POST /api/pull { keep: 0-2, pass?: 0-2, to?: NAME } -> { ok, kept, passed }
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
-import { ODDS, today, rollDesigns, mintStatements, userByName } from "../../lib/game.js";
+import { ODDS, PULLS_PER_DAY, BONUS_CHANCE, BONUS, today, rollDesigns, mintStatements, userByName } from "../../lib/game.js";
 
 async function loadPull(env, userId, day) {
   return env.DB.prepare(
@@ -13,55 +18,84 @@ async function loadPull(env, userId, day) {
   ).bind(userId, day).first();
 }
 
-async function designsById(env, ids) {
-  if (!ids.length) return [];
+// Today's packs for a player, oldest first.
+async function todaysPulls(env, userId) {
+  const d = today();
+  const { results } = await env.DB.prepare(
+    "SELECT day, status FROM daily_pulls WHERE user_id = ? AND (day = ? OR day LIKE ?) ORDER BY created_at, day"
+  ).bind(userId, d, d + "#%").all();
+  return results;
+}
+
+async function designsById(env, allIds) {
+  const ids = allIds.filter((id) => id !== BONUS);
+  if (!ids.length) return allIds.map(() => ({ bonus: true }));
   const { results } = await env.DB.prepare(
     `SELECT id, name, type, rarity, image_key, max_editions,
             (SELECT COUNT(*) FROM instances WHERE design_id = designs.id) AS minted
      FROM designs WHERE id IN (${ids.map(() => "?").join(",")})`
   ).bind(...ids).all();
-  return ids.map((id) => results.find((d) => d.id === id) || null);
+  return allIds.map((id) => (id === BONUS ? { bonus: true } : results.find((d) => d.id === id) || null));
 }
 
 export async function onRequestGet({ request, env }) {
   const user = await currentUser(env, request);
   if (!user) return json({ error: "Not logged in." }, 401);
-  const day = today();
 
-  let pull = await loadPull(env, user.id, day);
-  if (!pull) {
+  const rows = await todaysPulls(env, user.id);
+  const regular = rows.filter((r) => !r.day.includes("#b"));
+  let key = (rows.find((r) => r.status === "open") || {}).day;
+  if (!key && regular.length < PULLS_PER_DAY) {
+    // open the next pack of the day
+    key = regular.length === 0 ? today() : `${today()}#${regular.length + 1}`;
     const ids = await rollDesigns(env, 3);
-    if (ids.length) {
-      await env.DB.prepare(
-        "INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at) VALUES (?, ?, ?, ?)"
-      ).bind(user.id, day, JSON.stringify(ids), now()).run();
-    }
-    pull = await loadPull(env, user.id, day);
-    if (!pull) return json({ error: "No banners to pull yet. Check back soon!" }, 503);
+    if (!ids.length) return json({ error: "No banners to pull yet. Check back soon!" }, 503);
+    if (Math.random() < BONUS_CHANCE) ids[Math.floor(Math.random() * 3)] = BONUS;
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at) VALUES (?, ?, ?, ?)"
+    ).bind(user.id, key, JSON.stringify(ids), now()).run();
   }
+  if (!key) key = rows[rows.length - 1].day; // all used up: show the last one
+  const pull = await loadPull(env, user.id, key);
+  const bonus = key.includes("#b");
+  const number = bonus ? null : (await todaysPulls(env, user.id)).filter((r) => !r.day.includes("#b")).findIndex((r) => r.day === key) + 1;
 
   const options = await designsById(env, JSON.parse(pull.options));
-  return json({ ...pull, options, odds: ODDS });
+  return json({ ...pull, options, odds: ODDS, pull_number: number, pulls_per_day: PULLS_PER_DAY, bonus_pack: bonus, bonus_chance: BONUS_CHANCE });
 }
 
 export async function onRequestPost({ request, env }) {
   const user = await currentUser(env, request);
   if (!user) return json({ error: "Not logged in." }, 401);
-  const day = today();
   const body = await readJson(request);
 
+  const open = (await todaysPulls(env, user.id)).find((r) => r.status === "open");
+  if (!open) return json({ error: "No pack open right now. Come back tomorrow!" }, 400);
+  const day = open.day;
   const pull = await loadPull(env, user.id, day);
-  if (!pull) return json({ error: "Open today's pull first." }, 400);
-  if (pull.status !== "open") return json({ error: "You already picked today. Come back tomorrow!" }, 400);
 
   const ids = JSON.parse(pull.options);
   const keep = Number(body.keep);
   if (![0, 1, 2].includes(keep)) return json({ error: "Pick one to keep." }, 400);
 
+  // Picked the BONUS PACK card: close this pack and open a fresh one right away.
+  if (ids[keep] === BONUS) {
+    const claim = await env.DB.prepare(
+      "UPDATE daily_pulls SET status = 'done', kept_index = ? WHERE user_id = ? AND day = ? AND status = 'open'"
+    ).bind(keep, user.id, day).run();
+    if (!claim.meta.changes) return json({ error: "You already picked from this pack." }, 400);
+    const n = (await todaysPulls(env, user.id)).filter((r) => r.day.includes("#b")).length + 1;
+    const fresh = await rollDesigns(env, 3); // never another bonus card
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at) VALUES (?, ?, ?, ?)"
+    ).bind(user.id, `${today()}#b${n}`, JSON.stringify(fresh), now()).run();
+    return json({ ok: true, bonus: true });
+  }
+
   let pass = null, recipient = null;
   if (body.pass !== undefined && body.pass !== null && body.pass !== "") {
     pass = Number(body.pass);
-    if (![0, 1, 2].includes(pass) || pass === keep) return json({ error: "Pass on one of the other two." }, 400);
+    if (![0, 1, 2].includes(pass) || pass === keep || ids[pass] === BONUS) return json({ error: "Pass on one of the other two." }, 400);
     recipient = await userByName(env, body.to);
     if (!recipient) return json({ error: "No player by that name." }, 404);
     if (recipient.id === user.id) return json({ error: "You can't pass one to yourself!" }, 400);
@@ -72,7 +106,7 @@ export async function onRequestPost({ request, env }) {
     `UPDATE daily_pulls SET status = 'done', kept_index = ?, passed_index = ?, passed_to = ?
      WHERE user_id = ? AND day = ? AND status = 'open'`
   ).bind(keep, pass, recipient ? recipient.id : null, user.id, day).run();
-  if (!claim.meta.changes) return json({ error: "You already picked today." }, 400);
+  if (!claim.meta.changes) return json({ error: "You already picked from this pack." }, 400);
 
   const keptRes = await env.DB.batch(mintStatements(env, ids[keep], user.id, "daily"));
   if (keptRes[0].meta.changes !== 1) {

@@ -3,7 +3,7 @@ const $ = (id) => document.getElementById(id);
 const say = (text) => ($("msg").textContent = text || "");
 const TOP = ["loading", "out", "in", "code-card", "about"];
 const showTop = (id) => TOP.forEach((s) => ($(s).hidden = s !== id));
-const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes"];
+const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
 
 // Tiny element builder. Text always goes in as text, never as HTML.
@@ -31,6 +31,37 @@ async function api(path, opts = {}) {
 }
 
 const fmtDate = (t) => new Date(t * 1000).toLocaleDateString();
+// date + time, for the ledger (e.g. "10/11/2026, 9:52:13 PM")
+const fmtStamp = (t) => new Date(t * 1000).toLocaleString();
+
+// In-game "are you sure?" window instead of the browser's popup. Resolves true/false.
+function ask(text, { ok = "OK", cancel = "Cancel", pic = null, input = null } = {}) {
+  return new Promise((resolve) => {
+    $("dialog-text").textContent = text;
+    const box = $("dialog-input");
+    box.hidden = input === null;
+    box.value = input ?? "";
+    const p = $("dialog-pic"); p.textContent = ""; if (pic) p.append(pic);
+    $("dialog-ok").textContent = ok; $("dialog-cancel").textContent = cancel;
+    $("dialog").hidden = false;
+    (input === null ? $("dialog-ok") : box).focus();
+    const done = (v) => {
+      $("dialog").hidden = true;
+      $("dialog-ok").onclick = $("dialog-cancel").onclick = null;
+      document.removeEventListener("keydown", onKey);
+      resolve(v);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") done(input === null ? false : null);
+      else if (e.key === "Enter" && input !== null) done(box.value);
+    };
+    document.addEventListener("keydown", onKey);
+    $("dialog-ok").onclick = () => done(input === null ? true : box.value);
+    $("dialog-cancel").onclick = () => done(input === null ? false : null);
+  });
+}
+// Same window with a text box: resolves to the text, or null if cancelled.
+const askText = (text, initial = "", opts = {}) => ask(text, { ...opts, input: initial });
 function ago(t) {
   const s = Math.max(0, Math.floor(Date.now() / 1000) - t);
   if (s < 120) return "just now";
@@ -71,15 +102,17 @@ async function route() {
     if (hash.startsWith("u/")) return await showPage(hash.slice(2));
     if (hash.startsWith("banner/")) return await showBanner(hash.slice(7));
     if (hash === "codes") return await showCodes();
+    if (hash === "trades") return await showTrades();
     return await showPull();
   } catch (e) { say(e.message); }
 }
 window.addEventListener("hashchange", route);
 
 async function refresh() {
-  const { user } = await api("/api/me");
+  const { user, trades_waiting } = await api("/api/me");
   me = user;
   if (!me) return route();
+  setTradeCount(trades_waiting || 0);
   $("who").textContent = me.name;
   $("nav-mine").href = "#u/" + encodeURIComponent(me.name);
   loadPlayers();
@@ -94,19 +127,21 @@ async function showPull() {
   box.textContent = "Loading...";
   const pull = await api("/api/pull");
   const o = pull.odds;
-  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}% · ULTRA ${o.ultra}%. Rares are limited editions, and every ultra is one of a kind.`;
+  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}% · ULTRA ${o.ultra}%. Rares are limited editions, and every ultra is one of a kind. About 1 in ${Math.round(1 / pull.bonus_chance)} packs has a BONUS PACK card.`;
   box.textContent = "";
+  if (pull.bonus_pack) box.append(el("p", { class: "center bonus-head" }, el("b", {}, "★ BONUS PACK! ★")));
+  else if (pull.pulls_per_day > 1) box.append(el("p", { class: "center" }, el("b", {}, `Pack ${pull.pull_number} of ${pull.pulls_per_day} today`)));
 
   if (pull.status === "done") {
     const kept = pull.options[pull.kept_index];
-    box.append(el("p", {}, "You kept: ", el("b", {}, kept ? kept.name : "?")));
+    box.append(el("p", {}, kept && kept.bonus ? "You took the BONUS PACK!" : "You kept: ", kept && kept.bonus ? null : el("b", {}, kept ? kept.name : "?")));
     if (pull.passed_to) {
       const passed = pull.options[pull.passed_index];
       box.append(el("p", {}, "You passed ", el("b", {}, passed ? passed.name : "?"), " on to ",
         el("a", { href: "#u/" + encodeURIComponent(pull.passed_to) }, pull.passed_to), "."));
     }
     box.append(el("div", { class: "pull-row" }, pull.options.map((d, i) => card(d, i, pull))));
-    box.append(el("p", { class: "center" }, "Come back tomorrow for a new pull!"));
+    box.append(el("p", { class: "center" }, "That's all your packs for today. Come back tomorrow!"));
     return;
   }
 
@@ -138,19 +173,22 @@ async function showPull() {
     };
     giftBox.append(radio("", "No thanks, let the other two go"));
     pull.options.forEach((d2, j) => {
-      if (j !== i && d2) giftBox.append(radio(String(j), "Gift ", bannerImg(d2), " ", el("b", {}, d2.name)));
+      if (j !== i && d2 && !d2.bonus) giftBox.append(radio(String(j), "Gift ", bannerImg(d2), " ", el("b", {}, d2.name)));
     });
     giftBox.querySelector("input").checked = true;
     toRow.hidden = true;
+    // taking the bonus pack: no gifting, just open the new pack
+    const isBonus = !!(pull.options[i] && pull.options[i].bonus);
+    giftHead.hidden = giftBox.hidden = isBonus;
+    keepBtn.textContent = isBonus ? "Open the bonus pack!" : "Keep it!";
     form.hidden = false;
   }));
   box.append(el("div", { class: "pull-row" }, cards));
   box.append(el("p", { class: "center small" }, "Click the one you want to keep."));
 
-  const form = el("form", { class: "pull-form" },
-    el("p", {}, el("b", {}, "Gift one of the other two to a friend?")),
-    giftBox, toRow,
-    el("p", { class: "center" }, el("button", {}, "Keep it!")));
+  const giftHead = el("p", {}, el("b", {}, "Gift one of the other two to a friend?"));
+  const keepBtn = el("button", {}, "Keep it!");
+  const form = el("form", { class: "pull-form" }, giftHead, giftBox, toRow, el("p", { class: "center" }, keepBtn));
   form.hidden = true;
   form.onsubmit = async (e) => {
     e.preventDefault();
@@ -158,7 +196,9 @@ async function showPull() {
     const pass = giftChoice();
     if (pass !== "" && !toInput.value.trim()) return say("Type who to send it to, or choose \"No thanks\".");
     try {
-      const r = await api("/api/pull", { method: "POST", body: { keep, pass: pass === "" ? null : Number(pass), to: toInput.value } });
+      const takingBonus = !!(pull.options[keep] && pull.options[keep].bonus);
+      const r = await api("/api/pull", { method: "POST", body: { keep, pass: takingBonus || pass === "" ? null : Number(pass), to: toInput.value } });
+      if (r.bonus) { say("★ BONUS PACK! ★ Here's a fresh one!"); return await showPull(); }
       say(pass !== "" && !r.passed ? "Kept! (The one you gifted sold out, sorry.)" : pass !== "" ? "Kept, and your gift is on its way!" : "Added to your collection!");
       await showPull();
     } catch (err) { say(err.message); }
@@ -168,6 +208,13 @@ async function showPull() {
 
 function card(d, i, pull, onPick) {
   if (!d) return el("div", { class: "card" }, "(gone)");
+  if (d.bonus) {
+    const c = el("div", { class: "card bonus-card" + (pull.kept_index === i ? " chosen" : "") },
+      el("b", { class: "bonus-star" }, "★"), el("b", {}, "BONUS PACK!"),
+      el("span", { class: "small" }, "Take this instead of a button and open a fresh pack right now."));
+    if (onPick) { c.tabIndex = 0; c.onclick = onPick; c.onkeydown = (e) => { if (e.key === "Enter") onPick(); }; c.classList.add("pickable"); }
+    return c;
+  }
   const left = d.max_editions ? `${Math.max(0, d.max_editions - d.minted)} of ${d.max_editions} left` : "";
   const c = el("div", { class: "card rarity-" + d.rarity + (pull.kept_index === i ? " chosen" : "") },
     bannerImg(d, 2), el("b", {}, d.name), el("span", { class: "small" }, `${d.rarity} · ${d.type}`),
@@ -209,17 +256,34 @@ async function showPage(name) {
     const grid = $("gift-grid");
     grid.textContent = "";
     if (!mine.banners.length) grid.append(el("p", { class: "small" }, "You don't have any buttons to give yet!"));
-    for (const b of mine.banners) {
+    for (const b of mine.banners.filter((x) => !x.locked)) { // skip buttons tied up in a trade
       grid.append(el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}`,
         onclick: () => { chooseGift(b); $("gift-picker").hidden = true; } },
         bannerImg(b), el("span", { class: "small" }, edition(b))));
     }
   }
 
+  // Trade panel: only on other people's pages.
+  const tp = $("trade-panel");
+  tp.hidden = owner.toLowerCase() === me.name.toLowerCase();
+  $("trade-builder").hidden = true;
+  if (!tp.hidden) {
+    document.querySelectorAll(".tb-name").forEach((n) => (n.textContent = owner));
+    tp.dataset.user = owner;
+    tradeTheirs = col.banners;
+  }
+
   const list = $("page-guestbook");
   list.textContent = "";
-  if (!gb.entries.length) list.append(el("p", { class: "small" }, "No one has signed yet. Be the first!"));
-  for (const g of gb.entries) {
+  // messages and finished trades, newest first
+  const items = [
+    ...gb.entries.map((g) => ({ at: g.created_at, g })),
+    ...(gb.trades || []).map((t) => ({ at: t.at, t })),
+  ].sort((x, y) => y.at - x.at);
+  if (!items.length) list.append(el("p", { class: "small" }, "No one has signed yet. Be the first!"));
+  for (const it of items) {
+    if (it.t) { list.append(tradeNote(it.t)); continue; }
+    const g = it.g;
     list.append(el("div", { class: "entry" + (g.author_is_bot ? " from-bot" : "") },
       el("p", { class: "small" },
         el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtDate(g.created_at)}:`),
@@ -227,6 +291,104 @@ async function showPage(name) {
       g.gift_id ? el("p", { class: "stamp" },
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity })),
         el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null));
+  }
+}
+
+// ---------- trading ----------
+
+let tradeTheirs = [];
+const pickedGive = new Set(), pickedWant = new Set();
+
+function setTradeCount(n) {
+  $("nav-trades").textContent = n ? `Trades (${n})` : "Trades";
+  $("nav-trades").classList.toggle("has-offers", !!n);
+}
+
+const smallList = (list) => list.map((b) => el("span", { class: "tr-item", title: `${b.name} ${edition(b)}` },
+  el("a", { href: "#banner/" + b.id }, bannerImg(b)), el("span", { class: "small" }, ` ${b.name} ${edition(b)}`)));
+
+function tradeNote(t) {
+  return el("div", { class: "entry trade-note" },
+    el("p", { class: "small" }, `⇄ TRADE · ${fmtDate(t.at)}`),
+    el("p", {}, el("a", { href: "#u/" + encodeURIComponent(t.from_name) }, t.from_name), " traded ",
+      ...smallList(t.give), " to ", el("a", { href: "#u/" + encodeURIComponent(t.to_name) }, t.to_name), " for ", ...smallList(t.want)));
+}
+
+function pickGrid(box, list, picked, label) {
+  box.textContent = "";
+  const usable = list.filter((b) => b.rarity !== "ultra");
+  if (!usable.length) { box.append(el("p", { class: "small" }, `No buttons ${label}.`)); return; }
+  for (const b of usable) {
+    const busy = b.locked && label === "to give";
+    const tile = el("button", { type: "button", class: "tile pick-tile" + (picked.has(b.id) ? " picked" : "") + (busy ? " busy" : ""),
+      title: busy ? "Already in another open trade" : `${b.name} ${edition(b)}` },
+      bannerImg(b), el("span", { class: "small" }, busy ? "in a trade" : edition(b)));
+    if (busy) tile.disabled = true;
+    tile.onclick = () => {
+      if (picked.has(b.id)) picked.delete(b.id);
+      else if (picked.size < 3) picked.add(b.id);
+      else return say("Up to 3 on each side!");
+      say("");
+      tile.classList.toggle("picked", picked.has(b.id));
+    };
+    box.append(tile);
+  }
+}
+
+$("trade-open").onclick = async () => {
+  pickedGive.clear(); pickedWant.clear();
+  $("tb-note").value = "";
+  try {
+    const mine = await api("/api/collection");
+    pickGrid($("tb-give"), mine.banners, pickedGive, "to give");
+    pickGrid($("tb-want"), tradeTheirs, pickedWant, "to ask for");
+    $("trade-builder").hidden = false;
+  } catch (e) { say(e.message); }
+};
+$("tb-close").onclick = () => { $("trade-builder").hidden = true; };
+$("tb-send").onclick = async () => {
+  if (!pickedGive.size || !pickedWant.size) return say("Pick at least one button on each side!");
+  try {
+    await api("/api/trades", { method: "POST", body: {
+      to: $("trade-panel").dataset.user, give: [...pickedGive], want: [...pickedWant], message: $("tb-note").value } });
+    $("trade-builder").hidden = true;
+    say("Offer sent! Check the Trades page for their answer.");
+  } catch (e) { say(e.message); }
+};
+
+async function showTrades() {
+  showView("view-trades");
+  const { incoming, outgoing, history } = await api("/api/trades");
+  setTradeCount(incoming.length);
+  const card = (t, buttons) => el("div", { class: "entry" },
+    el("p", { class: "small" }, t.to_user === me.id
+      ? el("span", {}, el("a", { href: "#u/" + encodeURIComponent(t.from_name) }, t.from_name), t.from_bot ? " [BOT]" : "", ` offered on ${fmtDate(t.created_at)}:`)
+      : el("span", {}, "To ", el("a", { href: "#u/" + encodeURIComponent(t.to_name) }, t.to_name), t.to_bot ? " [BOT]" : "", ` on ${fmtDate(t.created_at)}:`)),
+    el("p", {}, t.to_user === me.id ? "You get " : "You give ", ...smallList(t.give)),
+    el("p", {}, t.to_user === me.id ? "You give " : "You get ", ...smallList(t.want)),
+    t.message ? el("p", { class: "small" }, `"${t.message}"`) : null,
+    t.status === "open" ? el("p", { class: "small" }, `Expires ${fmtDate(t.expires_at)}`) : null,
+    buttons ? el("p", { class: "sign-buttons" }, buttons) : null);
+  const act = (t, action, label) => el("button", { type: "button", onclick: async () => {
+    if (action === "accept" && !(await ask("Accept this trade? The buttons swap right away.", { ok: "Deal!", cancel: "Hmm, wait" }))) return;
+    try { await api("/api/trades/act", { method: "POST", body: { id: t.id, action } }); say(action === "accept" ? "Trade done! Enjoy ur new buttons!" : "Done."); await showTrades(); }
+    catch (e) { say(e.message); await showTrades(); }
+  } }, label);
+
+  const fill = (box, list, empty, buttonsFor) => {
+    box.textContent = "";
+    if (!list.length) box.append(el("p", { class: "small" }, empty));
+    for (const t of list) box.append(card(t, buttonsFor ? buttonsFor(t) : null));
+  };
+  fill($("tr-in"), incoming, "No offers right now. Go make one on somebody's guestbook!", (t) => [act(t, "accept", "Accept!"), " ", act(t, "decline", "No thanks")]);
+  fill($("tr-out"), outgoing, "You haven't sent any offers.", (t) => [act(t, "cancel", "Cancel offer")]);
+  const past = $("tr-past");
+  past.textContent = "";
+  if (!history.length) past.append(el("p", { class: "small" }, "No trades yet."));
+  for (const t of history) {
+    const other = t.to_user === me.id ? t.from_name : t.to_name;
+    past.append(el("p", { class: "small" }, `${fmtDate(t.resolved_at || t.created_at)}: with `,
+      el("a", { href: "#u/" + encodeURIComponent(other) }, other), ` · ${t.status.toUpperCase()}`));
   }
 }
 
@@ -259,7 +421,8 @@ $("sign-form").onsubmit = async (e) => {
   say("");
   const f = e.target;
   const gift = giftPick ? giftPick.id : null;
-  if (gift && !confirm("Your stamped banner will be given to them. Send it?")) return;
+  if (gift && !(await ask(`Stamp ${giftPick.name} ${edition(giftPick)} into ${f.dataset.user}'s guestbook? It'll be theirs to keep!`,
+    { ok: "Send it!", cancel: "Wait, no", pic: bannerImg(giftPick, 2) }))) return;
   try {
     await api("/api/guestbook", { method: "POST", body: { user: f.dataset.user, message: f.message.value, instance_id: gift || null } });
     f.reset();
@@ -344,13 +507,13 @@ async function showBanner(id) {
     el("p", {}, "Chain check: ", el("b", { class: chain.ok ? "ok-text" : "bad-text" }, chain.ok ? "ALL GOOD" : "BROKEN"),
       ` (${chain.entries} entries) · `, el("a", { href: "#about" }, "how this works")),
     el("p", { class: "small" }, "Design recorded: ",
-      de ? `${fmtDate(de.created_at)} as ledger entry #${de.id}` : "not sealed yet"),
+      de ? `${fmtStamp(de.created_at)} as ledger entry #${de.id}` : "not sealed yet"),
     de ? el("p", { class: "small" }, "Design fingerprint: ", el("span", { class: "hash" }, de.hash)) : null,
     el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash" }, b.image_hash)),
 
     el("h2", {}, "» Travel Log «"),
     el("ol", { class: "log" }, history.map((h) => el("li", {},
-      `${fmtDate(h.created_at)}: ${HOW[h.reason] || h.reason}`,
+      `${fmtStamp(h.created_at)}: ${HOW[h.reason] || h.reason}`,
       h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
       ` → ${h.to_name || "a former player"}`,
       fp(h.hash, h.ledger_id)))));
@@ -402,16 +565,21 @@ async function showAbout() {
   list.textContent = "";
   if (!L.recent.length) list.append(el("li", {}, "Nothing yet!"));
   for (const h of L.recent) {
-    const fp = el("span", { class: "hash small", title: h.hash }, " " + h.hash.slice(0, 12) + "…");
+    // line 1 (small): when + fingerprint · line 2: what happened
+    const meta = el("div", { class: "led-meta" }, fmtStamp(h.created_at), " · ",
+      el("span", { class: "hash", title: h.hash }, h.hash.slice(0, 12) + "…"));
+    let what;
     if (h.kind === "design") {
-      list.append(el("li", { value: h.id },
-        `${fmtDate(h.created_at)}: NEW DESIGN ${h.design || "?"} (${h.rarity}${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, fp));
-      continue;
+      what = el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), `${h.design || "?"} (${h.rarity}`
+        + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
+        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`);
+    } else {
+      what = el("div", { class: "led-what" },
+        `${h.design || "a button"} #${h.edition ?? "?"}, ${HOW[h.reason] || h.reason}`,
+        h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
+        ` → ${h.to_name || "a former player"}`);
     }
-    list.append(el("li", { value: h.id },
-      `${fmtDate(h.created_at)}: ${h.design || "a button"} #${h.edition ?? "?"}, ${HOW[h.reason] || h.reason}`,
-      h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
-      ` → ${h.to_name || "a former player"}`, fp));
+    list.append(el("li", { value: h.id }, meta, what));
   }
 
   const { designs } = await api("/api/credits");
@@ -433,7 +601,7 @@ async function showCodes() {
     const li = el("li", {}, `${c.label || "code"} (made ${fmtDate(c.created_at)})`);
     if (codes.length > 1) {
       li.append(el("button", { onclick: async () => {
-        if (!confirm("Remove this code? It will stop working.")) return;
+        if (!(await ask(`Remove "${c.label || "this code"}"? It will stop working.`, { ok: "Remove it", cancel: "Keep it" }))) return;
         try { await api(`/api/codes?id=${c.id}`, { method: "DELETE" }); await showCodes(); say("Code removed."); }
         catch (e) { say(e.message); }
       } }, "remove"));
@@ -443,7 +611,7 @@ async function showCodes() {
 }
 
 $("new-code").onclick = async () => {
-  const label = prompt("Name this code (e.g. 'phone', 'notebook'):", "extra code");
+  const label = await askText("Name this code (like 'phone' or 'notebook'):", "extra code", { ok: "Make code" });
   if (label === null) return;
   try { const { code } = await api("/api/codes", { method: "POST", body: { label } }); showCode(code); }
   catch (e) { say(e.message); }
@@ -451,7 +619,7 @@ $("new-code").onclick = async () => {
 
 $("delete-account").onclick = async () => {
   say("");
-  const typed = prompt(`This deletes your account for good.\n\nType your name (${me.name}) to confirm:`);
+  const typed = await askText(`This deletes your account for good. Type your name (${me.name}) to confirm:`, "", { ok: "Delete forever", cancel: "No, keep it" });
   if (typed === null) return;
   try {
     await api("/api/account", { method: "DELETE", body: { confirm: typed } });

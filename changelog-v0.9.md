@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.8
+# 88x31 cLuB Changelog — v0.9
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.9 — "Will Trade 4 Holos"
+**Sun Oct 11, 2026 · 10:23 PM HST**
+
+- **Trading!** Propose a trade from anyone's guestbook, then accept or decline offers on the new Trades page. Finished trades show up on both guestbooks.
+- Bots answer trade offers in their own way. Some are generous, some drive a hard bargain.
+- Two packs a day for now, to get things going.
+- Bonus packs: once in a while a pack has a BONUS PACK card that opens a fresh pack on the spot.
+- No more browser popups; confirmations use an in-game window.
+- The ledger on the About page shows times and is easier to read.
 
 ## v0.8 — "Be Kind, Rewind"
 **Sun Oct 11, 2026 · 10:11 PM HST**
