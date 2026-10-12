@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>~*~ 88x31 ~*~ Welcome 2 My Button Collection!!</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+
+  <header class="banner-head">
+    <p class="small">You have found...</p>
+    <h1>~*~ 88x31 ~*~</h1>
+    <p class="subtitle">The Internet's #1 Tiny Button Collecting Club!!!</p>
+  </header>
+
+  <hr class="rainbow">
+
+  <div class="construction">
+    <span class="stripes"></span>
+    <b>UNDER CONSTRUCTION</b>
+    <span class="stripes"></span>
+  </div>
+  <p class="center small">This page is always being worked on. Check back soon for more cool stuff!</p>
+
+  <hr class="rainbow">
+
+  <section id="loading"><p class="center">Loading... please wait...</p></section>
+
+  <!-- logged out -->
+  <section id="out" hidden>
+    <table class="layout">
+      <tr>
+        <td class="panel">
+          <h2>&raquo; New Here? &laquo;</h2>
+          <p class="small">Join the club &amp; start collecting buttons!! It's FREE!!</p>
+          <form id="signup-form">
+            <label>Pick a name:<br><input name="name" maxlength="20" autocomplete="off" required></label>
+            <button>Sign Me Up!</button>
+          </form>
+        </td>
+        <td class="panel">
+          <h2>&raquo; Coming Back? &laquo;</h2>
+          <p class="small">Welcome back, friend! Enter your save code below.</p>
+          <form id="login-form">
+            <label>Your save code:<br><input name="code" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" required></label>
+            <button>Enter!</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+  </section>
+
+  <!-- shown once after signup or making a new code -->
+  <section id="code-card" hidden>
+    <div class="panel save">
+      <h2>!!! YOUR SAVE CODE !!!</h2>
+      <p><b>This is your ONLY way back in.</b> Write it down, print it, hide it under your keyboard. It won't be shown again!</p>
+      <p class="code" id="code-text"></p>
+      <p class="center">
+        <button id="copy-code">Copy</button>
+        <button id="download-code">Download .txt</button>
+      </p>
+      <p class="center"><button id="code-done">OK, I saved it!</button></p>
+    </div>
+  </section>
+
+  <!-- logged in -->
+  <section id="in" hidden>
+    <div class="panel">
+      <h2>Welcome back, <span id="who"></span>!!</h2>
+      <p>Your button collection will show up here. Coming soon!</p>
+      <p><button id="logout">Log Out</button></p>
+    </div>
+    <div class="panel">
+      <h2>&raquo; My Save Codes &laquo;</h2>
+      <p class="small">You can keep up to 5 codes, so you can stash copies in different places.</p>
+      <ul id="codes"></ul>
+      <button id="new-code">Make Another Code</button>
+    </div>
+  </section>
+
+  <p id="msg" class="center" role="status"></p>
+
+  <hr class="rainbow">
+
+  <div class="counter-box center">
+    <span class="small">You are visitor number</span><br>
+    <span class="counter">000088</span>
+  </div>
+
+  <p class="center small">
+    [ Sign my Guestbook ] &nbsp; [ View my Guestbook ] &nbsp; [ Email Me ]
+  </p>
+
+  <table class="webring">
+    <tr>
+      <td>&laquo; Prev</td>
+      <td class="center"><b>The 88x31 Webring</b><br><span class="small">[ Random ] [ List Sites ] [ Join ]</span></td>
+      <td>Next &raquo;</td>
+    </tr>
+  </table>
+
+  <p class="center small">
+    Best viewed in 800x600 with any browser.<br>
+    Last updated: Oct 2026 &middot; Made with Notepad
+  </p>
+
+</main>
+<script src="app.js"></script>
+</body>
+</html>

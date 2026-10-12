@@ -1,0 +1,12 @@
+# secrets — never commit these
+.dev.vars
+.env
+.env.*
+
+# wrangler / node
+.wrangler/
+node_modules/
+
+# OS junk
+.DS_Store
+Thumbs.db
