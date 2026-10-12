@@ -1,3 +1,5 @@
+-- SUPERSEDED by 005_sources_ledger.sql (the ledger now lives in its own table).
+-- Already run on the live database; these columns are simply unused now.
 -- Hash-chained ownership ledger.
 --   npx wrangler d1 execute 88x31-db --remote --file=migrations/004_ledger.sql
 -- Each ownership_history row gets sealed in order: `record` is a frozen copy of the

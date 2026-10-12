@@ -118,6 +118,8 @@ textarea, select {
 img.banner { display: block; image-rendering: pixelated; border: 2px solid transparent; }
 img.rarity-uncommon { border-color: #00ffff; }
 img.rarity-rare { border-color: #ffff00; }
+img.rarity-ultra { border-color: #ff00ff; outline: 1px solid #ffffff; }
+.card.rarity-ultra b, .variant { color: #ff99ff; font-weight: bold; }
 
 .grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .tile { display: flex; flex-direction: column; align-items: center; text-decoration: none; }
@@ -161,9 +163,13 @@ img.rarity-rare { border-color: #ffff00; }
 .entry p { margin: 4px 0; }
 .stamp { display: flex; align-items: center; gap: 6px; }
 .log { padding-left: 24px; }
+.credit { margin: 4px 0; }
+.credits { list-style: none; padding: 0; }
+.credits li { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.credits .credit { display: inline; }
 .hash { font-family: "Courier New", Courier, monospace; word-break: break-all; color: #00ff00; }
-#ledger-ok.ok { color: #00ff00; }
-#ledger-ok.bad { color: #ff6666; }
+#ledger-ok.ok, .ok-text { color: #00ff00; }
+#ledger-ok.bad, .bad-text { color: #ff6666; }
 .danger-head { margin-top: 20px; color: #ff6666; }
 #delete-account { color: #fff; background: #990000; border-color: #ff6666; }
 

@@ -55,7 +55,11 @@ CREATE TABLE IF NOT EXISTS designs (
   stats        TEXT NOT NULL DEFAULT '{}',  -- JSON
   max_editions INTEGER,                  -- NULL = unlimited
   status       TEXT NOT NULL DEFAULT 'active', -- active | pending | removed
-  created_at   INTEGER NOT NULL
+  created_at   INTEGER NOT NULL,
+  source_title  TEXT,   -- where the art came from (see migrations/005)
+  source_author TEXT,
+  source_url    TEXT,
+  license       TEXT    -- e.g. "CC0 1.0", "CC BY 4.0", "Original"
 );
 
 -- One owned copy of a design.
@@ -79,13 +83,8 @@ CREATE TABLE IF NOT EXISTS ownership_history (
   to_user      INTEGER REFERENCES users(id),
   reason       TEXT NOT NULL,   -- starter | gift | trade | fusion | admin
   ref_id       INTEGER,         -- trade or fusion id
-  created_at   INTEGER NOT NULL,
-  -- hash-chained ledger (see lib/ledger.js): frozen entry + chained SHA-256
-  record       TEXT,
-  prev_hash    TEXT,
-  hash         TEXT
+  created_at   INTEGER NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_history_unsealed ON ownership_history(hash, id);
 CREATE INDEX IF NOT EXISTS idx_history_instance ON ownership_history(instance_id);
 
 -- ---------- trading & gifting ----------
@@ -205,3 +204,16 @@ CREATE TABLE IF NOT EXISTS counters (
   value  INTEGER NOT NULL DEFAULT 0
 );
 INSERT OR IGNORE INTO counters (name, value) VALUES ('visits', 0);
+
+-- ---------- the ledger (also in migrations/005_sources_ledger.sql) ----------
+-- One hash chain over design creations and ownership changes. See lib/ledger.js.
+CREATE TABLE IF NOT EXISTS ledger (
+  id          INTEGER PRIMARY KEY,
+  kind        TEXT NOT NULL,        -- design | transfer
+  ref_id      INTEGER NOT NULL,
+  record      TEXT NOT NULL,
+  prev_hash   TEXT NOT NULL,
+  hash        TEXT NOT NULL UNIQUE,
+  created_at  INTEGER NOT NULL,
+  UNIQUE (kind, ref_id)
+);

@@ -85,7 +85,7 @@ async function showPull() {
   box.textContent = "Loading...";
   const pull = await api("/api/pull");
   const o = pull.odds;
-  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}%. Rares are limited editions.`;
+  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}% · ULTRA ${o.ultra}%. Rares are limited editions, and every ultra is one of a kind.`;
   box.textContent = "";
 
   if (pull.status === "done") {
@@ -252,19 +252,56 @@ $("foot-sign").onclick = (e) => {
 
 async function showBanner(id) {
   showView("view-banner");
-  const { banner: b, history } = await api("/api/banner?id=" + encodeURIComponent(id));
+  const { banner: b, design_entry: de, history, chain } = await api("/api/banner?id=" + encodeURIComponent(id));
   const box = $("banner-body");
   box.textContent = "";
+  const fp = (hash, ledgerId) => hash
+    ? el("span", { class: "hash small", title: hash }, ` [ledger #${ledgerId} · ${hash.slice(0, 12)}…]`)
+    : el("span", { class: "small" }, " [not sealed yet]");
+
   box.append(
     el("h2", {}, `» ${b.name} ${edition(b)} «`),
     el("p", { class: "center" }, bannerImg(b, 3)),
-    el("p", {}, `Type: ${b.type} · Rarity: ${b.rarity}`),
+    variantLine(b),
+    el("p", {}, `Type: ${b.type} · Rarity: ${b.rarity === "ultra" ? "ULTRA RARE" : b.rarity}`,
+      b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
     el("p", {}, "Owned by ", b.owner ? el("a", { href: "#u/" + encodeURIComponent(b.owner) }, b.owner) : "nobody"),
-    el("h2", {}, "Travel log"),
+
+    el("h2", {}, "» Credits «"),
+    credit(b) || el("p", { class: "small" }, "No credit recorded."),
+    b.source_url ? el("p", { class: "small" }, "Original: ", el("a", { href: b.source_url, target: "_blank", rel: "noopener" }, b.source_url)) : null,
+    el("p", { class: "small" }, "The credit is also written inside the button's GIF file."),
+
+    el("h2", {}, "» On the Ledger «"),
+    el("p", {}, "Chain check: ", el("b", { class: chain.ok ? "ok-text" : "bad-text" }, chain.ok ? "ALL GOOD" : "BROKEN"),
+      ` (${chain.entries} entries) · `, el("a", { href: "#about" }, "how this works")),
+    el("p", { class: "small" }, "Design recorded: ",
+      de ? `${fmtDate(de.created_at)} as ledger entry #${de.id}` : "not sealed yet"),
+    de ? el("p", { class: "small" }, "Design fingerprint: ", el("span", { class: "hash" }, de.hash)) : null,
+    el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash" }, b.image_hash)),
+
+    el("h2", {}, "» Travel Log «"),
     el("ol", { class: "log" }, history.map((h) => el("li", {},
       `${fmtDate(h.created_at)}: ${HOW[h.reason] || h.reason}`,
       h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
-      ` → ${h.to_name || "a former player"}`))));
+      ` → ${h.to_name || "a former player"}`,
+      fp(h.hash, h.ledger_id)))));
+}
+
+function variantLine(b) {
+  let st = {};
+  try { st = JSON.parse(b.stats || "{}"); } catch {}
+  if (!st.variant_of) return null;
+  return el("p", { class: "variant" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`);
+}
+
+// "Art: Blue Globe by jsmith (Openclipart) · CC0 1.0"
+function credit(d) {
+  const bits = [];
+  if (d.source_title) bits.push(d.source_url ? el("a", { href: d.source_url, target: "_blank", rel: "noopener" }, d.source_title) : d.source_title);
+  if (d.source_author) bits.push(bits.length ? ` by ${d.source_author}` : `by ${d.source_author}`);
+  if (d.license) bits.push(` · ${d.license === "Original" ? "original art" : d.license}`);
+  return bits.length ? el("p", { class: "small credit" }, "Art: ", ...bits) : null;
 }
 
 // ---------- about / ledger ----------
@@ -279,11 +316,23 @@ async function showAbout() {
   list.textContent = "";
   if (!L.recent.length) list.append(el("li", {}, "Nothing yet!"));
   for (const h of L.recent) {
+    const fp = el("span", { class: "hash small", title: h.hash }, " " + h.hash.slice(0, 12) + "…");
+    if (h.kind === "design") {
+      list.append(el("li", { value: h.id },
+        `${fmtDate(h.created_at)}: NEW DESIGN ${h.design || "?"} (${h.rarity}${h.max_editions ? ", " + h.max_editions + " copies" : ""}${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, fp));
+      continue;
+    }
     list.append(el("li", { value: h.id },
       `${fmtDate(h.created_at)}: ${h.design || "a button"} #${h.edition ?? "?"}, ${HOW[h.reason] || h.reason}`,
       h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
-      ` → ${h.to_name || "a former player"} `,
-      el("span", { class: "hash small", title: h.hash }, h.hash.slice(0, 12) + "…")));
+      ` → ${h.to_name || "a former player"}`, fp));
+  }
+
+  const { designs } = await api("/api/credits");
+  const credits = $("credits");
+  credits.textContent = "";
+  for (const d of designs) {
+    credits.append(el("li", {}, bannerImg(d), el("span", {}, el("b", {}, d.name), " ", credit(d) || "")));
   }
 }
 

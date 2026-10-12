@@ -185,8 +185,8 @@ for slug, name, typ, rarity, fn in BANNERS:
     esc = name.replace("'", "''")
     cap = "50" if rarity == "rare" else "NULL"   # rares are limited editions
     sql.append(
-        f"INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at) "
-        f"VALUES ('{esc}', 'banners/{slug}.gif', '{h}', '{typ}', '{rarity}', '{{\"placeholder\":true}}', {cap}, 'active', strftime('%s','now'));"
+        f"INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_author, license) "
+        f"VALUES ('{esc}', 'banners/{slug}.gif', '{h}', '{typ}', '{rarity}', '{{\"placeholder\":true}}', {cap}, 'active', strftime('%s','now'), '88x31', 'Original');"
     )
 open(os.path.join(ROOT, "seed_banners.sql"), "w").write("\n".join(sql) + "\n")
 

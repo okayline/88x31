@@ -77,7 +77,8 @@
     <div class="panel">
       <h2>&raquo; The Ledger &laquo;</h2>
       <p>Every button copy has a number (like <i>Neon Nite #12 of 50</i>), and every time one changes hands, it gets written down: who it came from, who it went to, when, and why (a daily pull, a gift, a guestbook stamp, a trade...).</p>
-      <p>Those entries are chained together like a blockchain, but without the crypto. Each entry gets a <b>fingerprint</b>, a hash made from that entry <i>plus the fingerprint of the entry before it</i>. So every fingerprint depends on the whole history behind it.</p>
+      <p>New button designs go in the ledger too, the moment they're added: a fingerprint of the artwork, its rarity, how many copies can ever exist, and where the art came from (its source, author and license). So nobody can quietly swap a button's picture, change its credits, or print extra copies later.</p>
+      <p>All of these entries are chained together like a blockchain, but without the crypto. Each entry gets a <b>fingerprint</b>, a hash made from that entry <i>plus the fingerprint of the entry before it</i>. So every fingerprint depends on the whole history behind it.</p>
       <p>That means nobody can quietly rewrite the past, not even us. If one old entry were changed, its fingerprint would stop matching, and so would every fingerprint after it. The site re-checks the whole chain every time this page loads.</p>
       <p>Anyone can save the latest fingerprint below and check back later. If the history is honest, today's chain will still lead to the fingerprint you saved.</p>
       <p>Good to know:</p>
@@ -96,6 +97,12 @@
       <h2>Latest entries</h2>
       <ol id="ledger-recent" class="log"></ol>
       <p class="small">Raw data: <a href="/api/ledger">/api/ledger</a></p>
+    </div>
+
+    <div class="panel">
+      <h2>&raquo; Credits &laquo;</h2>
+      <p class="small">Every button design and where its art came from. Each button's file also carries its credit inside it.</p>
+      <ul id="credits" class="credits"></ul>
     </div>
   </section>
 

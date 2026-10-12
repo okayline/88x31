@@ -51,11 +51,18 @@ curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/003
 npx wrangler d1 execute 88x31-db --remote --file=003_counter.sql
 ```
 
-Ledger columns:
+Ledger columns (004, now superseded by 005 but already run on the live database):
 
 ```
 curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/004_ledger.sql
 npx wrangler d1 execute 88x31-db --remote --file=004_ledger.sql
+```
+
+Design sources/licenses and the unified ledger:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/005_sources_ledger.sql
+npx wrangler d1 execute 88x31-db --remote --file=005_sources_ledger.sql
 ```
 
 ### Placeholder banners
@@ -80,3 +87,16 @@ The D1 binding is read from `wrangler.toml` (`DB` → `88x31-db`).
 npx wrangler d1 execute 88x31-db --local --file=schema.sql
 npx wrangler pages dev
 ```
+
+## Adding banners made from open-licensed art
+
+Only use sources that are public domain, CC0, or CC BY (with credit). Skip anything NC or ND.
+Make the 88x31 GIF first, then:
+
+```
+python3 tools/add_banner.py made/globe.gif --name "Spinning Globe" --type webring --rarity uncommon --source-title "Blue Globe" --author "jsmith" --url "https://openclipart.org/detail/12345" --license "CC0 1.0"
+```
+
+This bakes the credit into the GIF file, saves it to `public/banners/`, and adds a line to
+`seed_new_banners.sql`. Run that file on the database to add the new designs; each one is
+sealed into the ledger with its art fingerprint and credits.

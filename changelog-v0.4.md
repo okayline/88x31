@@ -1,8 +1,19 @@
-# 88x31 Changelog — v0.3
+# 88x31 Changelog — v0.4
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.4 — "Holo Foil & Gold Leaf"
+**Sun Oct 11, 2026 · 9:27 PM HST**
+
+- **First real buttons**, remixed from public-domain Openclipart art: Bodacious, Radical! and Four Kimono Ladies (common).
+- **Special variants:** Bodacious ✦ Holo and Radical! ✦ Holo (rare, 25 copies each) with a rainbow foil shine.
+- **Ultra rare, 1 of 1:** Four Kimono Ladies ✦ Gold Leaf and ✦ Sakura (pink foil and falling petals). Each exists exactly once.
+- **New rarity: ULTRA.** Daily pull odds are now common 69.9% · uncommon 25% · rare 5% · ultra 0.1%. An ultra that's shown but not kept goes back into the pool.
+- **Credits everywhere:** each design records its source, artist and license. Credits show on banner pages and a new Credits list on the About page, and are written inside each GIF file.
+- **Designs join the ledger:** every new design is sealed into the hash chain with its artwork fingerprint, rarity, copy limit and credits. The ledger moved into its own table, so the chain was rebuilt once.
+- **Banner pages** now show credits, the design's ledger entry, the artwork fingerprint, the chain check, and a ledger fingerprint on every travel-log step.
 
 ## v0.3 — "The Ledger Remembers"
 **Sun Oct 11, 2026 · 8:51 PM HST**
