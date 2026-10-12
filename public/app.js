@@ -319,7 +319,7 @@ async function showAbout() {
     const fp = el("span", { class: "hash small", title: h.hash }, " " + h.hash.slice(0, 12) + "…");
     if (h.kind === "design") {
       list.append(el("li", { value: h.id },
-        `${fmtDate(h.created_at)}: NEW DESIGN ${h.design || "?"} (${h.rarity}${h.max_editions ? ", " + h.max_editions + " copies" : ""}${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, fp));
+        `${fmtDate(h.created_at)}: NEW DESIGN ${h.design || "?"} (${h.rarity}${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, fp));
       continue;
     }
     list.append(el("li", { value: h.id },

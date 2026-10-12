@@ -16,8 +16,17 @@ body {
   color: var(--text);
   font: 16px/1.4 "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Times New Roman", serif;
   background-color: var(--sky);
-  /* looping twinkling starfield tile */
-  background-image: url("deco/stars.gif");
+  /* the starfield lives on a fixed layer behind everything (see body::before) */
+}
+
+/* Fixed star background: stays put while the page scrolls over it.
+   A fixed layer works on phones too, where background-attachment: fixed often doesn't. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--sky) url("deco/stars.gif");
   image-rendering: pixelated;
 }
 
@@ -193,7 +202,7 @@ img.rarity-ultra { border-color: #ff00ff; outline: 1px solid #ffffff; }
 /* people who ask their system for less motion get a still page */
 @media (prefers-reduced-motion: reduce) {
   .marquee span, .strip-track, .card.chosen { animation: none; }
-  body { background-image: none; }
+  body::before { background-image: none; }
   .marquee span { padding-left: 0; }
 }
 
