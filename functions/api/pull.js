@@ -2,6 +2,7 @@
 // GET  /api/pull -> { day, status, options: [design...], kept_index, passed_index, passed_to, odds }
 // POST /api/pull { keep: 0-2, pass?: 0-2, to?: NAME } -> { ok, kept, passed }
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
+import { sealSafe } from "../../lib/ledger.js";
 import { ODDS, today, rollDesigns, mintStatements, userByName } from "../../lib/game.js";
 
 async function loadPull(env, userId, day) {
@@ -88,5 +89,6 @@ export async function onRequestPost({ request, env }) {
     const passRes = await env.DB.batch(mintStatements(env, ids[pass], recipient.id, "pass_on", user.id));
     passed = passRes[0].meta.changes === 1; // false only if that one sold out
   }
+  await sealSafe(env);
   return json({ ok: true, kept, passed });
 }

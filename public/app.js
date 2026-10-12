@@ -1,7 +1,7 @@
 // 88x31 front page: accounts, daily pull, player pages, guestbooks, save codes.
 const $ = (id) => document.getElementById(id);
 const say = (text) => ($("msg").textContent = text || "");
-const TOP = ["loading", "out", "in", "code-card"];
+const TOP = ["loading", "out", "in", "code-card", "about"];
 const showTop = (id) => TOP.forEach((s) => ($(s).hidden = s !== id));
 const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
@@ -44,14 +44,21 @@ function bannerImg(design, scale = 1) {
   });
 }
 
+const GIFTY = ["pass_on", "guestbook", "trade", "gift"]; // reasons that always have a giver
+
 let me = null;
 
 // ---------- routing ----------
 
 async function route() {
-  if (!me) return;
   say("");
   const hash = decodeURIComponent(location.hash.slice(1));
+  if (hash === "about") {
+    showTop("about");
+    return showAbout().catch((e) => say(e.message));
+  }
+  if (!me) return showTop("out");
+  showTop("in");
   try {
     if (hash.startsWith("u/")) return await showPage(hash.slice(2));
     if (hash.startsWith("banner/")) return await showBanner(hash.slice(7));
@@ -64,10 +71,9 @@ window.addEventListener("hashchange", route);
 async function refresh() {
   const { user } = await api("/api/me");
   me = user;
-  if (!me) return showTop("out");
+  if (!me) return route();
   $("who").textContent = me.name;
   $("nav-mine").href = "#u/" + encodeURIComponent(me.name);
-  showTop("in");
   await route();
 }
 
@@ -106,32 +112,45 @@ async function showPull() {
   }
 
   let keep = null;
+  const giftBox = el("div", { class: "gift-choices" });
+  const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off" });
+  const toRow = el("label", { class: "to-row" }, "Send it to: ", toInput);
+  const giftChoice = () => (giftBox.querySelector("input:checked") || {}).value || "";
+
   const cards = pull.options.map((d, i) => card(d, i, pull, () => {
     keep = i;
     cards.forEach((c, j) => c.classList.toggle("chosen", j === i));
-    passSel.innerHTML = "";
-    passSel.append(el("option", { value: "" }, "(let them go)"));
-    pull.options.forEach((d2, j) => { if (j !== i && d2) passSel.append(el("option", { value: j }, d2.name)); });
+    // Radio choices: skip, or gift one of the two you didn't keep.
+    giftBox.textContent = "";
+    const radio = (value, ...label) => {
+      const input = el("input", { type: "radio", name: "gift", value });
+      input.onchange = () => { toRow.hidden = giftChoice() === ""; };
+      return el("label", { class: "radio" }, input, ...label);
+    };
+    giftBox.append(radio("", "No thanks, let the other two go"));
+    pull.options.forEach((d2, j) => {
+      if (j !== i && d2) giftBox.append(radio(String(j), "Gift ", bannerImg(d2), " ", el("b", {}, d2.name)));
+    });
+    giftBox.querySelector("input").checked = true;
+    toRow.hidden = true;
     form.hidden = false;
   }));
   box.append(el("div", { class: "pull-row" }, cards));
   box.append(el("p", { class: "center small" }, "Click the one you want to keep."));
 
-  const passSel = el("select", { name: "pass" });
-  const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off" });
   const form = el("form", { class: "pull-form" },
-    el("label", {}, "Pass one on to a friend? ", passSel),
-    el("label", {}, "Send it to: ", toInput),
-    el("button", {}, "Keep it!"));
+    el("p", {}, el("b", {}, "Gift one of the other two to a friend?")),
+    giftBox, toRow,
+    el("p", { class: "center" }, el("button", {}, "Keep it!")));
   form.hidden = true;
   form.onsubmit = async (e) => {
     e.preventDefault();
     say("");
-    const pass = passSel.value;
-    if (pass !== "" && !toInput.value.trim()) return say("Type the name of who to pass it to, or let them go.");
+    const pass = giftChoice();
+    if (pass !== "" && !toInput.value.trim()) return say("Type who to send it to, or choose \"No thanks\".");
     try {
       const r = await api("/api/pull", { method: "POST", body: { keep, pass: pass === "" ? null : Number(pass), to: toInput.value } });
-      say(pass !== "" && !r.passed ? "Kept! (The one you passed on sold out, sorry.)" : "Added to your collection!");
+      say(pass !== "" && !r.passed ? "Kept! (The one you gifted sold out, sorry.)" : pass !== "" ? "Kept, and your gift is on its way!" : "Added to your collection!");
       await showPull();
     } catch (err) { say(err.message); }
   };
@@ -244,8 +263,28 @@ async function showBanner(id) {
     el("h2", {}, "Travel log"),
     el("ol", { class: "log" }, history.map((h) => el("li", {},
       `${fmtDate(h.created_at)}: ${HOW[h.reason] || h.reason}`,
-      h.from_name ? ` from ${h.from_name}` : "",
-      h.to_name ? ` → ${h.to_name}` : ""))));
+      h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
+      ` → ${h.to_name || "a former player"}`))));
+}
+
+// ---------- about / ledger ----------
+
+async function showAbout() {
+  const L = await api("/api/ledger");
+  $("ledger-ok").textContent = L.ok ? "ALL GOOD! The chain is unbroken." : `BROKEN at entry #${L.broken_at}!`;
+  $("ledger-ok").className = L.ok ? "ok" : "bad";
+  $("ledger-count").textContent = L.entries;
+  $("ledger-head").textContent = L.head || "(none yet)";
+  const list = $("ledger-recent");
+  list.textContent = "";
+  if (!L.recent.length) list.append(el("li", {}, "Nothing yet!"));
+  for (const h of L.recent) {
+    list.append(el("li", { value: h.id },
+      `${fmtDate(h.created_at)}: ${h.design || "a button"} #${h.edition ?? "?"}, ${HOW[h.reason] || h.reason}`,
+      h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
+      ` → ${h.to_name || "a former player"} `,
+      el("span", { class: "hash small", title: h.hash }, h.hash.slice(0, 12) + "…")));
+  }
 }
 
 // ---------- save codes ----------
@@ -275,6 +314,19 @@ $("new-code").onclick = async () => {
   catch (e) { say(e.message); }
 };
 
+$("delete-account").onclick = async () => {
+  say("");
+  const typed = prompt(`This deletes your account for good.\n\nType your name (${me.name}) to confirm:`);
+  if (typed === null) return;
+  try {
+    await api("/api/account", { method: "DELETE", body: { confirm: typed } });
+    me = null;
+    location.hash = "";
+    showTop("out");
+    say("Your account has been deleted. Bye bye, thanx 4 visiting!");
+  } catch (e) { say(e.message); }
+};
+
 // ---------- signup / login / save code card ----------
 
 function showCode(code) {
@@ -288,7 +340,7 @@ $("signup-form").onsubmit = async (e) => {
   try {
     const { user, code } = await api("/api/signup", { method: "POST", body: { name: e.target.name.value } });
     me = user;
-    location.hash = "u/" + encodeURIComponent(user.name); // land on your new collection after saving the code
+    afterCode = "u/" + encodeURIComponent(user.name); // land on your new guestbook once the code is saved
     showCode(code);
   } catch (err) { say(err.message); }
 };
@@ -317,7 +369,13 @@ $("download-code").onclick = () => {
   URL.revokeObjectURL(a.href);
 };
 
-$("code-done").onclick = async () => { say(""); await refresh(); };
+let afterCode = null;
+$("code-done").onclick = async () => {
+  say("");
+  // Set the address without triggering a route, then refresh routes once.
+  if (afterCode) { history.replaceState(null, "", "#" + afterCode); afterCode = null; }
+  await refresh();
+};
 
 $("logout").onclick = async (e) => {
   e.preventDefault();
@@ -327,5 +385,16 @@ $("logout").onclick = async (e) => {
   location.hash = "";
   showTop("out");
 };
+
+// Visitor counter: counted once per browser visit, so refreshing doesn't bump it.
+(async () => {
+  let counted = false;
+  try { counted = sessionStorage.getItem("counted") === "1"; } catch {}
+  try {
+    const { visits } = await api("/api/hit", { method: counted ? "GET" : "POST" });
+    try { sessionStorage.setItem("counted", "1"); } catch {}
+    $("counter").textContent = String(visits).padStart(6, "0");
+  } catch {}
+})();
 
 refresh().catch((e) => { say(e.message); showTop("out"); });

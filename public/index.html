@@ -66,6 +66,39 @@
     </div>
   </section>
 
+  <!-- about (open to everyone) -->
+  <section id="about" hidden>
+    <div class="panel">
+      <h2 class="center">~*~ About 88x31 ~*~</h2>
+      <p>88x31 is a club for collecting, gifting and trading those tiny 88&times;31 buttons from the early web. Pull new buttons every day, keep your favorites, pass extras on to friends, and stamp gifts into each other's guestbooks.</p>
+      <p><a href="#">&laquo; Back to the homepage</a></p>
+    </div>
+
+    <div class="panel">
+      <h2>&raquo; The Ledger &laquo;</h2>
+      <p>Every button copy has a number (like <i>Neon Nite #12 of 50</i>), and every time one changes hands, it gets written down: who it came from, who it went to, when, and why (a daily pull, a gift, a guestbook stamp, a trade...).</p>
+      <p>Those entries are chained together like a blockchain, but without the crypto. Each entry gets a <b>fingerprint</b>, a hash made from that entry <i>plus the fingerprint of the entry before it</i>. So every fingerprint depends on the whole history behind it.</p>
+      <p>That means nobody can quietly rewrite the past, not even us. If one old entry were changed, its fingerprint would stop matching, and so would every fingerprint after it. The site re-checks the whole chain every time this page loads.</p>
+      <p>Anyone can save the latest fingerprint below and check back later. If the history is honest, today's chain will still lead to the fingerprint you saved.</p>
+      <p>Good to know:</p>
+      <ul>
+        <li>The ledger tracks who owns which copy. It doesn't stop anyone saving a picture of a button, but only the ledger says whose copy is the real #12.</li>
+        <li>Buttons are just for fun. They can't be bought or sold for real money.</li>
+        <li>If a player deletes their account, their name disappears from the ledger (it shows as "a former player"), and the chain still checks out.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h2>&raquo; Ledger Status &laquo;</h2>
+      <p>Chain check: <b id="ledger-ok">checking...</b></p>
+      <p>Entries recorded: <b id="ledger-count">...</b></p>
+      <p>Latest fingerprint:<br><span class="hash" id="ledger-head">...</span></p>
+      <h2>Latest entries</h2>
+      <ol id="ledger-recent" class="log"></ol>
+      <p class="small">Raw data: <a href="/api/ledger">/api/ledger</a></p>
+    </div>
+  </section>
+
   <!-- logged in -->
   <section id="in" hidden>
     <div class="panel nav">
@@ -73,6 +106,7 @@
       [ <a href="#pull">Daily Pull</a> ]
       [ <a href="#" id="nav-mine">My Guestbook</a> ]
       [ <a href="#codes">Save Codes</a> ]
+      [ <a href="#about">About</a> ]
       [ <a href="#" id="logout">Log Out</a> ]
       <form id="visit-form" class="visit">
         Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off"> <button>Go!</button>
@@ -116,6 +150,10 @@
       <p class="small">You can keep up to 5 codes, so you can stash copies in different places.</p>
       <ul id="codes"></ul>
       <button id="new-code">Make Another Code</button>
+
+      <h2 class="danger-head">&raquo; Delete My Account &laquo;</h2>
+      <p class="small">This removes your account, your guestbook, the messages you left on other guestbooks, and your buttons. Buttons you already gave away stay with their new owners. <b>This can't be undone.</b></p>
+      <button id="delete-account">Delete My Account</button>
     </div>
   </section>
 
@@ -134,11 +172,11 @@
 
   <div class="counter-box center">
     <span class="small">You are visitor number</span><br>
-    <span class="counter">000088</span>
+    <span class="counter" id="counter">000000</span>
   </div>
 
   <p class="center small">
-    [ <a href="#" id="foot-sign">Sign my Guestbook</a> ] &nbsp; [ <a href="#" id="foot-view">View my Guestbook</a> ] &nbsp; [ Email Me ]
+    [ <a href="#" id="foot-sign">Sign my Guestbook</a> ] &nbsp; [ <a href="#" id="foot-view">View my Guestbook</a> ] &nbsp; [ <a href="#about">About</a> ] &nbsp; [ Email Me ]
   </p>
 
   <table class="webring">

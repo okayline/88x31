@@ -44,6 +44,20 @@ curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/002
 npx wrangler d1 execute 88x31-db --remote --file=002_pulls_guestbook.sql
 ```
 
+Visitor counter table:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/003_counter.sql
+npx wrangler d1 execute 88x31-db --remote --file=003_counter.sql
+```
+
+Ledger columns:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/004_ledger.sql
+npx wrangler d1 execute 88x31-db --remote --file=004_ledger.sql
+```
+
 ### Placeholder banners
 
 10 temporary banners live in `public/banners/` (made by `tools/make_placeholders.py`). Add them to the database with:

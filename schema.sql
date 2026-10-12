@@ -79,8 +79,13 @@ CREATE TABLE IF NOT EXISTS ownership_history (
   to_user      INTEGER REFERENCES users(id),
   reason       TEXT NOT NULL,   -- starter | gift | trade | fusion | admin
   ref_id       INTEGER,         -- trade or fusion id
-  created_at   INTEGER NOT NULL
+  created_at   INTEGER NOT NULL,
+  -- hash-chained ledger (see lib/ledger.js): frozen entry + chained SHA-256
+  record       TEXT,
+  prev_hash    TEXT,
+  hash         TEXT
 );
+CREATE INDEX IF NOT EXISTS idx_history_unsealed ON ownership_history(hash, id);
 CREATE INDEX IF NOT EXISTS idx_history_instance ON ownership_history(instance_id);
 
 -- ---------- trading & gifting ----------
@@ -193,3 +198,10 @@ CREATE TABLE IF NOT EXISTS guestbook_entries (
   UNIQUE (page_user, author_id, day)
 );
 CREATE INDEX IF NOT EXISTS idx_guestbook_page ON guestbook_entries(page_user, created_at);
+
+-- ---------- visitor counter (also in migrations/003_counter.sql) ----------
+CREATE TABLE IF NOT EXISTS counters (
+  name   TEXT PRIMARY KEY,
+  value  INTEGER NOT NULL DEFAULT 0
+);
+INSERT OR IGNORE INTO counters (name, value) VALUES ('visits', 0);

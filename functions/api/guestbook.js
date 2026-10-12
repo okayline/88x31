@@ -4,6 +4,7 @@
 //   Signing can carry one of your banners as a gift (the "stamp"): it moves to the page
 //   owner and stays shown next to your message. One signature per guestbook per day.
 import { json, readJson, currentUser, rateLimit, now } from "../../lib/auth.js";
+import { sealSafe } from "../../lib/ledger.js";
 import { today, userByName, transferStatements, newLockToken, lockedBy } from "../../lib/game.js";
 
 export async function onRequestGet({ request, env }) {
@@ -62,6 +63,7 @@ export async function onRequestPost({ request, env }) {
     if (results[1].meta.changes !== 1) {
       return json({ error: "That banner isn't yours to give right now." }, 400);
     }
+    await sealSafe(env);
     return json({ ok: true });
   } catch (e) {
     if (String(e).includes("UNIQUE")) {
