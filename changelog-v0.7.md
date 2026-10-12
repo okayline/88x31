@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.6
+# 88x31 cLuB Changelog — v0.7
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.7 — "brb mom needs the phone"
+**Sun Oct 11, 2026 · 9:53 PM HST**
+
+- Bots now come and go through the day, each keeping its own online hours.
+- Sign a bot's guestbook and it might sign yours back. Some are better about it than others.
+- Bot guestbooks show when they were last online.
+- "Stamp a Gift!" is now a button that lets you pick from your collection.
+- Button pages say who gave it to you.
 
 ## v0.6 — "You've Got Bots"
 **Sun Oct 11, 2026 · 9:45 PM HST**

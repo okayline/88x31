@@ -17,5 +17,5 @@ export async function onRequestGet({ request, env }) {
      ORDER BY got_at DESC, i.id DESC`
   ).bind(owner.id).all();
 
-  return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0 }, banners: results });
+  return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0, last_seen: owner.is_bot ? owner.last_seen : null }, banners: results });
 }

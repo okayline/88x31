@@ -168,6 +168,13 @@ img.rarity-ultra { border-color: #ff00ff; outline: 1px solid #ffffff; }
 .radio input { width: auto; margin: 0; }
 .radio img.banner { display: inline-block; }
 
+.sign-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.gift-chosen { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 6px 0; padding: 4px 6px; border: 2px dashed #ffff00; background: #000066; }
+.gift-chosen img.banner { display: inline-block; }
+button.mini { font-size: 12px; padding: 0 6px; }
+.gift-picker { margin: 8px 0; background: #000033; }
+.pick-tile { background: transparent; border: 2px solid transparent; padding: 2px; color: var(--text); cursor: pointer; }
+.pick-tile:hover, .pick-tile:focus { border-color: #ffff00; }
 .entry { border-top: 2px dashed var(--edge); padding-top: 6px; margin-top: 8px; }
 .entry p { margin: 4px 0; }
 .stamp { display: flex; align-items: center; gap: 6px; }

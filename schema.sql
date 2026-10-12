@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   name        TEXT NOT NULL UNIQUE COLLATE NOCASE,
   is_admin    INTEGER NOT NULL DEFAULT 0,
   is_bot      INTEGER NOT NULL DEFAULT 0,   -- bots play once a day (lib/bots.js); can't log in
+  last_seen   INTEGER,                      -- bots: when they were last online
   created_at  INTEGER NOT NULL
 );
 
@@ -218,4 +219,13 @@ CREATE TABLE IF NOT EXISTS ledger (
   hash        TEXT NOT NULL UNIQUE,
   created_at  INTEGER NOT NULL,
   UNIQUE (kind, ref_id)
+);
+
+-- ---------- bot schedule (also in migrations/007_bot_schedule.sql) ----------
+CREATE TABLE IF NOT EXISTS bot_runs (
+  bot_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  day         TEXT NOT NULL,      -- YYYY-MM-DD in Hawaii time (the bots' day)
+  action      TEXT NOT NULL,      -- 'pull' or 'sign1', 'sign2', ...
+  done_at     INTEGER NOT NULL,
+  PRIMARY KEY (bot_id, day, action)
 );

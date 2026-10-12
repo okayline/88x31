@@ -31,6 +31,14 @@ async function api(path, opts = {}) {
 }
 
 const fmtDate = (t) => new Date(t * 1000).toLocaleDateString();
+function ago(t) {
+  const s = Math.max(0, Math.floor(Date.now() / 1000) - t);
+  if (s < 120) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)} minutes ago`;
+  if (s < 7200) return "an hour ago";
+  if (s < 86400) return `${Math.floor(s / 3600)} hours ago`;
+  return Math.floor(s / 86400) === 1 ? "yesterday" : `${Math.floor(s / 86400)} days ago`;
+}
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
@@ -178,6 +186,8 @@ async function showPage(name) {
   const owner = col.owner.name;
   $("page-name").textContent = owner;
   $("page-bot").hidden = !col.owner.is_bot;
+  $("page-seen").hidden = !col.owner.last_seen;
+  if (col.owner.last_seen) $("page-seen").textContent = `${owner} was last online ${ago(col.owner.last_seen)}`;
 
   const grid = $("page-collection");
   grid.textContent = "";
@@ -192,11 +202,17 @@ async function showPage(name) {
   form.hidden = owner.toLowerCase() === me.name.toLowerCase();
   if (!form.hidden) {
     form.dataset.user = owner;
-    const sel = $("gift-select");
-    sel.innerHTML = "";
-    sel.append(el("option", { value: "" }, "(no gift)"));
+    chooseGift(null);
+    $("gift-picker").hidden = true;
     const mine = await api("/api/collection");
-    for (const b of mine.banners) sel.append(el("option", { value: b.id }, `${b.name} ${edition(b)}`));
+    const grid = $("gift-grid");
+    grid.textContent = "";
+    if (!mine.banners.length) grid.append(el("p", { class: "small" }, "You don't have any buttons to give yet!"));
+    for (const b of mine.banners) {
+      grid.append(el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}`,
+        onclick: () => { chooseGift(b); $("gift-picker").hidden = true; } },
+        bannerImg(b), el("span", { class: "small" }, edition(b))));
+    }
   }
 
   const list = $("page-guestbook");
@@ -224,15 +240,29 @@ $("show-bots").onchange = () => {
   applyBotToggle();
 };
 
+// The gift picked with "Stamp a Gift!" (or null).
+let giftPick = null;
+function chooseGift(b) {
+  giftPick = b;
+  const box = $("gift-chosen");
+  box.textContent = "";
+  box.hidden = !b;
+  $("stamp-btn").textContent = b ? "Change Gift" : "Stamp a Gift!";
+  if (b) box.append("Stamping: ", bannerImg(b), ` ${b.name} ${edition(b)} `,
+    el("button", { type: "button", class: "mini", onclick: () => chooseGift(null) }, "remove"));
+}
+$("stamp-btn").onclick = () => { $("gift-picker").hidden = !$("gift-picker").hidden; };
+
 $("sign-form").onsubmit = async (e) => {
   e.preventDefault();
   say("");
   const f = e.target;
-  const gift = f.gift.value;
+  const gift = giftPick ? giftPick.id : null;
   if (gift && !confirm("Your stamped banner will be given to them. Send it?")) return;
   try {
     await api("/api/guestbook", { method: "POST", body: { user: f.dataset.user, message: f.message.value, instance_id: gift || null } });
     f.reset();
+    chooseGift(null);
     say("Signed! Thanks 4 visiting!");
     await showPage(f.dataset.user);
   } catch (err) { say(err.message); }
@@ -277,7 +307,7 @@ async function showBanner(id) {
     variantLine(b),
     el("p", {}, `Type: ${b.type} · Rarity: ${b.rarity === "ultra" ? "ULTRA RARE" : b.rarity}`,
       b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
-    el("p", {}, "Owned by ", b.owner ? el("a", { href: "#u/" + encodeURIComponent(b.owner) }, b.owner) : "nobody"),
+    ownedLine(b, history),
 
     el("h2", {}, "» Credits «"),
     credit(b) || el("p", { class: "small" }, "No credit recorded."),
@@ -298,6 +328,24 @@ async function showBanner(id) {
       h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
       ` → ${h.to_name || "a former player"}`,
       fp(h.hash, h.ledger_id)))));
+}
+
+// "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
+const GOT_HOW = {
+  welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
+  guestbook: "as a guestbook gift", trade: "in a trade", gift: "as a gift", fusion: "from a fusion",
+};
+function ownedLine(b, history) {
+  const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
+  if (!b.owner) return el("p", {}, "Owned by nobody (retired).");
+  const last = history[history.length - 1];
+  const p = el("p", { class: "owned" }, "Owned by ", who(b.owner));
+  if (!last) return p;
+  const how = GOT_HOW[last.reason] || "";
+  if (last.from_name) p.append(" · received from ", who(last.from_name), ` ${how} on ${fmtDate(last.created_at)}`);
+  else if (GIFTY.includes(last.reason)) p.append(` · received from a former player ${how} on ${fmtDate(last.created_at)}`);
+  else p.append(` · found ${how} on ${fmtDate(last.created_at)}`);
+  return p;
 }
 
 function variantLine(b) {
