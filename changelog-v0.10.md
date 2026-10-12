@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.9
+# 88x31 cLuB Changelog — v0.10
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.10 — "Breaking News"
+**Sun Oct 11, 2026 · 10:32 PM HST**
+
+- A "Recent Trades & Gifts" news ticker on the front page, including ultra finds.
+- Simpler player search: just type and pick a name from the suggestions.
 
 ## v0.9 — "Will Trade 4 Holos"
 **Sun Oct 11, 2026 · 10:23 PM HST**

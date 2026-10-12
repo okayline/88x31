@@ -119,7 +119,6 @@
       <form id="visit-form" class="visit">
         Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off" list="player-names"> <button>Go!</button>
       </form>
-      <div id="player-list" class="player-list"></div>
       <datalist id="player-names"></datalist>
     </div>
 
@@ -210,6 +209,11 @@
 
   <hr class="rainbow">
 
+  <p class="center"><b>~ Recent Trades &amp; Gifts ~</b></p>
+  <div class="ticker" id="ticker" aria-live="off">
+    <span id="ticker-text">loading the latest news...</span>
+  </div>
+
   <p class="center"><b>~ Buttons you can collect ~</b></p>
   <div class="button-strip" aria-hidden="true">
     <div class="strip-track">
@@ -238,7 +242,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.9</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.10</span>
   </p>
 
 </main>

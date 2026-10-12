@@ -432,36 +432,22 @@ $("sign-form").onsubmit = async (e) => {
   } catch (err) { say(err.message); }
 };
 
-// All players: shown as clickable names under "Visit a guestbook", filtered as you type.
-// The same names feed the autocomplete on name boxes (visit, pass-on gifts).
+// All player names feed the browser's own suggestion dropdown on name boxes
+// ("Visit a guestbook" and the daily pull's "Send it to").
 let players = [];
 async function loadPlayers() {
   try { players = (await api("/api/players")).players; } catch { players = []; }
   const dl = $("player-names");
   dl.textContent = "";
   for (const p of players) dl.append(el("option", { value: p.name }));
-  renderPlayers();
 }
-function renderPlayers() {
-  const q = $("visit-form").name.value.trim().toLowerCase();
-  const box = $("player-list");
-  box.textContent = "";
-  const shown = players.filter((p) => !q || p.name.toLowerCase().includes(q));
-  if (!shown.length) { box.append(el("span", { class: "small" }, "No players match.")); return; }
-  shown.forEach((p, i) => {
-    if (i) box.append(" · ");
-    box.append(el("a", { href: "#u/" + encodeURIComponent(p.name), title: `${p.buttons} buttons` }, p.name),
-      p.is_bot ? el("span", { class: "bot-badge small" }, " [BOT]") : null);
-  });
-}
-$("visit-form").name.oninput = renderPlayers;
+
 
 $("visit-form").onsubmit = (e) => {
   e.preventDefault();
   const n = e.target.name.value.trim();
   if (n) location.hash = "u/" + encodeURIComponent(n);
   e.target.reset();
-  renderPlayers();
 };
 
 // Footer links: "View" opens your guestbook; "Sign" jumps to the form on the guestbook you're viewing.
@@ -688,6 +674,21 @@ $("logout").onclick = async (e) => {
   location.hash = "";
   showTop("out");
 };
+
+// Front-page ticker of recent trades, gifts and ultra finds (refreshes every few minutes).
+async function loadTicker() {
+  try {
+    const { items } = await api("/api/feed");
+    const t = $("ticker-text");
+    t.textContent = items.length
+      ? items.map((i) => i.text).join("  ***  ")
+      : "No trades or gifts yet... be the first!";
+    // keep the scroll speed steady no matter how long the text is
+    t.style.animationDuration = Math.max(20, Math.round(t.textContent.length / 6)) + "s";
+  } catch {}
+}
+loadTicker();
+setInterval(loadTicker, 3 * 60 * 1000);
 
 // Visitor counter: counted once per browser visit, so refreshing doesn't bump it.
 (async () => {
