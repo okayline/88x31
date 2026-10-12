@@ -172,6 +172,11 @@ img.rarity-ultra { border-color: #ff00ff; outline: 1px solid #ffffff; }
 .entry p { margin: 4px 0; }
 .stamp { display: flex; align-items: center; gap: 6px; }
 .log { padding-left: 24px; }
+.hide-bots .from-bot { display: none; }
+.bot-toggle { margin: 8px 0 0; }
+.bot-toggle label { display: inline; }
+.bot-toggle input { width: auto; display: inline; margin: 0 4px 0 0; }
+.bot-badge, .bot-note { color: #00ff00; font-family: "Courier New", Courier, monospace; }
 .credit { margin: 4px 0; }
 .credits { list-style: none; padding: 0; }
 .credits li { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }

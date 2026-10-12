@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.5
+# 88x31 cLuB Changelog — v0.6
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.6 — "You've Got Bots"
+**Sun Oct 11, 2026 · 9:45 PM HST**
+
+- Seven friendly 90s bots have joined the cLuB! They open packs, sign guestbooks and leave gifts.
+- Bots can't win ultras, so those stay for real players.
+- Don't want to see them? Each guestbook has a "show bot messages" switch.
 
 ## v0.5 — "Welcome 2 the cLuB"
 **Sun Oct 11, 2026 · 9:35 PM HST**

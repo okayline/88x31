@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
   if (!owner) return json({ error: "No player by that name." }, 404);
 
   const { results } = await env.DB.prepare(
-    `SELECT g.id, g.message, g.created_at, a.name AS author,
+    `SELECT g.id, g.message, g.created_at, a.name AS author, a.is_bot AS author_is_bot,
             g.instance_id AS gift_id, i.edition AS gift_edition, d.name AS gift_name,
             d.image_key AS gift_image, d.rarity AS gift_rarity, d.max_editions AS gift_max
      FROM guestbook_entries g

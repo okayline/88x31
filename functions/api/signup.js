@@ -12,6 +12,7 @@ export async function onRequestPost({ request, env }) {
   if (!/^[A-Za-z0-9_-]{3,20}$/.test(clean)) {
     return json({ error: "Name must be 3-20 letters, numbers, _ or -." }, 400);
   }
+  if (/-bot$/i.test(clean)) return json({ error: "Names ending in -bot are saved for the bots!" }, 400);
   const taken = await env.DB.prepare("SELECT 1 FROM users WHERE name = ?").bind(clean).first();
   if (taken) return json({ error: "That name is taken." }, 409);
 

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   id          INTEGER PRIMARY KEY,
   name        TEXT NOT NULL UNIQUE COLLATE NOCASE,
   is_admin    INTEGER NOT NULL DEFAULT 0,
+  is_bot      INTEGER NOT NULL DEFAULT 0,   -- bots play once a day (lib/bots.js); can't log in
   created_at  INTEGER NOT NULL
 );
 
@@ -204,6 +205,7 @@ CREATE TABLE IF NOT EXISTS counters (
   value  INTEGER NOT NULL DEFAULT 0
 );
 INSERT OR IGNORE INTO counters (name, value) VALUES ('visits', 0);
+INSERT OR IGNORE INTO counters (name, value) VALUES ('bots_day', 0);
 
 -- ---------- the ledger (also in migrations/005_sources_ledger.sql) ----------
 -- One hash chain over design creations and ownership changes. See lib/ledger.js.

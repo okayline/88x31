@@ -177,6 +177,7 @@ async function showPage(name) {
   ]);
   const owner = col.owner.name;
   $("page-name").textContent = owner;
+  $("page-bot").hidden = !col.owner.is_bot;
 
   const grid = $("page-collection");
   grid.textContent = "";
@@ -202,15 +203,26 @@ async function showPage(name) {
   list.textContent = "";
   if (!gb.entries.length) list.append(el("p", { class: "small" }, "No one has signed yet. Be the first!"));
   for (const g of gb.entries) {
-    list.append(el("div", { class: "entry" },
+    list.append(el("div", { class: "entry" + (g.author_is_bot ? " from-bot" : "") },
       el("p", { class: "small" },
-        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), ` wrote on ${fmtDate(g.created_at)}:`),
+        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtDate(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity })),
         el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null));
   }
 }
+
+// "show bot messages" toggle, remembered in this browser.
+function applyBotToggle() {
+  $("page-guestbook").classList.toggle("hide-bots", !$("show-bots").checked);
+}
+try { $("show-bots").checked = localStorage.getItem("show-bots") !== "0"; } catch {}
+applyBotToggle();
+$("show-bots").onchange = () => {
+  try { localStorage.setItem("show-bots", $("show-bots").checked ? "1" : "0"); } catch {}
+  applyBotToggle();
+};
 
 $("sign-form").onsubmit = async (e) => {
   e.preventDefault();
