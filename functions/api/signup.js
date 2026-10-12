@@ -1,5 +1,6 @@
 // POST /api/signup  { name }  ->  { user, code }  (code is shown once, never stored)
 import { json, readJson, newSaveCode, hashCode, startSession, rateLimit, now } from "../../lib/auth.js";
+import { giveWelcomePack } from "../../lib/game.js";
 
 export async function onRequestPost({ request, env }) {
   if (!(await rateLimit(env, request, "signup", 5, 3600))) {
@@ -31,6 +32,9 @@ export async function onRequestPost({ request, env }) {
   } catch {
     return json({ error: "That name is taken." }, 409);
   }
+
+  // Welcome pack (skipped quietly if no banners are loaded yet).
+  try { await giveWelcomePack(env, user.id); } catch (e) { console.log("welcome pack failed", e); }
 
   const cookie = await startSession(env, user.id);
   return json({ user, code }, 200, { "set-cookie": cookie });

@@ -35,6 +35,24 @@ Copy the `database_id` it prints into `wrangler.toml`, then:
 npx wrangler d1 execute 88x31-db --remote --file=schema.sql
 ```
 
+### Updating an existing database
+
+If the database was set up before daily pulls and guestbooks, add the new tables once:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/002_pulls_guestbook.sql
+npx wrangler d1 execute 88x31-db --remote --file=002_pulls_guestbook.sql
+```
+
+### Placeholder banners
+
+10 temporary banners live in `public/banners/` (made by `tools/make_placeholders.py`). Add them to the database with:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/seed_banners.sql
+npx wrangler d1 execute 88x31-db --remote --file=seed_banners.sql
+```
+
 ## Deploy
 
 In the Cloudflare dashboard: Workers & Pages → Create → Pages → connect this GitHub repo.

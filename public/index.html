@@ -15,13 +15,13 @@
     <p class="subtitle">The Internet's #1 Tiny Button Collecting Club!!!</p>
   </header>
 
+  <div class="marquee" aria-hidden="true">
+    <span>*** WELCOME 2 MY HOMEPAGE *** COLLECT THEM ALL *** TRADE WITH FRIENDS *** SIGN MY GUESTBOOK *** THANX 4 VISITING ***</span>
+  </div>
+
   <hr class="rainbow">
 
-  <div class="construction">
-    <span class="stripes"></span>
-    <b>UNDER CONSTRUCTION</b>
-    <span class="stripes"></span>
-  </div>
+  <p class="center"><img src="deco/under-construction.gif" alt="Under construction" class="uc-bar" width="574" height="51"></p>
   <p class="center small">This page is always being worked on. Check back soon for more cool stuff!</p>
 
   <hr class="rainbow">
@@ -33,7 +33,7 @@
     <table class="layout">
       <tr>
         <td class="panel">
-          <h2>&raquo; New Here? &laquo;</h2>
+          <h2>&raquo; New Here? &laquo; <img src="deco/new.gif" alt="new" width="32" height="14"></h2>
           <p class="small">Join the club &amp; start collecting buttons!! It's FREE!!</p>
           <form id="signup-form">
             <label>Pick a name:<br><input name="name" maxlength="20" autocomplete="off" required></label>
@@ -68,12 +68,50 @@
 
   <!-- logged in -->
   <section id="in" hidden>
-    <div class="panel">
-      <h2>Welcome back, <span id="who"></span>!!</h2>
-      <p>Your button collection will show up here. Coming soon!</p>
-      <p><button id="logout">Log Out</button></p>
+    <div class="panel nav">
+      <b>Hi, <span id="who"></span>!</b><br>
+      [ <a href="#pull">Daily Pull</a> ]
+      [ <a href="#" id="nav-mine">My Guestbook</a> ]
+      [ <a href="#codes">Save Codes</a> ]
+      [ <a href="#" id="logout">Log Out</a> ]
+      <form id="visit-form" class="visit">
+        Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off"> <button>Go!</button>
+      </form>
     </div>
-    <div class="panel">
+
+    <!-- daily pull -->
+    <div id="view-pull" class="view panel" hidden>
+      <h2>&raquo; Today's Pull &laquo;</h2>
+      <p class="small">3 buttons a day. Keep 1, and you can pass one of the others to a friend.</p>
+      <div id="pull-body"></div>
+      <p class="small" id="pull-odds"></p>
+    </div>
+
+    <!-- a player's page: collection + guestbook -->
+    <div id="view-page" class="view" hidden>
+      <div class="panel">
+        <h2 class="center">~*~ Welcome 2 <span id="page-name"></span>'s Guestbook ~*~</h2>
+        <h2>&raquo; My Button Collection &laquo;</h2>
+        <div id="page-collection" class="grid"></div>
+      </div>
+      <div class="panel" id="guestbook-panel">
+        <h2>&raquo; Sign &amp; Read My Guestbook &laquo;</h2>
+        <form id="sign-form" hidden>
+          <label>Leave a message:<br><textarea name="message" maxlength="280" rows="3" required></textarea></label>
+          <label>Stamp a gift (optional, it goes to them!):<br><select name="gift" id="gift-select"><option value="">(no gift)</option></select></label>
+          <button>Sign Guestbook!</button>
+        </form>
+        <div id="page-guestbook"></div>
+      </div>
+    </div>
+
+    <!-- one banner's details -->
+    <div id="view-banner" class="view panel" hidden>
+      <div id="banner-body"></div>
+    </div>
+
+    <!-- save codes -->
+    <div id="view-codes" class="view panel" hidden>
       <h2>&raquo; My Save Codes &laquo;</h2>
       <p class="small">You can keep up to 5 codes, so you can stash copies in different places.</p>
       <ul id="codes"></ul>
@@ -85,13 +123,22 @@
 
   <hr class="rainbow">
 
+  <p class="center"><b>~ Buttons you can collect ~</b></p>
+  <div class="button-strip" aria-hidden="true">
+    <div class="strip-track">
+      <img src="banners/neon-nite.gif" alt="" width="88" height="31"><img src="banners/surf-the-web.gif" alt="" width="88" height="31"><img src="banners/under-construction.gif" alt="" width="88" height="31"><img src="banners/sign-my-guestbook.gif" alt="" width="88" height="31"><img src="banners/webring-member.gif" alt="" width="88" height="31"><img src="banners/hit-counter.gif" alt="" width="88" height="31"><img src="banners/rainbow-divider.gif" alt="" width="88" height="31"><img src="banners/best-viewed.gif" alt="" width="88" height="31"><img src="banners/made-with-notepad.gif" alt="" width="88" height="31"><img src="banners/email-me.gif" alt="" width="88" height="31"><img src="banners/neon-nite.gif" alt="" width="88" height="31"><img src="banners/surf-the-web.gif" alt="" width="88" height="31"><img src="banners/under-construction.gif" alt="" width="88" height="31"><img src="banners/sign-my-guestbook.gif" alt="" width="88" height="31"><img src="banners/webring-member.gif" alt="" width="88" height="31"><img src="banners/hit-counter.gif" alt="" width="88" height="31"><img src="banners/rainbow-divider.gif" alt="" width="88" height="31"><img src="banners/best-viewed.gif" alt="" width="88" height="31"><img src="banners/made-with-notepad.gif" alt="" width="88" height="31"><img src="banners/email-me.gif" alt="" width="88" height="31">
+    </div>
+  </div>
+
+  <hr class="rainbow">
+
   <div class="counter-box center">
     <span class="small">You are visitor number</span><br>
     <span class="counter">000088</span>
   </div>
 
   <p class="center small">
-    [ Sign my Guestbook ] &nbsp; [ View my Guestbook ] &nbsp; [ Email Me ]
+    [ <a href="#" id="foot-sign">Sign my Guestbook</a> ] &nbsp; [ <a href="#" id="foot-view">View my Guestbook</a> ] &nbsp; [ Email Me ]
   </p>
 
   <table class="webring">

@@ -1,4 +1,4 @@
-/* Old-homepage look. Everything is static: no blinking, scrolling or animation. */
+/* Old-homepage look: twinkling star background, boxes floating on top. */
 :root {
   --sky: #000033;
   --star: #ffffff;
@@ -15,14 +15,9 @@ body {
   color: var(--text);
   font: 16px/1.4 "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Times New Roman", serif;
   background-color: var(--sky);
-  /* tiled starfield */
-  background-image:
-    radial-gradient(1px 1px at 12px 18px, var(--star), transparent 2px),
-    radial-gradient(1px 1px at 47px 72px, var(--star), transparent 2px),
-    radial-gradient(2px 2px at 83px 31px, #ffffcc, transparent 3px),
-    radial-gradient(1px 1px at 101px 95px, var(--star), transparent 2px),
-    radial-gradient(1px 1px at 29px 108px, #ccccff, transparent 2px);
-  background-size: 120px 120px;
+  /* looping twinkling starfield tile */
+  background-image: url("deco/stars.gif");
+  image-rendering: pixelated;
 }
 
 main { max-width: 640px; margin: 0 auto; padding: 16px; }
@@ -50,15 +45,7 @@ hr.rainbow {
   background: linear-gradient(90deg, #ff0000, #ff9900, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
 }
 
-.construction {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  color: #000; background: #ffcc00; border: 2px solid #000; padding: 4px;
-  font-family: Arial, Helvetica, sans-serif; letter-spacing: 1px;
-}
-.stripes {
-  display: inline-block; width: 48px; height: 16px;
-  background: repeating-linear-gradient(45deg, #000 0 6px, #ffcc00 6px 12px);
-}
+.uc-bar { max-width: 100%; height: auto; image-rendering: pixelated; }
 
 table.layout { width: 100%; border-spacing: 8px; }
 table.layout td { vertical-align: top; width: 50%; }
@@ -68,6 +55,7 @@ table.layout td { vertical-align: top; width: 50%; }
   border: 3px ridge var(--edge);
   padding: 10px;
   margin: 12px 0;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
 }
 table.layout .panel { margin: 0; }
 
@@ -106,9 +94,77 @@ button:active { border-style: inset; }
 table.webring {
   width: 100%; margin: 12px 0; border: 3px ridge var(--edge);
   background: var(--panel); border-collapse: collapse;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
 }
 table.webring td { padding: 6px; color: var(--link); }
 table.webring td:last-child { text-align: right; }
+
+/* ---------- logged-in views ---------- */
+
+a { color: var(--link); }
+a:visited { color: #ff99ff; }
+
+.nav { text-align: center; }
+.visit { margin-top: 8px; }
+.visit input { display: inline-block; width: 140px; }
+
+textarea, select {
+  width: 100%; margin-top: 4px; padding: 4px;
+  font: 14px "Courier New", Courier, monospace;
+  color: #000; background: #fff; border: 2px inset var(--edge);
+}
+
+img.banner { display: block; image-rendering: pixelated; border: 2px solid transparent; }
+img.rarity-uncommon { border-color: #00ffff; }
+img.rarity-rare { border-color: #ffff00; }
+
+.grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.tile { display: flex; flex-direction: column; align-items: center; text-decoration: none; }
+
+.pull-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 8px 0; }
+.card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 196px; padding: 8px; text-align: center;
+  background: #000033; border: 3px ridge var(--edge);
+}
+.card.back {
+  height: 120px; justify-content: center;
+  font: bold 48px "Times New Roman", serif; color: var(--ink);
+  background: repeating-linear-gradient(45deg, #000080 0 8px, #000060 8px 16px);
+}
+.card.pickable { cursor: pointer; }
+.card.chosen { border: 3px solid var(--ink); box-shadow: 0 0 0 3px #ff00ff; }
+.card.rarity-rare b { color: var(--ink); }
+.pull-form { max-width: 360px; margin: 8px auto 0; }
+
+.entry { border-top: 2px dashed var(--edge); padding-top: 6px; margin-top: 8px; }
+.entry p { margin: 4px 0; }
+.stamp { display: flex; align-items: center; gap: 6px; }
+.log { padding-left: 24px; }
+
+/* ---------- moving bits ---------- */
+
+.marquee {
+  overflow: hidden; white-space: nowrap;
+  margin: 12px 0 0; padding: 2px 0;
+  color: #00ff00; background: #000; border: 2px inset var(--edge);
+  font: bold 14px "Courier New", Courier, monospace;
+}
+.marquee span { display: inline-block; padding-left: 100%; animation: scroll-left 18s linear infinite; }
+@keyframes scroll-left { to { transform: translateX(-100%); } }
+
+.button-strip { overflow: hidden; border: 3px ridge var(--edge); background: #000; padding: 4px 0; }
+.strip-track { display: flex; gap: 6px; width: max-content; animation: strip 30s linear infinite; }
+.strip-track img { display: block; image-rendering: pixelated; }
+/* 10 buttons x (88px + 6px gap) = one full set */
+@keyframes strip { to { transform: translateX(-940px); } }
+
+/* people who ask their system for less motion get a still page */
+@media (prefers-reduced-motion: reduce) {
+  .marquee span, .strip-track { animation: none; }
+  body { background-image: none; }
+  .marquee span { padding-left: 0; }
+}
 
 /* phones: stack the two boxes */
 @media (max-width: 560px) {
