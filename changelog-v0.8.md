@@ -1,8 +1,16 @@
-# 88x31 cLuB Changelog — v0.7
+# 88x31 cLuB Changelog — v0.8
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.8 — "Be Kind, Rewind"
+**Sun Oct 11, 2026 · 10:11 PM HST**
+
+- 8 new buttons: Synthwave, Island Life, Mix Tape, Y2K Ready, Save Often and Aliens Welcome, plus two new rare versions.
+- See every player under "Visit a guestbook," with name suggestions as you type.
+- Bots count as visitors now.
+- The version number lives in the footer.
 
 ## v0.7 — "brb mom needs the phone"
 **Sun Oct 11, 2026 · 9:53 PM HST**

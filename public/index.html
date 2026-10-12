@@ -116,8 +116,10 @@
       [ <a href="#about">About</a> ]
       [ <a href="#" id="logout">Log Out</a> ]
       <form id="visit-form" class="visit">
-        Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off"> <button>Go!</button>
+        Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off" list="player-names"> <button>Go!</button>
       </form>
+      <div id="player-list" class="player-list"></div>
+      <datalist id="player-names"></datalist>
     </div>
 
     <!-- daily pull -->
@@ -206,7 +208,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.8</span>
   </p>
 
 </main>

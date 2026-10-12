@@ -82,6 +82,7 @@ async function refresh() {
   if (!me) return route();
   $("who").textContent = me.name;
   $("nav-mine").href = "#u/" + encodeURIComponent(me.name);
+  loadPlayers();
   await route();
 }
 
@@ -121,7 +122,7 @@ async function showPull() {
 
   let keep = null;
   const giftBox = el("div", { class: "gift-choices" });
-  const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off" });
+  const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off", list: "player-names" });
   const toRow = el("label", { class: "to-row" }, "Send it to: ", toInput);
   const giftChoice = () => (giftBox.querySelector("input:checked") || {}).value || "";
 
@@ -268,11 +269,36 @@ $("sign-form").onsubmit = async (e) => {
   } catch (err) { say(err.message); }
 };
 
+// All players: shown as clickable names under "Visit a guestbook", filtered as you type.
+// The same names feed the autocomplete on name boxes (visit, pass-on gifts).
+let players = [];
+async function loadPlayers() {
+  try { players = (await api("/api/players")).players; } catch { players = []; }
+  const dl = $("player-names");
+  dl.textContent = "";
+  for (const p of players) dl.append(el("option", { value: p.name }));
+  renderPlayers();
+}
+function renderPlayers() {
+  const q = $("visit-form").name.value.trim().toLowerCase();
+  const box = $("player-list");
+  box.textContent = "";
+  const shown = players.filter((p) => !q || p.name.toLowerCase().includes(q));
+  if (!shown.length) { box.append(el("span", { class: "small" }, "No players match.")); return; }
+  shown.forEach((p, i) => {
+    if (i) box.append(" · ");
+    box.append(el("a", { href: "#u/" + encodeURIComponent(p.name), title: `${p.buttons} buttons` }, p.name),
+      p.is_bot ? el("span", { class: "bot-badge small" }, " [BOT]") : null);
+  });
+}
+$("visit-form").name.oninput = renderPlayers;
+
 $("visit-form").onsubmit = (e) => {
   e.preventDefault();
   const n = e.target.name.value.trim();
   if (n) location.hash = "u/" + encodeURIComponent(n);
   e.target.reset();
+  renderPlayers();
 };
 
 // Footer links: "View" opens your guestbook; "Sign" jumps to the form on the guestbook you're viewing.

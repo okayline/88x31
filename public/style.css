@@ -116,6 +116,7 @@ a:visited { color: #ff99ff; }
 
 .nav { text-align: center; }
 .visit { margin-top: 8px; }
+.player-list { margin-top: 6px; max-height: 96px; overflow-y: auto; font-size: 14px; line-height: 1.6; padding: 4px 6px; background: #000033; border: 2px inset var(--edge); }
 .visit input { display: inline-block; width: 140px; }
 
 textarea, select {
