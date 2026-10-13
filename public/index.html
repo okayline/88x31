@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.18.1">
+<link rel="stylesheet" href="style.css?v=0.18.2">
 </head>
 <body>
 <main>
@@ -107,8 +107,20 @@
     <div class="panel">
       <h2 class="center">~*~ About the 88x31 cLuB ~*~</h2>
       <p>Welcome, web surfer!! You've found the 88x31 cLuB, a place for collecting, gifting and trading those tiny 88&times;31 buttons that used to be on every homepage on the Information Superhighway.</p>
-      <p>Here's the deal: open your packs every day, keep your faves, pass the extras on to your buddies, and stamp gifts into each other's guestbooks. Trade with friends to finish your collection. Hunt for holos. And if you're REALLY lucky... an ultra!! (There's only one of each. Ever.)</p>
+      <p>Here's the deal: open your packs every day, keep your faves, pass the extras on to your buddies, and stamp gifts into each other's guestbooks. Trade with friends to finish your collection. Keep an eye out for shiny ones. And if you're REALLY lucky... an ultra!! (There's only one of each. Ever.)</p>
       <p><a href="#">&laquo; Back to the homepage</a></p>
+    </div>
+
+    <div class="panel">
+      <h2>&raquo; Foils &laquo;</h2>
+      <p>Every button comes in a foil. Most are clear... but not all of them! Some shimmer, and no two shimmer quite the same.</p>
+      <p>Buttons from the very beginning of the cLuB are <b>First Prints</b>, and there will never be any more of those.</p>
+    </div>
+
+    <div class="panel">
+      <h2>&raquo; Found a Button? &laquo;</h2>
+      <p>The web is full of old 88x31s, so bring 'em in! Drop one on the <a href="#wall">Wall of Buttons</a> and it joins the cLuB. Find one first and it's got your name on it forever.</p>
+      <p>Made one of these back in the day? Sign the webmaster's guestbook and we'll credit you or take it down, your call.</p>
     </div>
 
     <div class="panel">
@@ -134,16 +146,15 @@
       <p>Latest fingerprint:<br><span class="hash" id="ledger-head">...</span></p>
       <h2>Latest entries</h2>
       <ol id="ledger-recent" class="log ledger-list"></ol>
+      <details class="ledger-more" id="ledger-more" hidden>
+        <summary>Show more of the ledger</summary>
+        <ol id="ledger-older" class="log ledger-list"></ol>
+      </details>
       <p class="small">Raw data: <a href="/api/ledger">/api/ledger</a></p>
+      <p class="small">cLuB public key (Ed25519): <span class="hash" id="pubkey">...</span><br>
+        The cLuB signs button certificates with its secret key; this public half lets anyone check them. <a href="#check">Check a button</a></p>
     </div>
 
-    <div class="panel">
-      <h2>&raquo; Take Buttons Home &laquo;</h2>
-      <p>All the cLuB's button art is <b>CC0</b>, which means it's free for anyone to use for anything. No credit needed! Slap 'em on your homepage, your blog, your Neocities. That's what 88x31s are for!!</p>
-      <p>If you <i>own</i> a button, you can also download <b>your copy</b>: the same picture with a secret signed certificate tucked inside the file. It says which copy it is, who it was issued to, their homepage, and its ledger entry. It's signed with the cLuB's secret key, so nobody can fake one or change even one letter.</p>
-      <p>Copy the file all you want, it'll still be a genuine certificate. But it only ever says who it was <i>issued to</i>. Who owns a button <i>right now</i>? That's always the ledger's call. Got a button file lying around? <a href="#check">Check it here!</a></p>
-      <p class="small">cLuB public key (Ed25519): <span class="hash" id="pubkey">...</span></p>
-    </div>
 
     <div class="panel">
       <h2>&raquo; Credits &laquo;</h2>
@@ -174,21 +185,12 @@
       <!-- add a button found in the wild (members only) -->
       <form class="add-button only-in" id="add-form" hidden>
         <h3 class="center">» Found a Button? «</h3>
-        <p class="small">Add an old 88x31 button to the cLuB! It has to be a real 88x31 GIF that isn't in here yet. You get copy #1 and a "found by" credit.</p>
+        <p class="small center">Got an old 88x31 GIF? Drop it in and it joins the cLuB. Find one first and it's got your name on it forever.</p>
         <label class="drop" id="add-drop">
-          <input type="file" id="add-file" accept="image/gif" required>
+          <input type="file" id="add-file" accept="image/gif">
           <span id="add-pick">Click to pick a GIF, or drop one here</span>
         </label>
-        <p class="center" id="add-preview"></p>
         <p class="center add-status" id="add-status" aria-live="polite"></p>
-        <p><label>Name it: <input type="text" id="add-name" maxlength="40" required></label></p>
-        <p><label>Kind: <select id="add-type">
-          <option value="neon">neon</option><option value="construction">construction</option><option value="guestbook">guestbook</option>
-          <option value="webring">webring</option><option value="counter">counter</option><option value="divider">divider</option>
-        </select></label></p>
-        <p><label>Who made it, if you know: <input type="text" id="add-author" maxlength="60" placeholder="leave blank if unknown"></label></p>
-        <p><label>Where it's from, if you know: <input type="url" id="add-url" maxlength="300" placeholder="https://..."></label></p>
-        <p class="center"><button type="submit" id="add-go">Add it to the cLuB!</button></p>
       </form>
     </div>
   </section>
@@ -367,7 +369,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.18.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.18.2</span>
   </p>
 
 </main>
@@ -383,6 +385,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.18.1"></script>
+<script src="app.js?v=0.18.2"></script>
 </body>
 </html>

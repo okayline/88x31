@@ -427,7 +427,16 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .add-button input[type="text"], .add-button input[type="url"] { width: 100%; max-width: 280px; box-sizing: border-box; }
 
 /* v0.18.1: the info window keeps one height so the page doesn't jump when you click a button */
-#info-win .info-body { height: 360px; overflow-y: auto; }
-@media (max-width: 560px) { #info-win .info-body { height: 300px; } }
+#info-win .info-body { height: auto; }
+
 .add-status { min-height: 1.3em; font-weight: bold; }
 #add-preview img.banner { margin: 0 auto; }
+.ledger-more summary { cursor: pointer; font-weight: bold; margin: 8px 0; }
+.drop.busy { opacity: 0.6; pointer-events: none; }
+
+/* v0.18.2: info window in two columns on wide screens, one fixed height that fits everything */
+.info-cols { display: grid; grid-template-columns: 1fr; gap: 0 18px; }
+@media (min-width: 700px) { .info-cols { grid-template-columns: 1fr 1fr; } .info-window .owners { columns: 2; } }
+/* one fixed height that fits the tallest button's info (measured), so the page never shifts */
+#info-win .info-body { height: 940px; overflow-y: auto; box-sizing: border-box; }
+@media (min-width: 700px) { #info-win .info-body { height: 560px; } }

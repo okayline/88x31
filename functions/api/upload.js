@@ -1,15 +1,15 @@
-// POST /api/upload  (multipart form: file, name, type, author?, url?)
-//   -> { ok, design_id, instance_id }  or { error, design_id? }
+// POST /api/upload  (multipart form: file)  -> { ok, design_id, instance_id, holo }  or { error, design_id? }
 // Add a button found in the wild to the cLuB. It joins the archive tier: shown as found,
 // credited where known, never relicensed. The finder gets copy #1 and a "found by" credit.
-// Rules: a real 88x31 GIF, not already in the cLuB, never an ultra. Uploads start as commons.
+// Rules: a real 88x31 GIF, not already in the cLuB, never an ultra. Uploads are commons of kind "found",
+// named after their file. The finder's copy #1 gets better holo odds (FINDER_FOILS).
 import { json, currentUser, now, rateLimit } from "../../lib/auth.js";
 import { mintStatements } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
 
 export const MAX_BYTES = 100 * 1024;
 export const UPLOADS_PER_DAY = 10;
-export const TYPES = ["neon", "construction", "guestbook", "webring", "counter", "divider"];
+export const FINDER_FOILS = { holo: 200, clear: 800 }; // out of 1000: 20% holo for copy #1
 
 async function sha256Bytes(bytes) {
   const d = await crypto.subtle.digest("SHA-256", bytes);
@@ -42,12 +42,7 @@ export async function onRequestPost({ request, env }) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!isButtonGif(bytes)) return json({ error: "It has to be a real 88x31 GIF." }, 400);
 
-  const name = clean(form.get("name"), 40);
-  if (!name) return json({ error: "Give the button a name." }, 400);
-  const type = TYPES.includes(form.get("type")) ? form.get("type") : "neon";
-  const author = clean(form.get("author"), 60) || null;
-  let url = clean(form.get("url"), 300) || null;
-  if (url && !/^https?:\/\//i.test(url)) url = null;
+  const name = clean(String(file.name || "").replace(/\.gif$/i, ""), 40) || "untitled";
 
   const today = (await env.DB.prepare(
     "SELECT COUNT(*) AS n FROM designs WHERE found_by = ? AND created_at > ?"
@@ -62,15 +57,15 @@ export async function onRequestPost({ request, env }) {
   const ins = await env.DB.prepare(
     `INSERT INTO designs (name, image_key, image_hash, creator_id, type, rarity, stats, status, created_at,
                           source_title, source_author, source_url, license, tier, found_by)
-     VALUES (?, 'pending', ?, ?, ?, 'common', '{}', 'active', ?, ?, ?, ?, 'Not relicensed', 'archive', ?)`
-  ).bind(name, hash, me.id, type, t, url ? name : null, author || "Origin unknown, found in the wild", url, me.id).run();
+     VALUES (?, 'pending', ?, ?, 'found', 'common', '{}', 'active', ?, NULL, 'Origin unknown, found in the wild', NULL, 'Not relicensed', 'archive', ?)`
+  ).bind(name, hash, me.id, t, me.id).run();
   const id = ins.meta.last_row_id;
   await env.DB.batch([
     env.DB.prepare("INSERT INTO design_images (design_id, data) VALUES (?, ?)").bind(id, bytes),
     env.DB.prepare("UPDATE designs SET image_key = ? WHERE id = ?").bind(`api/img?d=${id}`, id),
   ]);
-  const res = await env.DB.batch(await mintStatements(env, id, me.id, "found"));
+  const res = await env.DB.batch(await mintStatements(env, id, me.id, "found", null, { weights: FINDER_FOILS }));
   await sealSafe(env);
-  const inst = await env.DB.prepare("SELECT id FROM instances WHERE design_id = ? AND edition = 1").bind(id).first();
-  return json({ ok: res[0].meta.changes === 1, design_id: id, instance_id: inst ? inst.id : null });
+  const inst = await env.DB.prepare("SELECT id, foil FROM instances WHERE design_id = ? AND edition = 1").bind(id).first();
+  return json({ ok: res[0].meta.changes === 1, design_id: id, instance_id: inst ? inst.id : null, holo: !!inst && inst.foil === "holo" });
 }

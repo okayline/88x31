@@ -194,7 +194,13 @@ async function route() {
     return await showPage(me.name); // your guestbook is home
   } catch (e) { say(e.message); }
 }
-window.addEventListener("hashchange", () => { window.scrollTo(0, 0); route(); });
+window.addEventListener("hashchange", (e) => {
+  // Clicking around the Wall of Buttons only fills in the info box: no jump, no redraw.
+  const was = decodeURIComponent(new URL(e.oldURL).hash.slice(1)), now = decodeURIComponent(location.hash.slice(1));
+  if (/^wall(\/|$)/.test(was) && /^wall\/\d+$/.test(now) && wallLoaded) { openInfo(Number(now.slice(5))).catch((err) => say(err.message)); return; }
+  if (/^wall(\/|$)/.test(was) && now === "wall" && wallLoaded) { closeInfo(); return; }
+  window.scrollTo(0, 0); route();
+});
 
 // Player pages are pared down: no marquee, ticker, button strip, counter or webring,
 // and the "Welcome 2 X's Page" title sits between the rainbow bars.
@@ -464,55 +470,32 @@ function closeInfo() {
   document.querySelectorAll(".wall-tile.on").forEach((t) => t.classList.remove("on"));
 }
 closeInfo();
-// ---------- Found a Button? (add one to the cLuB) ----------
+// ---------- Found a Button? (drop a GIF, it uploads right away) ----------
 {
   const status = (text, bad = false) => { const e = $("add-status"); e.textContent = text || ""; e.className = "center add-status" + (bad ? " bad-text" : ""); };
-  const pickFile = (file) => {
-    const prev = $("add-preview"); prev.textContent = "";
-    if (!file) return;
-    const pic = el("img", { src: URL.createObjectURL(file), class: "banner", alt: "your button", width: 88, height: 31 });
-    status("Loading the picture...");
-    pic.onload = () => {
-      if (pic.naturalWidth !== 88 || pic.naturalHeight !== 31) status(`That one is ${pic.naturalWidth}x${pic.naturalHeight}. It has to be exactly 88x31!`, true);
-      else status("Looks good! Name it, then hit the button below to add it.");
-    };
-    pic.onerror = () => status("Couldn't read that file. Is it a GIF?", true);
-    prev.append(pic);
-    $("add-pick").textContent = file.name;
-    const nm = $("add-name");
-    if (!nm.value || nm.dataset.auto === "1") { nm.value = file.name.replace(/\.gif$/i, "").replace(/[-_]+/g, " ").slice(0, 40); nm.dataset.auto = "1"; }
-  };
-  $("add-name").addEventListener("input", () => { $("add-name").dataset.auto = ""; });
-  $("add-file").addEventListener("change", (e) => pickFile(e.target.files[0]));
-  const addDrop = $("add-drop");
-  addDrop.addEventListener("dragover", (e) => { e.preventDefault(); addDrop.classList.add("over"); });
-  addDrop.addEventListener("dragleave", () => addDrop.classList.remove("over"));
-  addDrop.addEventListener("drop", (e) => {
-    e.preventDefault(); addDrop.classList.remove("over");
-    const f = e.dataTransfer.files[0]; if (!f) return;
-    const dt = new DataTransfer(); dt.items.add(f); $("add-file").files = dt.files; pickFile(f);
-  });
-  $("add-form").onsubmit = async (e) => {
-    e.preventDefault();
-    const file = $("add-file").files[0];
-    if (!file) return status("Pick a GIF first.", true);
-    const fd = new FormData();
-    fd.append("file", file); fd.append("name", $("add-name").value); fd.append("type", $("add-type").value);
-    fd.append("author", $("add-author").value); fd.append("url", $("add-url").value);
-    $("add-go").disabled = true;
-    status("Adding...");
+  let busy = false;
+  const send = async (file) => {
+    if (!file || busy) return;
+    if (!/\.gif$/i.test(file.name) && file.type !== "image/gif") return status("It has to be a GIF.", true);
+    busy = true; $("add-drop").classList.add("busy");
+    status(`Adding ${file.name}...`);
+    const fd = new FormData(); fd.append("file", file);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
       const r = await res.json().catch(() => ({}));
       if (!res.ok) { status(r.error || "Something went wrong.", true); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
-      $("add-form").reset(); $("add-preview").textContent = ""; $("add-pick").textContent = "Click to pick a GIF, or drop one here";
-      status("");
-      say("Added! It's in the cLuB now, and copy #1 is yours.");
+      status(r.holo ? "Added!! And yours came out HOLO!" : "Added! It's in the cLuB now, and copy #1 is yours.");
       wallLoaded = false;
       location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
     } catch { status("Couldn't upload that. Try again?", true); }
-    finally { $("add-go").disabled = false; }
+    finally { busy = false; $("add-drop").classList.remove("busy"); $("add-file").value = ""; }
   };
+  $("add-form").onsubmit = (e) => e.preventDefault();
+  $("add-file").addEventListener("change", (e) => send(e.target.files[0]));
+  const addDrop = $("add-drop");
+  addDrop.addEventListener("dragover", (e) => { e.preventDefault(); addDrop.classList.add("over"); });
+  addDrop.addEventListener("dragleave", () => addDrop.classList.remove("over"));
+  addDrop.addEventListener("drop", (e) => { e.preventDefault(); addDrop.classList.remove("over"); send(e.dataTransfer.files[0]); });
 }
 
 $("info-close").onclick = () => { closeInfo(); history.replaceState(null, "", "#wall"); };
@@ -559,7 +542,7 @@ async function openInfo(id) {
   let st = {}; try { st = JSON.parse(d.stats || "{}"); } catch {}
   const who = (c) => c.owner ? el("a", { href: "#u/" + encodeURIComponent(c.owner) }, c.owner) : "nobody";
   body.textContent = "";
-  body.append(...[
+  const left = [
     el("p", { class: "center" }, bannerImg(d, 3)),
     st.variant_of ? el("p", { class: "variant center" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`) : null,
     el("p", {}, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
@@ -576,16 +559,19 @@ async function openInfo(id) {
     d.source_url ? el("p", { class: "small" }, "Original: ", el("a", { href: d.source_url, target: "_blank", rel: "noopener" }, d.source_url)) : null,
     tierNote(d, webmaster),
     adminBox(d.id, d.name, d.status, d.found_by, () => openInfo(id)),
+  ].filter(Boolean);
+  const right = [
     el("h3", {}, "On the Ledger"),
     el("p", { class: "small" }, ledger ? `Recorded ${fmtStamp(ledger.created_at)} as entry #${ledger.id}` : "Not sealed yet."),
-    ledger ? el("p", { class: "small" }, "Fingerprint: ", el("span", { class: "hash" }, ledger.hash)) : null,
-    el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash" }, d.image_hash)),
+    ledger ? el("p", { class: "small" }, "Fingerprint: ", el("span", { class: "hash", title: ledger.hash }, ledger.hash.slice(0, 12) + "…")) : null,
+    el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash", title: d.image_hash }, d.image_hash.slice(0, 12) + "…")),
     el("h3", {}, "Who has one"),
     copies.length
-      ? el("ul", { class: "owners" }, copies.map((c) => el("li", {},
+      ? el("ul", { class: "owners" }, copies.slice(0, 12).map((c) => el("li", {},
           el("a", { href: "#banner/" + c.id }, `#${c.edition}`), " · ", who(c), c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null)))
       : el("p", { class: "small" }, "Nobody yet! Could be you..."),
-    copies.length >= 60 ? el("p", { class: "small" }, "...and more!") : null].filter(Boolean));
+    d.minted > 12 && copies.length > 12 ? el("p", { class: "small" }, `...and ${d.minted - 12} more!`) : null].filter(Boolean);
+  body.append(el("div", { class: "info-cols" }, el("div", {}, ...left), el("div", {}, ...right)));
 }
 
 // ---------- sets ----------
@@ -1158,16 +1144,27 @@ function credit(d) {
 
 // ---------- about / ledger ----------
 
+// Webmaster entries on the ledger, said plainly (no names)
+const ADMIN_SAYS = {
+  remove_design: "a button was removed by request",
+  restore_design: "a removed button came back",
+  block_uploader: "someone's button finding was paused",
+  unblock_uploader: "someone's button finding was switched back on",
+};
+
 async function showAbout() {
-  const L = await api("/api/ledger");
+  const L = await api("/api/ledger?limit=100");
   $("ledger-ok").textContent = L.ok ? "ALL GOOD! The chain is unbroken." : `BROKEN at entry #${L.broken_at}!`;
   $("ledger-ok").className = L.ok ? "ok" : "bad";
   $("ledger-count").textContent = L.entries;
   $("ledger-head").textContent = L.head || "(none yet)";
-  const list = $("ledger-recent");
-  list.textContent = "";
+  api("/api/pubkey").then((k) => { $("pubkey").textContent = k.key || "(not set up yet)"; }).catch(() => {});
+  const SHOW = 15; // the rest go in the "Show more" dropdown
+  const list = $("ledger-recent"), older = $("ledger-older");
+  list.textContent = ""; older.textContent = "";
+  $("ledger-more").hidden = L.recent.length <= SHOW;
   if (!L.recent.length) list.append(el("li", {}, "Nothing yet!"));
-  for (const h of L.recent) {
+  for (const [n, h] of L.recent.entries()) {
     // line 1 (small): when + fingerprint · line 2: what happened
     const meta = el("div", { class: "led-meta" }, fmtStamp(h.created_at), " · ",
       el("span", { class: "hash", title: h.hash }, h.hash.slice(0, 12) + "…"));
@@ -1176,16 +1173,20 @@ async function showAbout() {
       what = el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), `${h.design || "?"} (${h.rarity}`
         + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
         + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`);
+    } else if (h.kind === "foil") {
+      const f = h.foil === "clear" ? "a clear foil" : `a ${foilName(h.foil).toUpperCase()} foil!`;
+      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came wrapped in ${f}`);
+    } else if (h.kind === "admin") {
+      what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {
       what = el("div", { class: "led-what" },
         `${h.design || "a button"} #${h.edition ?? "?"}, ${HOW[h.reason] || h.reason}`,
         h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
         ` → ${h.to_name || "a former player"}`);
     }
-    list.append(el("li", { value: h.id }, meta, what));
+    (n < SHOW ? list : older).append(el("li", { value: h.id }, meta, what));
   }
 
-  api("/api/pubkey").then((k) => { $("pubkey").textContent = k.key || "(not set up yet)"; }).catch(() => {});
 
 }
 

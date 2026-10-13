@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.18.1
+# 88x31 cLuB Changelog — v0.18.2
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.18.2 — "Point and Click"
+**Mon Oct 12, 2026 · 11:20 PM HST**
+
+- Clicking buttons on the Wall of Buttons no longer jumps you to the top of the page.
+- The button info window shows everything at once, no scrolling.
+- Found a Button? Just drop in a GIF. That's it!
+- Finding a button first comes with a little extra luck...
+- The About page got a refresh, and you can now dig further back through the ledger.
 
 ## v0.18.1 — "Hold Still"
 **Mon Oct 12, 2026 · 11:00 PM HST**
