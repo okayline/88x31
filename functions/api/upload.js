@@ -9,7 +9,8 @@ import { sealSafe } from "../../lib/ledger.js";
 
 export const MAX_BYTES = 100 * 1024;
 export const UPLOADS_PER_DAY = 10;
-export const FINDER_FOILS = { holo: 200, clear: 800 }; // out of 1000: 20% holo for copy #1
+// finder's copy #1: 20% chance of a tier 1 foil (normal is 8%); weights out of 10000 like the foils table
+export const FINDER_FOILS = { holo: 667, galaxy: 667, ripple: 666, clear: 6400 };
 
 async function sha256Bytes(bytes) {
   const d = await crypto.subtle.digest("SHA-256", bytes);
@@ -66,6 +67,8 @@ export async function onRequestPost({ request, env }) {
   ]);
   const res = await env.DB.batch(await mintStatements(env, id, me.id, "found", null, { weights: FINDER_FOILS }));
   await sealSafe(env);
-  const inst = await env.DB.prepare("SELECT id, foil FROM instances WHERE design_id = ? AND edition = 1").bind(id).first();
-  return json({ ok: res[0].meta.changes === 1, design_id: id, instance_id: inst ? inst.id : null, holo: !!inst && inst.foil === "holo" });
+  const inst = await env.DB.prepare(
+    "SELECT i.id, f.tier FROM instances i LEFT JOIN foils f ON f.id = i.foil WHERE i.design_id = ? AND i.edition = 1"
+  ).bind(id).first();
+  return json({ ok: res[0].meta.changes === 1, design_id: id, instance_id: inst ? inst.id : null, foiled: !!inst && inst.tier >= 1 });
 }

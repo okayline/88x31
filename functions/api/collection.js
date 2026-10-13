@@ -9,7 +9,7 @@ export async function onRequestGet({ request, env }) {
   if (!owner) return json({ error: name ? "No player by that name." : "Not logged in." }, name ? 404 : 401);
 
   const { results } = await env.DB.prepare(
-    `SELECT i.id, i.edition, i.locked, i.foil, i.foil_seed, d.id AS design_id, d.name, d.type, d.rarity, d.image_key, d.max_editions,
+    `SELECT i.id, i.edition, i.locked, i.foil, i.foil_seed, i.pattern, i.effect, d.id AS design_id, d.name, d.type, d.rarity, d.image_key, d.max_editions,
             (SELECT h.created_at FROM ownership_history h WHERE h.instance_id = i.id ORDER BY h.id DESC LIMIT 1) AS got_at,
             (SELECT h.reason FROM ownership_history h WHERE h.instance_id = i.id ORDER BY h.id DESC LIMIT 1) AS got_how
      FROM instances i JOIN designs d ON d.id = i.design_id

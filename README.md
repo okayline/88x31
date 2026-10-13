@@ -116,6 +116,29 @@ npx wrangler d1 execute 88x31-db --remote --command "INSERT INTO foils (id, name
 
 Weights are out of 1000 across all active foils; lower `clear` to make room.
 
+## Updating to v0.19 (foil tiers, patterns, effects, fusion)
+
+Run once, **before** pushing the v0.19 code. Additive only; existing copies keep their foil.
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/014_foil_tiers_fusion.sql
+npx wrangler d1 execute 88x31-db --remote --file=014_foil_tiers_fusion.sql
+```
+
+Each copy has three layers, rolled when it's made and sealed into the ledger:
+
+- **Foil** (the material). Base: Clear, Glitter, Sheen. Tier 1: Holo, Galaxy, Ripple. Tier 2: Chrome,
+  Gold, Oil Slick. Tier 3: Prismatic, Double Rainbow, Liquid Metal. Pack odds: base 91%, tier 1 8%,
+  tier 2 0.9%, tier 3 0.1% (weights in the `foils` table, kind `foil`).
+- **Pattern** (cuts a real foil's shine): Fracture, Etched, Surge. 5% of tier 1+ copies.
+- **Effect** (how the button plays): Dial-Up, Marquee, CRT, VHS; CRT+VHS only from fusion. 10% of copies.
+
+**Fusion** (`/api/fuse`, `lib/fusion.js`): 3 copies of the same button → the lowest-numbered one
+survives, the other two are used up and leave play for good (caps count every copy ever made, so
+capped buttons get scarcer). The survivor gets the best foil going in plus one tier; at tier 3 it
+gains a pattern, then an effect, then CRT+VHS. Patterns and effects carry over (random if they
+differ); with no effect going in there's a 10% surprise one. Ultras can't be fused.
+
 ## Run locally (optional)
 
 ```

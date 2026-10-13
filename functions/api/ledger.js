@@ -12,7 +12,8 @@ export async function onRequestGet({ request, env }) {
             h.reason, f.name AS from_name, t.name AS to_name,
             CASE WHEN COALESCE(d1.status, d2.status, d3.status) = 'removed' THEN 'a removed button' ELSE COALESCE(d1.name, d2.name, d3.name) END AS design, COALESCE(i.edition, fi.edition) AS edition,
             d1.license, d1.source_author, d1.rarity, d1.max_editions, d1.tier,
-            fi.foil, fi.id AS foil_copy, d3.status AS foil_design_status, a.action AS admin_action
+            fi.foil, fi.pattern, fi.effect, fi.id AS foil_copy, d3.status AS foil_design_status, a.action AS admin_action,
+            fu.foil AS fused_foil, fu.pattern AS fused_pattern, fu.effect AS fused_effect, fo.edition AS fused_edition, d4.name AS fused_design, d4.status AS fused_status
      FROM ledger l
      LEFT JOIN ownership_history h ON l.kind = 'transfer' AND h.id = l.ref_id
      LEFT JOIN users f ON f.id = h.from_user
@@ -23,6 +24,9 @@ export async function onRequestGet({ request, env }) {
      LEFT JOIN instances fi ON l.kind = 'foil' AND fi.id = l.ref_id
      LEFT JOIN designs d3 ON d3.id = fi.design_id
      LEFT JOIN admin_actions a ON l.kind = 'admin' AND a.id = l.ref_id
+     LEFT JOIN fusions fu ON l.kind = 'fusion' AND fu.id = l.ref_id
+     LEFT JOIN instances fo ON fo.id = fu.output_id
+     LEFT JOIN designs d4 ON d4.id = fo.design_id
      ORDER BY l.id DESC LIMIT ?`
   ).bind(limit).all();
   return json({ ...check, recent });

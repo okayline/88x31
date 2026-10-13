@@ -87,35 +87,53 @@ const HOW = {
   trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added",
 };
 
-// ---------- foils ----------
-// The foil is the owned layer around a copy. Kinds of foil come from /api/foils; the site
-// only draws the effects listed in FOIL_EFFECTS (anything else shows as clear for now).
+// ---------- foils, patterns, effects ----------
+// Every copy has a foil (its material), maybe a pattern (how a real foil's shine is cut) and maybe an
+// effect (how the whole button plays on screen). The kinds come from /api/foils; the site draws the
+// ones listed in DRAWN, and anything else shows plain for now.
 let FOILS = {};
-const FOIL_EFFECTS = new Set(["holo"]);
+const DRAWN = new Set(["glitter", "sheen", "holo", "galaxy", "ripple", "chrome", "gold", "oil-slick", "prismatic",
+  "double-rainbow", "liquid-metal", "fracture", "etched", "surge", "dialup", "marquee", "crt", "vhs", "crt-vhs"]);
 async function loadFoils() {
   try { const r = await api("/api/foils"); FOILS = Object.fromEntries(r.foils.map((f) => [f.id, f])); } catch {}
 }
 const foilName = (id) => (FOILS[id] && FOILS[id].name) || id;
+const tierOf = (id) => (FOILS[id] && FOILS[id].tier) || 0;
+const drawn = (id) => FOILS[id] && DRAWN.has(FOILS[id].effect) ? FOILS[id].effect : null;
+// "VHS Fracture Holo", "Glitter", "Clear", or null for a First Print
+function finishName(b) {
+  if (!b.foil) return null;
+  return [b.effect && foilName(b.effect), b.pattern && foilName(b.pattern), foilName(b.foil)].filter(Boolean).join(" ");
+}
 
 function bannerImg(design, scale = 1) {
-  const f = design.foil && FOILS[design.foil];
+  const fin = finishName(design);
   const img = el("img", {
     src: design.image_key, alt: design.name, width: 88 * scale, height: 31 * scale,
     class: "banner rarity-" + design.rarity,
-    title: `${design.name} (${design.rarity}${f && design.foil !== "clear" ? ", " + f.name + " foil" : ""})`,
+    title: `${design.name} (${design.rarity}${fin && fin !== "Clear" ? ", " + fin : ""})`,
   });
-  if (!f || !FOIL_EFFECTS.has(f.effect)) return img;
-  // each copy's foil shimmers a little differently, seeded from its own number
+  const foil = design.foil && drawn(design.foil), pat = design.pattern && drawn(design.pattern), fx = design.effect && drawn(design.effect);
+  if (!foil && !fx) return img;
+  // each copy shimmers a little differently, seeded from its own number
   const seed = Number(design.foil_seed) || 0;
-  return el("span", { class: `foil-wrap foil-${f.effect}`,
-    style: `--foil-angle:${seed % 360}deg;--foil-delay:-${seed % 6000}ms` }, img);
+  const vars = `--foil-angle:${seed % 360}deg;--foil-delay:-${seed % 7000}ms;--w:${88 * scale + 4}px;--h:${31 * scale + 4}px`;
+  const layer = () => el("span", { class: ["foil-wrap", foil && "foil-" + foil, pat && "pat-" + pat].filter(Boolean).join(" "), style: vars }, img.cloneNode());
+  if (!fx) return layer();
+  // the effect plays on the foiled button as one picture
+  const cls = "fx " + (fx === "crt-vhs" ? "fx-crt fx-vhs" : "fx-" + fx);
+  if (fx === "marquee") return el("span", { class: cls, style: vars, title: img.title }, el("span", { class: "fx-track" }, layer(), layer()));
+  return el("span", { class: cls, style: vars, title: img.title }, layer());
 }
 
-// "First Print" = made before foils existed; otherwise the copy's foil.
+// "First Print" = made before foils existed; otherwise the copy's finish.
+const TIER_LABEL = ["", "foil", "metal foil", "showpiece foil"];
 function foilLine(b, entry) {
   if (b.foil === undefined) return null;
   if (!b.foil) return el("p", { class: "first-print" }, "★ First Print ★ ", el("span", { class: "small" }, "made before foils existed"));
-  return el("p", {}, "Foil: ", el("b", {}, foilName(b.foil)),
+  const t = tierOf(b.foil);
+  return el("p", {}, "Finish: ", el("b", {}, finishName(b)),
+    t ? el("span", { class: "small" }, ` · tier ${t} ${TIER_LABEL[t]}`) : null,
     entry ? el("span", { class: "hash small", title: entry.hash }, ` [ledger #${entry.id} · ${entry.hash.slice(0, 12)}…]`) : null);
 }
 
@@ -433,7 +451,7 @@ async function showPage(name) {
         el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtDate(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
-        el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed })),
+        el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect })),
         el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null));
   }
 }
@@ -484,7 +502,7 @@ closeInfo();
       const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
       const r = await res.json().catch(() => ({}));
       if (!res.ok) { status(r.error || "Something went wrong.", true); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
-      status(r.holo ? "Added!! And yours came out HOLO!" : "Added! It's in the cLuB now, and copy #1 is yours.");
+      status(r.foiled ? "Added!! And yours came out SHINY!" : "Added! It's in the cLuB now, and copy #1 is yours.");
       wallLoaded = false;
       location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
     } catch { status("Couldn't upload that. Try again?", true); }
@@ -547,7 +565,8 @@ async function openInfo(id) {
     st.variant_of ? el("p", { class: "variant center" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`) : null,
     el("p", {}, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
     el("p", {}, d.max_editions ? `${d.minted} of ${d.max_editions} copies made` + (d.minted >= d.max_editions ? " (all gone!)" : "")
-      : `${d.minted} copies so far (unlimited)`),
+      : `${d.minted} copies so far (unlimited)`,
+      d.left_count != null && d.left_count < d.minted ? ` · ${d.left_count} left` : ""),
     d.status === "reward" ? el("p", { class: "small" }, "Only given as a set reward. Never found in packs.") : null,
     d.status === "frozen" ? el("p", { class: "small" }, "❄ Frozen: an early special version. No new copies are being made.") : null,
     foilCounts.length ? el("p", { class: "small" }, "Special copies: " + foilCounts.join(" · ")) : null,
@@ -1102,9 +1121,55 @@ async function showBanner(id) {
     el("h2", {}, "» Travel Log «"),
     el("ol", { class: "log" }, history.map((h) => el("li", {},
       `${fmtStamp(h.created_at)}: ${HOW[h.reason] || h.reason}`,
-      h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
-      ` → ${h.to_name || "a former player"}`,
-      fp(h.hash, h.ledger_id)))));
+      h.reason === "fusion"
+        ? (h.to_name ? ` by ${h.to_name}: came out shinier` : " → used up")
+        : [h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
+           ` → ${h.to_name || "a former player"}`],
+      fp(h.hash, h.ledger_id)))),
+    fuseBox(b));
+}
+
+// ---------- Fuse: 3 copies of one button in, 1 shinier one out ----------
+// Shown on your own copy's page when you have at least 3 copies of that button.
+function fuseBox(b) {
+  if (!me || !b.owner || b.consumed || b.owner.toLowerCase() !== me.name.toLowerCase() || b.rarity === "ultra") return null;
+  const box = el("div", { class: "fuse-box", hidden: "hidden" });
+  api("/api/collection").then(({ banners }) => {
+    const others = banners.filter((c) => c.design_id === b.design_id && c.id !== b.id && !c.locked);
+    if (others.length < 2) return;
+    const picked = new Set();
+    const go = el("button", { type: "button", disabled: "disabled" }, "Fuse!");
+    const tiles = others.map((c) => {
+      const t = el("button", { type: "button", class: "fuse-pick", title: `#${c.edition} · ${finishName(c) || "First Print"}` },
+        bannerImg(c), el("span", { class: "small" }, `#${c.edition} ${finishName(c) || "First Print"}`));
+      t.onclick = () => {
+        if (picked.has(c)) picked.delete(c); else if (picked.size < 2) picked.add(c);
+        t.classList.toggle("on", picked.has(c));
+        go.disabled = picked.size !== 2;
+      };
+      return t;
+    });
+    go.onclick = async () => {
+      const three = [b, ...picked];
+      const keep = three.reduce((x, y) => (y.edition < x.edition ? y : x));
+      const firsts = three.filter((c) => !c.foil).length;
+      const msg = `Fuse these 3 into one shinier ${b.name}? #${keep.edition} stays and gets the new look; the other two are used up for good.`
+        + (firsts ? `\n\nHeads up: ${firsts === 1 ? "one is a First Print" : firsts + " are First Prints"}. Those can never be made again!` : "");
+      if (!(await ask(msg, { ok: "Fuse!", cancel: "Wait, no" }))) return;
+      go.disabled = true;
+      try {
+        const r = await api("/api/fuse", { method: "POST", body: { ids: three.map((c) => c.id) } });
+        say(`Fused! #${keep.edition} is now ${finishName(r)}!`);
+        location.hash = "#banner/" + r.id;
+        if (String(r.id) === String(b.id)) showBanner(b.id);
+      } catch (e) { say(e.message); go.disabled = false; }
+    };
+    box.append(el("h2", {}, "» Fuse «"),
+      el("p", { class: "small" }, `You have ${others.length + 1} of these. Fuse 3 into 1 shinier one! Pick 2 more to go with this one:`),
+      el("div", { class: "fuse-grid" }, tiles), el("p", { class: "center" }, go));
+    box.hidden = false;
+  }).catch(() => {});
+  return box;
 }
 
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
@@ -1114,6 +1179,7 @@ const GOT_HOW = {
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
+  if (b.consumed) return el("p", {}, "Used up in a fusion. It lives on in a shinier copy.");
   if (!b.owner) return el("p", {}, "Owned by nobody (retired).");
   const last = history[history.length - 1];
   const p = el("p", { class: "owned" }, "Owned by ", who(b.owner));
@@ -1173,9 +1239,14 @@ async function showAbout() {
       what = el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), `${h.design || "?"} (${h.rarity}`
         + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
         + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`);
+    } else if (h.kind === "fusion") {
+      const name = h.fused_status === "removed" ? "a removed button" : h.fused_design || "a button";
+      const fin = finishName({ foil: h.fused_foil, pattern: h.fused_pattern, effect: h.fused_effect });
+      what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), `3 copies of ${name} became #${h.fused_edition ?? "?"}, now ${fin}!`);
     } else if (h.kind === "foil") {
-      const f = h.foil === "clear" ? "a clear foil" : `a ${foilName(h.foil).toUpperCase()} foil!`;
-      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came wrapped in ${f}`);
+      const fin = finishName(h);
+      const f = !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
+      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came with ${f}`);
     } else if (h.kind === "admin") {
       what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {

@@ -15,7 +15,7 @@ export async function onRequestGet({ request, env }) {
 
   const { results } = await env.DB.prepare(
     `SELECT g.id, g.message, g.created_at, a.name AS author, a.is_bot AS author_is_bot,
-            g.instance_id AS gift_id, i.edition AS gift_edition, i.foil AS gift_foil, i.foil_seed AS gift_foil_seed, d.name AS gift_name,
+            g.instance_id AS gift_id, i.edition AS gift_edition, i.foil AS gift_foil, i.foil_seed AS gift_foil_seed, i.pattern AS gift_pattern, i.effect AS gift_effect, d.name AS gift_name,
             d.image_key AS gift_image, d.rarity AS gift_rarity, d.max_editions AS gift_max
      FROM guestbook_entries g
      JOIN users a ON a.id = g.author_id

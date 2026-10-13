@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.18.2
+# 88x31 cLuB Changelog — v0.19
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.19 — "Totally Fused"
+**Mon Oct 12, 2026 · 11:58 PM HST**
+
+- Lots of new foils to find! Some sparkle, some shine, and some are very, very rare.
+- Some buttons now do strange things on screen. Keep an eye out...
+- **Fusion!** Got extras? Fuse three of the same button into one shinier one, right from your button's page.
+- Fused buttons are gone for good, so every fusion makes a button a little rarer.
+- Visitors who aren't logged in see a little less of the Wall of Buttons.
 
 ## v0.18.2 — "Point and Click"
 **Mon Oct 12, 2026 · 11:20 PM HST**

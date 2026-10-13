@@ -399,23 +399,203 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   h1 { font-size: 36px; }
 }
 
-/* ---------- foils (v0.18) ----------
-   The foil is drawn over the button, never baked into the art. Each copy's --foil-angle and
-   --foil-delay come from its own seed, so no two shimmer quite the same. */
-.foil-wrap { position: relative; display: inline-block; vertical-align: top; line-height: 0; }
-.wall-tile .foil-wrap, .dash-pic .foil-wrap, .set-item .foil-wrap { display: block; }
-.foil-wrap::after { content: ""; position: absolute; inset: 2px; pointer-events: none; }
+/* ---------- foils, patterns, effects (v0.19) ----------
+   Layers, bottom to top: the button art, its FOIL (the material, on .foil-wrap::after), the
+   PATTERN (cuts the foil's shine: a mask on that same layer, or an extra burst for Surge), then
+   the EFFECT (on the outer .fx, so it plays on the foiled button as one picture).
+   Nothing is drawn on top of the art: foils and patterns only change how light hits it.
+   Each copy's --foil-angle / --foil-delay come from its own seed. */
+.foil-wrap, .fx { position: relative; display: inline-block; vertical-align: top; line-height: 0; }
+.wall-tile .foil-wrap, .dash-pic .foil-wrap, .set-item .foil-wrap,
+.wall-tile .fx, .dash-pic .fx, .set-item .fx { display: block; }
+.foil-wrap::after, .foil-wrap::before { content: ""; position: absolute; inset: 2px; pointer-events: none; }
+.foil-wrap::before { display: none; }
+
+/* --- base tier: a little something --- */
+/* Glitter: scattered pixels of the button catch the light and twinkle */
+.foil-glitter::after {
+  background:
+    radial-gradient(circle, #fff 0 0.6px, transparent 1px) 0 0 / 17px 11px,
+    radial-gradient(circle, #fff 0 0.6px, transparent 1px) 7px 4px / 23px 13px,
+    radial-gradient(circle, #fff 0 0.5px, transparent 0.9px) 12px 7px / 29px 17px;
+  mix-blend-mode: overlay; opacity: 0.5;
+  animation: glitter-twinkle 1.8s steps(3) infinite; animation-delay: var(--foil-delay);
+}
+@keyframes glitter-twinkle {
+  0% { opacity: 0.2; background-position: 0 0, 7px 4px, 12px 7px; }
+  50% { opacity: 0.6; background-position: 5px 3px, 2px 9px, 21px 2px; }
+  100% { opacity: 0.2; background-position: 11px 6px, 15px 1px, 4px 12px; }
+}
+/* Sheen: a soft white glint glides across now and then */
+.foil-sheen::after {
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.6) 50%, transparent 58%) no-repeat;
+  background-size: 300% 100%; mix-blend-mode: soft-light;
+  animation: sheen-glide 7s ease-in-out infinite; animation-delay: var(--foil-delay);
+}
+@keyframes sheen-glide { 0% { background-position: 120% 0; } 30%, 100% { background-position: -20% 0; } }
+
+/* --- tier 1 --- */
 .foil-holo::after {
   background: linear-gradient(var(--foil-angle, 115deg),
     transparent 15%, rgba(255, 0, 255, 0.45) 30%, rgba(0, 255, 255, 0.5) 42%,
     rgba(255, 255, 0, 0.45) 54%, rgba(0, 255, 128, 0.4) 66%, transparent 85%);
-  background-size: 250% 250%;
-  mix-blend-mode: screen;
-  animation: foil-sweep 3.2s linear infinite;
-  animation-delay: var(--foil-delay, 0ms);
+  background-size: 250% 250%; mix-blend-mode: screen;
+  animation: foil-sweep 3.2s linear infinite; animation-delay: var(--foil-delay);
 }
 @keyframes foil-sweep { from { background-position: 100% 100%; } to { background-position: 0% 0%; } }
-@media (prefers-reduced-motion: reduce) { .foil-holo::after { animation: none; background-position: 50% 50%; } }
+/* Galaxy: the shine scattered into tiny colored specks, like stars */
+.foil-galaxy::after {
+  background:
+    radial-gradient(circle, rgba(255, 140, 255, 0.85) 0 0.6px, transparent 1px) 0 0 / 19px 12px,
+    radial-gradient(circle, rgba(140, 255, 255, 0.85) 0 0.6px, transparent 1px) 8px 5px / 25px 15px,
+    radial-gradient(circle, rgba(255, 255, 170, 0.8) 0 0.5px, transparent 0.9px) 3px 9px / 31px 19px,
+    linear-gradient(var(--foil-angle), rgba(110, 30, 200, 0.3), rgba(0, 110, 220, 0.3));
+  mix-blend-mode: screen;
+  animation: galaxy-drift 12s linear infinite; animation-delay: var(--foil-delay);
+}
+@keyframes galaxy-drift {
+  from { background-position: 0 0, 4px 3px, 2px 5px, 0 0; }
+  to { background-position: 36px 12px, -44px 19px, 30px -25px, 0 0; }
+}
+/* Ripple: the shine moves across in waves */
+.foil-ripple::after {
+  background: repeating-linear-gradient(var(--foil-angle),
+    rgba(255, 0, 200, 0.35) 0 4px, rgba(0, 255, 255, 0.35) 4px 8px, rgba(255, 255, 0, 0.3) 8px 12px, transparent 12px 20px);
+  background-size: 200% 200%; mix-blend-mode: screen;
+  animation: foil-sweep 4.5s linear infinite; animation-delay: var(--foil-delay);
+}
+
+/* --- tier 2 --- */
+/* Chrome: a cool metallic shine slides across, beveled silver edge */
+.foil-chrome::after {
+  background: linear-gradient(var(--foil-angle), rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.85) 48%,
+    rgba(120, 130, 150, 0.6) 55%, rgba(255, 255, 255, 0) 70%);
+  background-size: 250% 250%; mix-blend-mode: overlay;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.9), inset -1px -1px 0 rgba(90, 100, 120, 0.9);
+  animation: foil-sweep 3s linear infinite; animation-delay: var(--foil-delay);
+}
+/* Gold: a warm gold sheen with a gold edge */
+.foil-gold::after {
+  background: linear-gradient(var(--foil-angle), rgba(255, 190, 40, 0.35) 0%, rgba(255, 240, 160, 0.9) 45%,
+    rgba(200, 130, 0, 0.5) 55%, rgba(255, 190, 40, 0.35) 100%);
+  background-size: 250% 250%; mix-blend-mode: overlay;
+  box-shadow: inset 1px 1px 0 rgba(255, 236, 140, 0.95), inset -1px -1px 0 rgba(150, 90, 0, 0.95);
+  animation: foil-sweep 3.6s linear infinite; animation-delay: var(--foil-delay);
+}
+/* Oil Slick: a dark, swirly iridescent sheen */
+.foil-oil-slick::after {
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(120, 0, 200, 0.55), transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(0, 160, 140, 0.55), transparent 60%),
+    radial-gradient(ellipse at 50% 20%, rgba(220, 60, 160, 0.5), transparent 55%);
+  background-size: 160% 160%; mix-blend-mode: overlay;
+  animation: oil-swirl 8s ease-in-out infinite alternate; animation-delay: var(--foil-delay);
+}
+@keyframes oil-swirl {
+  from { background-position: 0% 0%, 100% 100%, 50% 0%; }
+  to { background-position: 100% 60%, 0% 20%, 20% 100%; }
+}
+
+/* --- tier 3 --- */
+/* Prismatic: the full rainbow, bright and always moving */
+.foil-prismatic::after {
+  background: linear-gradient(var(--foil-angle), #ff0080, #ff8c00, #ffee00, #00ff80, #00c8ff, #8000ff, #ff0080);
+  background-size: 300% 300%; mix-blend-mode: color-dodge; opacity: 0.6;
+  animation: foil-sweep 2.4s linear infinite; animation-delay: var(--foil-delay);
+}
+/* Double Rainbow: two rainbows crossing in opposite directions */
+.foil-double-rainbow::after {
+  background:
+    linear-gradient(115deg, transparent 30%, rgba(255, 0, 128, 0.5), rgba(255, 238, 0, 0.5), rgba(0, 200, 255, 0.5), transparent 70%),
+    linear-gradient(-65deg, transparent 30%, rgba(0, 255, 128, 0.5), rgba(128, 0, 255, 0.5), rgba(255, 140, 0, 0.5), transparent 70%);
+  background-size: 300% 300%, 300% 300%; mix-blend-mode: screen;
+  animation: double-cross 3.4s linear infinite; animation-delay: var(--foil-delay);
+}
+@keyframes double-cross { from { background-position: 100% 100%, 0% 0%; } to { background-position: 0% 0%, 100% 100%; } }
+/* Liquid Metal: flowing mercury */
+.foil-liquid-metal::after {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.95), transparent 35%),
+    radial-gradient(ellipse at 60% 30%, rgba(170, 180, 200, 0.9), transparent 40%),
+    radial-gradient(ellipse at 80% 70%, rgba(255, 255, 255, 0.9), transparent 35%),
+    linear-gradient(rgba(140, 150, 170, 0.6), rgba(220, 225, 235, 0.6));
+  background-size: 180% 180%, 200% 200%, 170% 170%, 100% 100%; mix-blend-mode: hard-light; opacity: 0.75;
+  box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #667;
+  animation: mercury 5s ease-in-out infinite alternate; animation-delay: var(--foil-delay);
+}
+@keyframes mercury {
+  from { background-position: 0% 50%, 100% 0%, 50% 100%, 0 0; }
+  to { background-position: 100% 30%, 0% 100%, 0% 0%, 0 0; }
+}
+
+/* --- patterns: how a real foil's shine is cut --- */
+/* Fracture: the shine breaks into shards */
+.pat-fracture::after {
+  -webkit-mask-image:
+    repeating-linear-gradient(calc(var(--foil-angle) + 28deg), #000 0 9px, rgba(0,0,0,0.25) 9px 16px),
+    repeating-linear-gradient(calc(var(--foil-angle) - 52deg), #000 0 12px, rgba(0,0,0,0.25) 12px 19px),
+    repeating-linear-gradient(calc(var(--foil-angle) + 97deg), #000 0 7px, rgba(0,0,0,0.25) 7px 15px);
+  mask-image:
+    repeating-linear-gradient(calc(var(--foil-angle) + 28deg), #000 0 9px, rgba(0,0,0,0.25) 9px 16px),
+    repeating-linear-gradient(calc(var(--foil-angle) - 52deg), #000 0 12px, rgba(0,0,0,0.25) 12px 19px),
+    repeating-linear-gradient(calc(var(--foil-angle) + 97deg), #000 0 7px, rgba(0,0,0,0.25) 7px 15px);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+/* Etched: the shine only shows in fine lines */
+.pat-etched::after {
+  -webkit-mask-image: repeating-linear-gradient(calc(var(--foil-angle) + 45deg), #000 0 1px, rgba(0,0,0,0.15) 1px 3px);
+  mask-image: repeating-linear-gradient(calc(var(--foil-angle) + 45deg), #000 0 1px, rgba(0,0,0,0.15) 1px 3px);
+}
+/* Surge: bright rainbow bursts pulse through */
+.pat-surge::before {
+  display: block;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.9), rgba(255, 0, 200, 0.5) 30%, rgba(0, 220, 255, 0.4) 55%, transparent 75%);
+  mix-blend-mode: color-dodge; opacity: 0;
+  animation: surge-burst 2.6s ease-out infinite; animation-delay: var(--foil-delay);
+}
+@keyframes surge-burst { 0%, 55% { opacity: 0; transform: scale(0.3); } 70% { opacity: 0.85; } 100% { opacity: 0; transform: scale(1.4); } }
+
+/* --- effects: how the whole button plays on screen --- */
+/* CRT: scanlines and a soft glow */
+.fx-crt { border-radius: 3px; box-shadow: 0 0 5px rgba(160, 255, 255, 0.55); }
+.fx-crt::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 3px;
+  background: repeating-linear-gradient(rgba(0, 0, 0, 0.3) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.35) 100%);
+  animation: crt-flicker 4s steps(2) infinite;
+}
+@keyframes crt-flicker { 0%, 92% { opacity: 1; } 96% { opacity: 0.8; } }
+/* VHS: now and then the picture slips sideways, with a slight color fringe */
+.fx-vhs {
+  filter: drop-shadow(1px 0 rgba(255, 0, 60, 0.55)) drop-shadow(-1px 0 rgba(0, 170, 255, 0.55));
+  animation: vhs-slip 6s steps(1) infinite; animation-delay: var(--foil-delay);
+}
+@keyframes vhs-slip {
+  0%, 88%, 100% { transform: none; }
+  89% { transform: translateX(2px) skewX(-3deg); }
+  91% { transform: translateX(-1px); }
+  93% { transform: translateX(3px) skewX(2deg); }
+  95% { transform: none; }
+}
+/* Dial-Up: loads in top to bottom like a slow modem, holds, then reloads */
+.fx-dialup > .foil-wrap { animation: dialup-load 9s steps(1) infinite; animation-delay: var(--foil-delay); }
+@keyframes dialup-load {
+  0% { clip-path: inset(0 0 100% 0); } 3% { clip-path: inset(0 0 85% 0); } 6% { clip-path: inset(0 0 70% 0); }
+  9% { clip-path: inset(0 0 55% 0); } 12% { clip-path: inset(0 0 40% 0); } 15% { clip-path: inset(0 0 25% 0); }
+  18% { clip-path: inset(0 0 10% 0); } 21%, 100% { clip-path: inset(0); }
+}
+/* Marquee: the picture scrolls sideways and wraps around */
+.fx-marquee { width: var(--w); height: var(--h); overflow: hidden; }
+.fx-marquee .fx-track { display: flex; width: calc(var(--w) * 2); animation: marquee-roll 12s linear infinite; animation-delay: var(--foil-delay); }
+.fx-marquee .fx-track > .foil-wrap { flex: none; }
+@keyframes marquee-roll { from { transform: translateX(0); } to { transform: translateX(calc(var(--w) * -1)); } }
+
+/* Respect "reduce motion": every foil holds still, effects stop moving */
+@media (prefers-reduced-motion: reduce) {
+  .foil-wrap::after, .foil-wrap::before, .fx, .fx::after, .fx > .foil-wrap, .fx-track { animation: none !important; }
+  .fx-dialup > .foil-wrap { clip-path: none; }
+}
+
 .first-print { color: #ffcc66; font-weight: bold; }
 
 /* ---------- archive buttons, webmaster box, adding buttons ---------- */
@@ -440,3 +620,10 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 /* one fixed height that fits the tallest button's info (measured), so the page never shifts */
 #info-win .info-body { height: 940px; overflow-y: auto; box-sizing: border-box; }
 @media (min-width: 700px) { #info-win .info-body { height: 560px; } }
+
+/* fuse box on your own copy's page */
+.fuse-box { border: 2px ridge #ff99ff; padding: 8px 10px; margin: 14px 0; }
+.fuse-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.fuse-pick { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; background: transparent; border: 2px solid transparent; cursor: pointer; color: inherit; }
+.fuse-pick.on { border-color: #ffff00; background: rgba(255, 255, 0, 0.12); }
+.fuse-pick img.banner, .fuse-pick .foil-wrap, .fuse-pick .fx { display: block; }
