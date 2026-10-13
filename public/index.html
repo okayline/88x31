@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.20">
+<link rel="stylesheet" href="style.css?v=0.21">
 </head>
 <body>
 <main>
@@ -17,7 +17,7 @@
     <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link">My Page</a> ] -
     [ <a href="#pull">Daily Pull</a> ] -</span>
     <span class="only-out">[ <a href="#">Join the cLuB!</a> ] -</span>
-    [ <a href="#wall">Wall of Buttons</a> ] -
+    <span class="only-in">[ <a href="#wall">Wall of Buttons</a> ] -</span>
     [ <a href="#about">About</a> ]
     <span class="only-in">- [ <a href="#" id="logout" class="logout-link">Log Out</a> ]</span>
   </nav>
@@ -187,7 +187,11 @@
           <input type="file" id="add-file" accept="image/gif">
           <span id="add-pick">Click to pick a GIF, or drop one here</span>
         </label>
+        <p class="center small add-batch" id="add-batch-row" hidden>
+          <label><input type="checkbox" id="add-batch" checked> Batch mode: "Found on the internets", no copy #1, straight into packs</label>
+        </p>
         <p class="center add-status" id="add-status" aria-live="polite"></p>
+        <ul class="small add-skipped" id="add-skipped" hidden></ul>
       </form>
     </div>
   </section>
@@ -346,8 +350,9 @@
   </div>
 
   <p class="center small">
-    <span class="only-in">[ <a href="#" class="my-page-link">My Page</a> ] &nbsp; [ <a href="#pull">Daily Pull</a> ] &nbsp; [ <a href="#trades">Trades</a> ] &nbsp;</span>
-    [ <a href="#wall">Wall of Buttons</a> ] &nbsp; [ <a href="#about">About</a> ]
+    <span class="only-in">[ <a href="#" class="my-page-link">My Page</a> ] &nbsp; [ <a href="#pull">Daily Pull</a> ] &nbsp; [ <a href="#wall">Wall of Buttons</a> ] &nbsp;</span>
+    <span class="only-out">[ <a href="#">Join</a> ] &nbsp;</span>
+    [ <a href="#about">About</a> ]
     <span class="only-in">&nbsp; [ <a href="#" class="logout-link">Log Out</a> ]</span>
   </p>
 
@@ -361,7 +366,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.20</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.21</span>
   </p>
 
 </main>
@@ -377,6 +382,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.20"></script>
+<script src="app.js?v=0.21"></script>
 </body>
 </html>

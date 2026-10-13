@@ -152,6 +152,16 @@ Sets are private now: players see only sets they've started (missing buttons and
 "?"), and visitors only see finished sets the owner chose to show off (secret ones as "a secret set").
 Player homepages were removed (the `users.homepage` column stays, unused).
 
+## v0.21 notes (no migration)
+
+- **Packs** are 1 found (archive-tier) button + 2 originals (`FOUND_PER_PACK` in lib/game.js);
+  all originals while nothing has been found. Bots' packs work the same way.
+- **Batch uploads**: webmasters can drop many GIFs or a whole folder on Found a Button. With
+  "Batch mode" on they're credited "Found on the internets", have no finder and no copy #1,
+  and go straight into packs. Webmasters have no upload limits.
+- **Bots fuse** at most once a day, only buttons with no copy limit (commons/uncommons):
+  hoarders often, givers rarely.
+
 ## Run locally (optional)
 
 ```

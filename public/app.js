@@ -14,6 +14,11 @@ const showTop = (id) => {
   document.querySelectorAll(".only-out").forEach((x) => (x.hidden = !!me));
   $("dash").hidden = true; // the "Hi!" box only shows on your own page (showPage turns it on)
 };
+// Logged-out front page: join / log in boxes, with the Wall of Buttons right below them.
+function showFront() {
+  showTop("out");
+  $("wall").hidden = false;
+}
 const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
 
@@ -193,6 +198,7 @@ async function route() {
   }
   if (hash === "check") { showTop("check"); return; }
   if (hash === "wall" || hash.startsWith("wall/")) {
+    if (!me) { showFront(); return showWall(hash.slice(5)).catch((e) => say(e.message)); }
     showTop("wall");
     return showWall(hash.slice(5)).catch((e) => say(e.message));
   }
@@ -202,7 +208,7 @@ async function route() {
     try { return hash.startsWith("u/") ? await showPage(hash.slice(2)) : await showBanner(hash.slice(7)); }
     catch (e) { say(e.message); return; }
   }
-  if (!me) return showTop("out");
+  if (!me) { showFront(); return showWall().catch((e) => say(e.message)); }
   showTop("in");
   if (!hash || hash === "u/" + me.name) loadSummary(); // refresh the dashboard when coming back home
   try {
@@ -217,8 +223,10 @@ async function route() {
 window.addEventListener("hashchange", (e) => {
   // Clicking around the Wall of Buttons only fills in the info box: no jump, no redraw.
   const was = decodeURIComponent(new URL(e.oldURL).hash.slice(1)), now = decodeURIComponent(location.hash.slice(1));
-  if (/^wall(\/|$)/.test(was) && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5)).catch((err) => say(err.message)); return; }
-  if (/^wall(\/|$)/.test(was) && now === "wall" && wallLoaded) { closeInfo(); return; }
+  // (logged out, the Wall is on the front page, so clicks there count as "on the Wall" too)
+  const onWall = /^wall(\/|$)/.test(was) || (!me && !/^(about|check|u\/|banner\/)/.test(was));
+  if (onWall && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5)).catch((err) => say(err.message)); return; }
+  if (onWall && now === "wall" && wallLoaded) { closeInfo(); return; }
   window.scrollTo(0, 0); route();
 });
 
@@ -236,6 +244,7 @@ async function refresh() {
   wallLoaded = false;
   const [{ user, trades_waiting }] = await Promise.all([api("/api/me"), loadFoils()]);
   me = user;
+  setUploadMode();
   if (!me) return route();
   setTradeCount(trades_waiting || 0);
   loadSummary();
@@ -473,6 +482,9 @@ async function showWall(openId) {
   if (openId) await openWallHash(openId);
 }
 
+// How many owners the info box lists: 12 in two columns, 6 on narrow screens (one column).
+const OWNERS_SHOWN = () => (window.matchMedia("(min-width: 700px)").matches ? 12 : 6);
+
 // "#wall/7" = design 7's info; "#wall/7/c/42" = copy 42 of it, shown in the same info box.
 function openWallHash(rest) {
   const m = /^(\d+)(?:\/c\/(\d+))?$/.exec(rest || "");
@@ -522,31 +534,91 @@ function closeInfo() {
 }
 closeInfo();
 // ---------- Found a Button? (drop a GIF, it uploads right away) ----------
+// Players add one at a time and get copy #1. Webmasters can drop many at once; in batch mode
+// they're "Found on the internets" with no copy #1, straight into packs.
 {
   const status = (text, bad = false) => { const e = $("add-status"); e.textContent = text || ""; e.className = "center add-status" + (bad ? " bad-text" : ""); };
   let busy = false;
-  const send = async (file) => {
-    if (!file || busy) return;
-    if (!/\.gif$/i.test(file.name) && file.type !== "image/gif") return status("It has to be a GIF.", true);
+  const isGif = (f) => /\.gif$/i.test(f.name) || f.type === "image/gif";
+  const upload = async (file, batch) => {
+    const fd = new FormData(); fd.append("file", file); if (batch) fd.append("batch", "1");
+    const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
+    const r = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, ...r };
+  };
+  const send = async (fileList) => {
+    const files = [...(fileList || [])];
+    if (!files.length || busy) return;
+    const many = me && me.is_admin;
     busy = true; $("add-drop").classList.add("busy");
-    status(`Adding ${file.name}...`);
-    const fd = new FormData(); fd.append("file", file);
+    const skipped = $("add-skipped"); skipped.textContent = ""; skipped.hidden = true;
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
-      const r = await res.json().catch(() => ({}));
-      if (!res.ok) { status(r.error || "Something went wrong.", true); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
-      status(r.foiled ? "Added!! And yours came out SHINY!" : "Added! It's in the cLuB now, and copy #1 is yours.");
+      if (!many || files.length === 1 && !$("add-batch").checked) {
+        // one button, credited to you
+        const file = files[0];
+        if (!isGif(file)) return status("It has to be a GIF.", true);
+        status(`Adding ${file.name}...`);
+        const r = await upload(file, false);
+        if (!r.ok) { status(r.error || "Something went wrong.", true); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
+        status(r.foiled ? "Added!! And yours came out SHINY!" : "Added! It's in the cLuB now, and copy #1 is yours.");
+        wallLoaded = false;
+        location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
+        return;
+      }
+      // webmaster: many at once, one after another, with a running tally
+      const batch = $("add-batch").checked;
+      let added = 0, dupes = 0, wrong = 0, failed = 0;
+      const skip = (name, why) => { skipped.hidden = false; skipped.append(el("li", {}, `${name}: ${why}`)); };
+      for (const [i, file] of files.entries()) {
+        status(`Adding ${i + 1} of ${files.length}... (${added} added · ${dupes} already in · ${wrong} not 88x31)`);
+        if (!isGif(file)) { wrong++; skip(file.name, "not a GIF"); continue; }
+        try {
+          const r = await upload(file, batch);
+          if (r.ok) added++;
+          else if (r.status === 409) { dupes++; skip(file.name, r.error); }
+          else if (/88x31|too big/i.test(r.error || "")) { wrong++; skip(file.name, r.error); }
+          else { failed++; skip(file.name, r.error || "something went wrong"); }
+        } catch { failed++; skip(file.name, "couldn't upload"); }
+      }
+      status(`Done! ${added} added · ${dupes} already in the cLuB · ${wrong} not 88x31` + (failed ? ` · ${failed} failed` : ""), !added);
       wallLoaded = false;
-      location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
-    } catch { status("Couldn't upload that. Try again?", true); }
-    finally { busy = false; $("add-drop").classList.remove("busy"); $("add-file").value = ""; }
+      if (added) showWall();
+    } finally { busy = false; $("add-drop").classList.remove("busy"); $("add-file").value = ""; }
   };
   $("add-form").onsubmit = (e) => e.preventDefault();
-  $("add-file").addEventListener("change", (e) => send(e.target.files[0]));
+  $("add-file").addEventListener("change", (e) => send(e.target.files));
   const addDrop = $("add-drop");
   addDrop.addEventListener("dragover", (e) => { e.preventDefault(); addDrop.classList.add("over"); });
   addDrop.addEventListener("dragleave", () => addDrop.classList.remove("over"));
-  addDrop.addEventListener("drop", (e) => { e.preventDefault(); addDrop.classList.remove("over"); send(e.dataTransfer.files[0]); });
+  // dropping a folder: read the files inside it (and any folders inside that)
+  const readEntry = (entry) => new Promise((resolve) => {
+    if (entry.isFile) return entry.file((f) => resolve([f]), () => resolve([]));
+    if (!entry.isDirectory) return resolve([]);
+    const reader = entry.createReader(), out = [];
+    const next = () => reader.readEntries(async (batch) => {
+      if (!batch.length) return resolve(out);
+      for (const en of batch) out.push(...(await readEntry(en)));
+      next();
+    }, () => resolve(out));
+    next();
+  });
+  addDrop.addEventListener("drop", async (e) => {
+    e.preventDefault(); addDrop.classList.remove("over");
+    const items = [...(e.dataTransfer.items || [])].map((it) => it.webkitGetAsEntry && it.webkitGetAsEntry()).filter(Boolean);
+    if (items.some((en) => en.isDirectory) && me && me.is_admin) {
+      status("Reading the folder...");
+      const files = (await Promise.all(items.map(readEntry))).flat();
+      return send(files);
+    }
+    send(e.dataTransfer.files);
+  });
+}
+// webmasters get multi-file drops and the batch switch
+function setUploadMode() {
+  const admin = !!(me && me.is_admin);
+  $("add-batch-row").hidden = !admin;
+  if (admin) $("add-file").setAttribute("multiple", "multiple"); else $("add-file").removeAttribute("multiple");
+  $("add-pick").textContent = admin ? "Click to pick GIFs, or drop a bunch here" : "Click to pick a GIF, or drop one here";
 }
 
 $("info-close").onclick = () => { closeInfo(); history.replaceState(null, "", "#wall"); };
@@ -619,7 +691,7 @@ async function openInfo(id) {
     el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash", title: d.image_hash }, d.image_hash.slice(0, 12) + "…")),
     el("h3", {}, "Who has one"),
     copies.length
-      ? el("ul", { class: "owners copies" }, copies.slice(0, 12).map((c) => {
+      ? el("ul", { class: "owners copies" }, copies.slice(0, OWNERS_SHOWN()).map((c) => {
           const look = { ...d, ...c, name: d.name, image_key: d.image_key, rarity: d.rarity };
           const fin = finishName(look);
           return el("li", {},
@@ -629,7 +701,8 @@ async function openInfo(id) {
               el("span", { class: "fin" + (fin && fin !== "None" ? " special" : "") }, fin || "First Print")));
         }))
       : el("p", { class: "small" }, "Nobody yet! Could be you..."),
-    d.minted > 12 && copies.length > 12 ? el("p", { class: "small" }, `...and ${d.minted - 12} more!`) : null].filter(Boolean);
+    (d.left_count ?? d.minted) > OWNERS_SHOWN() && copies.length > OWNERS_SHOWN()
+      ? el("p", { class: "small" }, `...and ${(d.left_count ?? d.minted) - OWNERS_SHOWN()} more!`) : null].filter(Boolean);
   body.append(el("div", { class: "info-cols" }, el("div", {}, ...left), el("div", {}, ...right)));
 }
 
@@ -740,8 +813,8 @@ function renderLinks(owner, gb, col) {
   const list = gb.links || [];
   if (!list.length) body.append(el("p", { class: "small" }, mine ? "No links yet. Visit a guestbook and hit \"Swap links!\"" : "No links yet."));
   for (const l of list) {
-    const href = l.homepage || "#u/" + encodeURIComponent(l.name);
-    body.append(el("span", { class: "tile link-tile" }, cardImg(l.card, href, l.homepage ? `${l.name}'s homepage` : `${l.name}'s guestbook`),
+    const href = "#u/" + encodeURIComponent(l.name);
+    body.append(el("span", { class: "tile link-tile" }, cardImg(l.card, href, `${l.name}'s page`),
       el("a", { class: "small", href: "#u/" + encodeURIComponent(l.name) }, l.name),
       mine ? el("button", { type: "button", class: "mini unlink", title: "Unlink", onclick: async () => {
         if (await ask(`Unlink from ${l.name}? You'll both drop out of each other's Cool Links.`, { ok: "Unlink", cancel: "Keep" })) go(l.name)("remove");
@@ -974,33 +1047,19 @@ function useBox(b) {
   const origin = location.origin;
   const mine = me && b.owner && b.owner.toLowerCase() === me.name.toLowerCase();
   const file = b.image_key.split("/").pop();
-  const linkTo = (useHome) => (useHome && b.owner_homepage) ? b.owner_homepage : `${origin}/#banner/${b.id}`;
-  const snippet = (useHome) => `<a href="${linkTo(useHome)}"><img src="${mine ? file.replace(".gif", "-" + b.edition + ".gif") : origin + "/" + b.image_key}" width="88" height="31" alt="${b.name}"></a>`;
   const code = el("textarea", { class: "snippet", rows: "3", readonly: "readonly" });
-  let useHome = !!(mine && b.owner_homepage);
-  const refresh = () => { code.value = snippet(useHome); };
-  refresh();
-  const box = el("div", { class: "use-box" },
+  code.value = `<a href="${origin}/#banner/${b.id}"><img src="${mine ? file.replace(".gif", "-" + b.edition + ".gif") : origin + "/" + b.image_key}" width="88" height="31" alt="${b.name}"></a>`;
+  return el("div", { class: "use-box" },
     el("h2", {}, "» Use this button «"),
     el("p", { class: "sign-buttons" },
       mine ? el("a", { class: "btn-link", href: `/api/download?id=${b.id}` }, "Download my copy (signed)") : null,
       el("a", { class: "btn-link", href: "/" + b.image_key, download: file }, mine ? "Plain picture" : "Download the picture")),
     mine ? el("p", { class: "small" }, "Your copy has a certificate hidden inside saying it's ",
-      el("b", {}, `${b.name} ${edition(b)}`), ", issued to you", b.owner_homepage ? " with your homepage" : "", ". Upload that file to your site next to your page.") : null);
-  if (mine && b.owner_homepage) {
-    const pick = (v, label) => {
-      const r = el("input", { type: "radio", name: "linkto", value: v });
-      r.checked = (v === "home") === useHome;
-      r.onchange = () => { useHome = v === "home"; refresh(); };
-      return el("label", { class: "radio" }, r, label);
-    };
-    box.append(el("div", { class: "gift-choices" }, el("span", { class: "small" }, "Clicking it goes to:"), pick("home", "my homepage"), pick("page", "this button's cLuB page")));
-  }
-  box.append(el("p", { class: "small" }, "Copy this into your page:"), code,
+      el("b", {}, `${b.name} ${edition(b)}`), ", issued to you. Upload that file to your site next to your page.") : null,
+    el("p", { class: "small" }, "Copy this into your page:"), code,
     el("p", {}, el("button", { type: "button", onclick: async () => {
       try { await navigator.clipboard.writeText(code.value); say("Copied!"); } catch { code.select(); say("Press Ctrl+C to copy."); }
     } }, "Copy code")));
-  return box;
 }
 
 // ---------- Check a Button ----------

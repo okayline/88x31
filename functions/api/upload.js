@@ -1,4 +1,6 @@
-// POST /api/upload  (multipart form: file)  -> { ok, design_id, instance_id, holo }  or { error, design_id? }
+// POST /api/upload  (multipart form: file, batch?)  -> { ok, design_id, instance_id, foiled }  or { error, design_id? }
+// batch=1 (webmasters only): a bulk import. Credited "Found on the internets", no finder and no
+// copy #1: the button goes straight into packs and #1 goes to whoever pulls it first.
 // Add a button found in the wild to the cLuB. It joins the archive tier: shown as found,
 // credited where known, never relicensed. The finder gets copy #1 and a "found by" credit.
 // Rules: a real 88x31 GIF, not already in the cLuB, never an ultra. Uploads are commons of kind "found",
@@ -45,10 +47,12 @@ export async function onRequestPost({ request, env }) {
   if (!isButtonGif(bytes)) return json({ error: "It has to be a real 88x31 GIF." }, 400);
 
   const name = clean(String(file.name || "").replace(/\.gif$/i, ""), 40) || "untitled";
+  const batch = !!me.is_admin && form.get("batch") === "1";
 
   const today = (await env.DB.prepare(
     "SELECT COUNT(*) AS n FROM designs WHERE found_by = ? AND created_at > ?"
   ).bind(me.id, now() - 86400).first()).n;
+  // (batch imports have no finder, so they never count toward anyone's daily limit)
   if (!me.is_admin && today >= UPLOADS_PER_DAY) return json({ error: `You can add ${UPLOADS_PER_DAY} buttons a day. Come back tomorrow!` }, 429);
 
   const hash = await sha256Bytes(bytes);
@@ -59,13 +63,14 @@ export async function onRequestPost({ request, env }) {
   const ins = await env.DB.prepare(
     `INSERT INTO designs (name, image_key, image_hash, creator_id, type, rarity, stats, status, created_at,
                           source_title, source_author, source_url, license, tier, found_by)
-     VALUES (?, 'pending', ?, ?, 'found', 'common', '{}', 'active', ?, NULL, 'Origin unknown, found in the wild', NULL, 'Not relicensed', 'archive', ?)`
-  ).bind(name, hash, me.id, t, me.id).run();
+     VALUES (?, 'pending', ?, ?, 'found', 'common', '{}', 'active', ?, NULL, ?, NULL, 'Not relicensed', 'archive', ?)`
+  ).bind(name, hash, me.id, t, batch ? "Found on the internets" : "Origin unknown, found in the wild", batch ? null : me.id).run();
   const id = ins.meta.last_row_id;
   await env.DB.batch([
     env.DB.prepare("INSERT INTO design_images (design_id, data) VALUES (?, ?)").bind(id, bytes),
     env.DB.prepare("UPDATE designs SET image_key = ? WHERE id = ?").bind(`api/img?d=${id}`, id),
   ]);
+  if (batch) { await sealSafe(env); return json({ ok: true, design_id: id, batch: true }); }
   const res = await env.DB.batch(await mintStatements(env, id, me.id, "found", null, { weights: FINDER_FOILS }));
   await sealSafe(env);
   const inst = await env.DB.prepare(

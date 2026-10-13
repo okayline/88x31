@@ -618,7 +618,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .info-cols { display: grid; grid-template-columns: 1fr; gap: 0 18px; }
 @media (min-width: 700px) { .info-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .info-window .owners { columns: 2; } }
 /* one fixed height that fits the tallest button's info (measured), so the page never shifts */
-#info-win .info-body { height: 940px; overflow-y: auto; box-sizing: border-box; }
+#info-win .info-body { height: 760px; overflow-y: auto; box-sizing: border-box; }
 @media (min-width: 700px) { #info-win .info-body { height: 560px; } }
 
 /* fuse box on your own copy's page */
@@ -643,3 +643,6 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .set-row.trophy { margin: 6px 0; }
 .set-item .mystery-tile { width: 88px; height: 31px; line-height: 31px; font-size: 18px; }
 @media (max-width: 560px) { .top-bar { font-size: 15px; } }
+
+.add-skipped { max-height: 160px; overflow-y: auto; margin: 6px 0 0; text-align: left; }
+.add-batch { margin: 4px 0; }

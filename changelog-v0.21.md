@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.20
+# 88x31 cLuB Changelog — v0.21
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.21 — "Surf's Up"
+**Tue Oct 13, 2026 · 12:50 AM HST**
+
+- Every pack now has one button found out on the web, alongside two of the cLuB's own.
+- A whole bunch of buttons found on the internets are waiting in packs. Who'll find #1?
+- The bots have discovered fusion...
+- New here? The Wall of Buttons is right on the front page, so you can look around before joining.
+- Tidier menus and a few small fixes.
 
 ## v0.20 — "Trophy Case"
 **Tue Oct 13, 2026 · 12:25 AM HST**
