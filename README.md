@@ -243,7 +243,7 @@ npx wrangler d1 execute 88x31-db --remote --file=019_series_beta_special_packs.s
   set rewards the viewer has never owned, and anything in an upcoming series, show as "a mystery
   button" with no name or link.
 
-## Updating to v0.25.1 (10 tape-era Beta rares)
+## Updating to v0.25.1 (10 tape-era Beta buttons)
 
 Push the code first this time (it carries the art), **then** run once:
 
@@ -252,7 +252,7 @@ curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/020
 npx wrangler d1 execute 88x31-db --remote --file=020_beta_tape_era.sql
 ```
 
-Adds 10 rares (25 copies each) to Series Beta, art in `public/banners/beta/`. Safe to run twice.
+Adds 10 buttons to Series Beta (6 rares at 25 copies each, 4 uncommons), art in `public/banners/beta/`. Safe to run twice.
 
 ## Run locally (optional)
 
