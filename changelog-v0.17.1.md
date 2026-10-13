@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.17
+# 88x31 cLuB Changelog — v0.17.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.17.1 — "Webmaster Mode"
+**Mon Oct 12, 2026 · 7:28 PM HST**
+
+- Behind-the-scenes webmaster tools.
 
 ## v0.17 — "56K of Pure Fun"
 **Mon Oct 12, 2026 · 7:27 PM HST**

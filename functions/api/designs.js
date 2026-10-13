@@ -6,6 +6,7 @@ import { json, currentUser } from "../../lib/auth.js";
 const HIDDEN = new Set(["ultra", "special"]);
 async function uncovered(env, viewer) {
   if (!viewer) return new Set();
+  if (viewer.is_admin) return { has: () => true }; // admins (the webmaster) can see every button
   const { results } = await env.DB.prepare(
     `SELECT DISTINCT i.design_id FROM ownership_history h JOIN instances i ON i.id = h.instance_id
      JOIN designs d ON d.id = i.design_id WHERE h.to_user = ? AND d.rarity IN ('ultra', 'special')`
