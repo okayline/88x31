@@ -217,7 +217,7 @@ async function route() {
 window.addEventListener("hashchange", (e) => {
   // Clicking around the Wall of Buttons only fills in the info box: no jump, no redraw.
   const was = decodeURIComponent(new URL(e.oldURL).hash.slice(1)), now = decodeURIComponent(location.hash.slice(1));
-  if (/^wall(\/|$)/.test(was) && /^wall\/\d+$/.test(now) && wallLoaded) { openInfo(Number(now.slice(5))).catch((err) => say(err.message)); return; }
+  if (/^wall(\/|$)/.test(was) && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5)).catch((err) => say(err.message)); return; }
   if (/^wall(\/|$)/.test(was) && now === "wall" && wallLoaded) { closeInfo(); return; }
   window.scrollTo(0, 0); route();
 });
@@ -478,7 +478,46 @@ async function showWall(openId) {
     $("wall-count").textContent = `${designs.length} buttons and counting!`;
     wallLoaded = true;
   }
-  if (openId) await openInfo(Number(openId));
+  if (openId) await openWallHash(openId);
+}
+
+// "#wall/7" = design 7's info; "#wall/7/c/42" = copy 42 of it, shown in the same info box.
+function openWallHash(rest) {
+  const m = /^(\d+)(?:\/c\/(\d+))?$/.exec(rest || "");
+  if (!m) return closeInfo();
+  return m[2] ? openCopyInfo(Number(m[1]), Number(m[2])) : openInfo(Number(m[1]));
+}
+
+// One specific copy, inside the Wall's info box, with a way back to the button's info.
+async function openCopyInfo(designId, copyId) {
+  const body = $("info-body");
+  body.textContent = "Loading...";
+  $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const { banner: b, foil_entry: fe, history } = await api("/api/banner?id=" + copyId);
+  $("info-title").textContent = `${b.name} ${edition(b)}`;
+  const LOG = 8;
+  const steps = history.slice(-LOG);
+  const left = [
+    el("p", { class: "small" }, el("a", { href: "#wall/" + designId }, `« back to ${b.name}`)),
+    el("p", { class: "center" }, bannerImg(b, 3)),
+    variantLine(b),
+    foilLine(b, fe),
+    ownedLine(b, history),
+    b.status === "removed" ? el("p", {}, el("b", {}, "Removed by request.")) : null,
+  ].filter(Boolean);
+  const right = [
+    el("h3", {}, "Travel Log"),
+    history.length > LOG ? el("p", { class: "small" }, `...${history.length - LOG} earlier steps`) : null,
+    el("ol", { class: "log small", start: String(Math.max(1, history.length - LOG + 1)) }, steps.map((h) => el("li", {},
+      `${fmtDate(h.created_at)}: ${HOW[h.reason] || h.reason}`,
+      h.reason === "fusion"
+        ? (h.to_name ? " · came out shinier" : " → used up")
+        : [h.from_name ? ` from ${h.from_name}` : "", ` → ${h.to_name || "a former player"}`],
+      h.hash ? el("span", { class: "hash", title: h.hash }, ` ${h.hash.slice(0, 8)}…`) : null))),
+    el("p", {}, el("a", { href: "#banner/" + b.id }, "Open this copy's full page »")),
+  ].filter(Boolean);
+  body.textContent = "";
+  body.append(el("div", { class: "info-cols" }, el("div", {}, ...left), el("div", {}, ...right)));
 }
 
 // The info window is part of the Wall page; "closing" just resets it to its welcome message.
@@ -588,8 +627,15 @@ async function openInfo(id) {
     el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash", title: d.image_hash }, d.image_hash.slice(0, 12) + "…")),
     el("h3", {}, "Who has one"),
     copies.length
-      ? el("ul", { class: "owners" }, copies.slice(0, 12).map((c) => el("li", {},
-          el("a", { href: "#banner/" + c.id }, `#${c.edition}`), " · ", who(c), c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null)))
+      ? el("ul", { class: "owners copies" }, copies.slice(0, 12).map((c) => {
+          const look = { ...d, ...c, name: d.name, image_key: d.image_key, rarity: d.rarity };
+          const fin = finishName(look);
+          return el("li", {},
+            el("a", { href: `#wall/${d.id}/c/${c.id}`, class: "copy-pic", title: "See this copy" }, bannerImg(look, 0.5)),
+            el("span", {}, el("span", { class: "who-line", title: c.owner || "" }, el("a", { href: `#wall/${d.id}/c/${c.id}` }, `#${c.edition}`), " · ", who(c),
+              c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null),
+              el("span", { class: "fin" + (fin && fin !== "None" ? " special" : "") }, fin || "First Print")));
+        }))
       : el("p", { class: "small" }, "Nobody yet! Could be you..."),
     d.minted > 12 && copies.length > 12 ? el("p", { class: "small" }, `...and ${d.minted - 12} more!`) : null].filter(Boolean);
   body.append(el("div", { class: "info-cols" }, el("div", {}, ...left), el("div", {}, ...right)));

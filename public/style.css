@@ -616,7 +616,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 
 /* v0.18.2: info window in two columns on wide screens, one fixed height that fits everything */
 .info-cols { display: grid; grid-template-columns: 1fr; gap: 0 18px; }
-@media (min-width: 700px) { .info-cols { grid-template-columns: 1fr 1fr; } .info-window .owners { columns: 2; } }
+@media (min-width: 700px) { .info-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .info-window .owners { columns: 2; } }
 /* one fixed height that fits the tallest button's info (measured), so the page never shifts */
 #info-win .info-body { height: 940px; overflow-y: auto; box-sizing: border-box; }
 @media (min-width: 700px) { #info-win .info-body { height: 560px; } }
@@ -627,3 +627,13 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .fuse-pick { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; background: transparent; border: 2px solid transparent; cursor: pointer; color: inherit; }
 .fuse-pick.on { border-color: #ffff00; background: rgba(255, 255, 0, 0.12); }
 .fuse-pick img.banner, .fuse-pick .foil-wrap, .fuse-pick .fx { display: block; }
+
+/* Who has one: tiny copy previews with their finish */
+.info-window .owners.copies { list-style: none; padding: 0; margin: 4px 0; }
+.owners.copies li { display: flex; align-items: center; gap: 6px; margin: 0 0 5px; break-inside: avoid; line-height: 1.2; }
+.owners.copies .copy-pic { flex: none; line-height: 0; }
+.owners.copies .copy-pic img.banner { border-width: 1px; }
+.owners.copies .fin { font-size: 11px; color: #555; }
+.owners.copies .fin.special { color: #990099; font-weight: bold; }
+.owners.copies li > span { min-width: 0; flex: 1; }
+.owners.copies .who-line { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

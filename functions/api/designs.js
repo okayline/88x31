@@ -60,7 +60,7 @@ export async function onRequestGet({ request, env }) {
   ).bind(id, id).all();
   // who owns copies (first 60 by edition)
   const { results: copies } = await db.prepare(
-    `SELECT i.id, i.edition, i.foil, i.pattern, i.effect, u.name AS owner, u.is_bot FROM instances i LEFT JOIN users u ON u.id = i.owner_id
+    `SELECT i.id, i.edition, i.foil, i.foil_seed, i.pattern, i.effect, u.name AS owner, u.is_bot FROM instances i LEFT JOIN users u ON u.id = i.owner_id
      WHERE i.design_id = ? AND i.consumed = 0 ORDER BY i.edition LIMIT 60`
   ).bind(id).all();
   // copies made with each foil, and who to ask about credits or takedowns
