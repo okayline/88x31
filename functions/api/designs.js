@@ -31,7 +31,7 @@ export async function onRequestGet({ request, env }) {
        FROM designs d WHERE d.status IN ('active', 'reward', 'frozen') ${UPCOMING_OUT(viewer)} ORDER BY d.id`
     ).all();
     return json({ designs: results.map((d) => (hide.has(d.rarity) && !seen.has(d.id)
-      ? { id: d.id, hidden: true }   // a mystery: no name, picture or rarity
+      ? { id: d.id, hidden: true, tier: d.tier === "archive" ? "archive" : "original" }   // a mystery: no name, picture or rarity
       : d)) });
   }
   const design = await db.prepare(

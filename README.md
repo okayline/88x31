@@ -218,6 +218,31 @@ npx wrangler pages secret put TURNSTILE_SECRET --project-name 88x31
 npx wrangler pages secret put TURNSTILE_SITEKEY --project-name 88x31
 ```
 
+## Updating to v0.25 (Series Beta, special packs, webmaster series panel)
+
+Run once, **before** pushing the v0.25 code:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/019_series_beta_special_packs.sql
+npx wrangler d1 execute 88x31-db --remote --file=019_series_beta_special_packs.sql
+```
+
+- Adds `packs.special` and `pack_openings.finishes`, and **Series Beta** (active right away):
+  26 originals in `public/banners/beta/` (12 common, 6 uncommon, 6 fractal rares capped at 25
+  copies, 2 ultras capped at 1). The ultras credit Wikimedia Commons (CC0) as inspiration.
+- Two **signature foils**, `phosphor` (FRAKTAL.PIC) and `scanline` (20 GOTO 20): tier 3, locked to
+  their design with a huge weight, so the one copy of each ultra comes out in its own foil.
+- **Special packs** (Give packs → tick "special"): one card is at least uncommon, rares and ultras
+  twice as likely, real foils ~2.5x (tier 2–3 ×3) and at least one per pack. Finishes are rolled
+  when the pack opens and shown before you pick; keep 2.
+- **Series panel** on the Buttons page (webmasters): release / retire / hide a series, make a new
+  one (starts upcoming), look inside, and put loose originals into a series. The upload box can
+  add GIFs as cLuB originals straight into a series, with a rarity and kind (rare = 25 copies,
+  ultra = 1; no copy #1).
+- `/api/ledger` takes `limit` and `before` and hides spoilers on the server: rares, ultras and
+  set rewards the viewer has never owned, and anything in an upcoming series, show as "a mystery
+  button" with no name or link.
+
 ## Run locally (optional)
 
 ```

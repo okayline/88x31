@@ -114,7 +114,8 @@ const HOW = {
 // ones listed in DRAWN, and anything else shows plain for now.
 let FOILS = {};
 const DRAWN = new Set(["glitter", "sheen", "holo", "galaxy", "ripple", "chrome", "gold", "oil-slick", "prismatic",
-  "double-rainbow", "liquid-metal", "fracture", "etched", "surge", "dialup", "marquee", "crt", "vhs", "crt-vhs"]);
+  "double-rainbow", "liquid-metal", "fracture", "etched", "surge", "dialup", "marquee", "crt", "vhs", "crt-vhs",
+  "phosphor", "scanline"]);
 async function loadFoils() {
   try { const r = await api("/api/foils"); FOILS = Object.fromEntries(r.foils.map((f) => [f.id, f])); } catch {}
 }
@@ -361,7 +362,9 @@ function card(d, i, pull, onPick) {
   const left = d.max_editions ? `${Math.max(0, d.max_editions - d.minted)} of ${d.max_editions} left` : "";
   const c = el("div", { class: "card rarity-" + d.rarity + (pull.kept_index === i ? " chosen" : "") },
     bannerImg(d, 2), el("b", {}, d.name), el("span", { class: "small" }, `${d.rarity} · ${d.type}`),
-    left ? el("span", { class: "small" }, left) : null);
+    left ? el("span", { class: "small" }, left) : null,
+    // a finish already rolled (special packs show theirs before you choose)
+    d.foil && d.foil !== "clear" ? el("span", { class: "small card-finish" }, "✦ " + finishName(d)) : null);
   if (onPick) { c.tabIndex = 0; c.onclick = onPick; c.onkeydown = (e) => { if (e.key === "Enter") onPick(); }; c.classList.add("pickable"); }
   return c;
 }
@@ -467,29 +470,49 @@ async function showPage(name) {
 const RARITY_LABEL = { common: "common", uncommon: "uncommon", rare: "rare", ultra: "ULTRA RARE", special: "set reward" };
 let wallLoaded = false;
 
+// The Wall of Buttons: shuffled every time it loads (mystery tiles always last), with a
+// Show (all / cLuB originals / found) and Order (shuffle / rarity) choice remembered in this browser.
+let wallDesigns = [];
+const wallPref = (k, def) => { try { return localStorage.getItem("wall-" + k) || def; } catch { return def; } };
+const setWallPref = (k, v) => { try { localStorage.setItem("wall-" + k, v); } catch {} };
+function renderWallGrid() {
+  const show = wallPref("show", "all"), order = wallPref("order", "shuffle");
+  const RANK = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
+  let list = wallDesigns.filter((d) => show === "all" || (show === "found" ? d.tier === "archive" : d.tier !== "archive"));
+  const known = list.filter((d) => !d.hidden), mystery = list.filter((d) => d.hidden);
+  if (order === "rarity") known.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || a._r - b._r);
+  else known.sort((a, b) => a._r - b._r);
+  const grid = $("wall-grid");
+  grid.textContent = "";
+  // logged out: just the pictures, nothing to click
+  const tile = (d, inner) => (me ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.hidden ? "???" : d.name }, inner)
+    : el("span", { class: "wall-tile still", title: d.hidden ? "???" : d.name }, inner));
+  for (const d of [...known, ...mystery]) grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
+  $("wall-count").textContent = `${list.length} buttons${show === "all" ? " and counting!" : ""}`;
+  document.querySelectorAll("#wall-controls button").forEach((b) => b.classList.toggle("on", wallPref(b.dataset.k, b.dataset.k === "show" ? "all" : "shuffle") === b.dataset.v));
+}
+function wallControls() {
+  const box = $("wall-controls");
+  if (box.childElementCount) return;
+  const btn = (k, v, label) => el("button", { type: "button", "data-k": k, "data-v": v, onclick: () => { setWallPref(k, v); renderWallGrid(); } }, label);
+  box.append(el("span", {}, "Show: ", btn("show", "all", "All"), btn("show", "original", "cLuB Originals"), btn("show", "found", "Found")),
+    el("span", {}, " Order: ", btn("order", "shuffle", "Shuffle"), btn("order", "rarity", "Rarity")));
+}
 async function showWall(openId) {
+  loadSeriesPanel();
   // logged out, the Wall is pictures only: no info box, no "click one" line
   $("info-win").hidden = !me;
   document.querySelectorAll(".wall-intro").forEach((x) => (x.hidden = !me));
   if (!me) openId = null;
   if (!wallLoaded) {
     const { designs } = await api("/api/designs");
-    const grid = $("wall-grid");
-    grid.textContent = "";
-    const order = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
-    designs.sort((a, b) => (a.hidden ? 8 : order[a.rarity] ?? 9) - (b.hidden ? 8 : order[b.rarity] ?? 9) || a.id - b.id);
-    // logged out: just the pictures, nothing to click
-    const tile = (d, inner) => (me ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.hidden ? "???" : d.name }, inner)
-      : el("span", { class: "wall-tile still", title: d.hidden ? "???" : d.name }, inner));
-    for (const d of designs) grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
-    $("wall-count").textContent = `${designs.length} buttons and counting!`;
+    wallDesigns = designs.map((d) => ({ ...d, _r: Math.random() }));   // a fresh shuffle each load
+    wallControls();
+    renderWallGrid();
     wallLoaded = true;
   }
   if (openId) await openWallHash(openId);
 }
-
-// How many owners the info box lists: 12 in two columns, 6 on narrow screens (one column).
-const OWNERS_SHOWN = () => (window.matchMedia("(min-width: 700px)").matches ? 12 : 6);
 
 // "#wall/7" = design 7's info; "#wall/7/c/42" = copy 42 of it, shown in the same info box.
 function openWallHash(rest) {
@@ -546,8 +569,11 @@ closeInfo();
   const status = (text, bad = false) => { const e = $("add-status"); e.textContent = text || ""; e.className = "center add-status" + (bad ? " bad-text" : ""); };
   let busy = false;
   const isGif = (f) => /\.gif$/i.test(f.name) || f.type === "image/gif";
+  // webmasters can add the cLuB's own art straight into a series, with a rarity and kind
+  const intoSeries = () => (me && me.is_admin && $("add-as").value) || "";
   const upload = async (file, batch) => {
     const fd = new FormData(); fd.append("file", file); if (batch) fd.append("batch", "1");
+    if (intoSeries()) { fd.append("series", intoSeries()); fd.append("rarity", $("add-rarity").value); fd.append("kind", $("add-kind").value); }
     const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
     const r = await res.json().catch(() => ({}));
     return { ok: res.ok, status: res.status, ...r };
@@ -559,20 +585,20 @@ closeInfo();
     busy = true; $("add-drop").classList.add("busy");
     const skipped = $("add-skipped"); skipped.textContent = ""; skipped.hidden = true;
     try {
-      if (!many || files.length === 1 && !$("add-batch").checked) {
+      if (!many || files.length === 1 && !$("add-batch").checked && !intoSeries()) {
         // one button, credited to you
         const file = files[0];
         if (!isGif(file)) return status("It has to be a GIF.", true);
         status(`Adding ${file.name}...`);
         const r = await upload(file, false);
         if (!r.ok) { status(r.error || "Something went wrong.", true); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
-        status(r.foiled ? "Added!! And yours came out SHINY!" : "Added! It's in the cLuB now, and copy #1 is yours.");
+        status(r.foiled ? "Added!! And yours came out SHINY!" : "Added! It's in ~*~ tHe cLuB ~*~ now, and copy #1 is yours.");
         wallLoaded = false;
         location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
         return;
       }
       // webmaster: many at once, one after another, with a running tally
-      const batch = $("add-batch").checked;
+      const batch = !intoSeries() && $("add-batch").checked;
       let added = 0, dupes = 0, wrong = 0, failed = 0;
       const skip = (name, why) => { skipped.hidden = false; skipped.append(el("li", {}, `${name}: ${why}`)); };
       for (const [i, file] of files.entries()) {
@@ -586,7 +612,9 @@ closeInfo();
           else { failed++; skip(file.name, r.error || "something went wrong"); }
         } catch { failed++; skip(file.name, "couldn't upload"); }
       }
-      status(`Done! ${added} added · ${dupes} already in the cLuB · ${wrong} not 88x31` + (failed ? ` · ${failed} failed` : ""), !added);
+      const where = intoSeries() ? ` to ${$("add-as").selectedOptions[0].textContent}` : "";
+      status(`Done! ${added} added${where} · ${dupes} already in ~*~ tHe cLuB ~*~ · ${wrong} not 88x31` + (failed ? ` · ${failed} failed` : ""), !added);
+      if (intoSeries()) seriesPanelLoaded = false;
       wallLoaded = false;
       if (added) showWall();
     } finally { busy = false; $("add-drop").classList.remove("busy"); $("add-file").value = ""; }
@@ -619,10 +647,90 @@ closeInfo();
     send(e.dataTransfer.files);
   });
 }
+// ---------- Series panel (webmasters) ----------
+// Upcoming series are hidden and not in packs; up to 3 active ones share the pack slots (newest
+// gets the most); retired ones stay in collections but leave packs.
+let seriesPanelLoaded = false;
+const sSay = (t) => { $("series-msg").textContent = t || ""; };
+async function loadSeriesPanel() {
+  const panel = $("series-panel");
+  panel.hidden = !(me && me.is_admin);
+  if (panel.hidden || seriesPanelLoaded) return;
+  seriesPanelLoaded = true;
+  let r;
+  try { r = await api("/api/series"); } catch (e) { seriesPanelLoaded = false; return; }
+  const active = r.series.filter((x) => x.status === "active").length;
+  $("series-note").textContent = `${active} of ${r.max_active} active. Packs split 60/25/15 between the newest active series.`;
+  const setStatus = async (x, status) => {
+    const verb = { active: "Release", retired: "Retire", upcoming: "Hide" }[status];
+    const what = { active: "It goes into packs right away and everyone can see it.", retired: "It leaves packs. Copies people own stay theirs.", upcoming: "It leaves packs and is hidden from players." }[status];
+    if (!(await ask(`${verb} Series ${x.name}? ${what}`, { ok: verb }))) return;
+    try {
+      const res = await api("/api/series", { method: "POST", body: { action: "status", id: x.id, status } });
+      sSay(res.warning || `Series ${x.name} is now ${status}.`);
+      seriesPanelLoaded = false; wallLoaded = false; loadSeriesPanel();
+    } catch (e) { sSay(e.message); }
+  };
+  const rows = $("series-rows");
+  rows.textContent = "";
+  for (const x of r.series) {
+    const btns = ["active", "retired", "upcoming"].filter((st) => st !== x.status).map((st) =>
+      el("button", { type: "button", class: "mini", onclick: () => setStatus(x, st) }, { active: "Release", retired: "Retire", upcoming: "Hide" }[st]));
+    rows.append(el("tr", {},
+      el("td", {}, el("b", {}, `Series ${x.name}`)),
+      el("td", {}, el("span", { class: "series-status st-" + x.status }, x.status)),
+      el("td", {}, `${x.buttons} button${x.buttons === 1 ? "" : "s"}`),
+      el("td", {}, el("button", { type: "button", class: "mini", onclick: () => showSeriesDetail(x) }, "Look"), " ", ...btns)));
+  }
+  // cLuB originals that aren't in a series yet
+  const loose = $("series-loose");
+  loose.textContent = "";
+  if (r.loose.length) {
+    loose.append(el("p", {}, el("b", {}, "Originals not in a series: ")));
+    for (const d of r.loose) {
+      const pick = el("select", { "aria-label": `Series for ${d.name}` }, el("option", { value: "" }, "—"), ...r.series.map((x) => el("option", { value: x.id }, x.name)));
+      pick.onchange = async () => {
+        try { await api("/api/series", { method: "POST", body: { action: "assign", design_id: d.id, series_id: pick.value } }); sSay(`${d.name} → Series ${pick.selectedOptions[0].textContent}`); seriesPanelLoaded = false; wallLoaded = false; loadSeriesPanel(); }
+        catch (e) { sSay(e.message); }
+      };
+      loose.append(el("span", { class: "loose-item" }, `${d.name} (${d.rarity}) `, pick));
+    }
+  }
+  const form = $("series-new");
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    if (!name) return;
+    try { await api("/api/series", { method: "POST", body: { action: "create", name } }); form.reset(); sSay(`Series ${name} made! It's hidden until you release it.`); seriesPanelLoaded = false; loadSeriesPanel(); }
+    catch (err) { sSay(err.message); }
+  };
+}
+async function showSeriesDetail(x) {
+  const box = $("series-detail");
+  box.textContent = "Loading...";
+  try {
+    const { designs } = await api("/api/series?id=" + x.id);
+    box.textContent = "";
+    box.append(el("p", { class: "small center" }, el("b", {}, `Series ${x.name}`), ` · ${designs.length} buttons · `,
+      el("a", { href: "#", onclick: (e) => { e.preventDefault(); box.textContent = ""; } }, "close")),
+      el("div", { class: "wall-grid" }, designs.map((d) => el("a", { href: "#wall/" + d.id, class: "wall-tile", title: `${d.name} (${d.rarity}${d.max_editions ? ", " + d.max_editions + " copies" : ""})` }, bannerImg(d)))));
+  } catch (e) { box.textContent = e.message; }
+}
+
 // webmasters get multi-file drops and the batch switch
+let addAsReady = false;
 function setUploadMode() {
   const admin = !!(me && me.is_admin);
   $("add-batch-row").hidden = !admin;
+  $("add-as-row").hidden = !admin;
+  if (admin && !addAsReady) {
+    addAsReady = true;
+    const pick = $("add-as");
+    pick.onchange = () => { $("add-orig-opts").hidden = !pick.value; $("add-batch-row").hidden = !!pick.value; };
+    api("/api/series").then(({ series }) => {
+      for (const x of series) pick.append(el("option", { value: x.id }, `a cLuB original → Series ${x.name}` + (x.status !== "active" ? ` (${x.status})` : "")));
+    }).catch(() => {});
+  }
   if (admin) $("add-file").setAttribute("multiple", "multiple"); else $("add-file").removeAttribute("multiple");
   $("add-pick").textContent = admin ? "Click to pick GIFs, or drop a bunch here" : "Click to pick a GIF, or drop one here";
 }
@@ -830,7 +938,7 @@ function renderLinks(owner, gb, col) {
   // the swap button for visitors
   const swap = $("links-swap");
   swap.textContent = "";
-  if (!me) swap.append(el("span", { class: "small" }, el("a", { href: "#" }, "Join the cLuB"), " to swap links!"));
+  if (!me) swap.append(el("span", { class: "small" }, el("a", { href: "#" }, "Join ~*~ tHe cLuB ~*~"), " to swap links!"));
   else if (!mine) {
     const st = gb.link_state;
     if (st === "linked") swap.append(el("span", { class: "small" }, "You and ", el("b", {}, owner), " are linked ✓ "),
@@ -1357,13 +1465,15 @@ async function showBanner(id) {
 // Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
 const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
-const packLabel = (p) => (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "Mixed") + " Pack";
+const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "Mixed") + " Pack";
 
+// Special packs: better odds, foils guaranteed, and a shinier wrapper.
 function packTile(p, href) {
-  return el("a", { href, class: "pack-tile" + (p.source === "welcome" ? " welcome" : "") + (p.revealed ? " revealed" : ""), title: p.note || PACK_FROM[p.source] || "" },
+  const cls = "pack-tile" + (p.source === "welcome" ? " welcome" : "") + (p.special ? " special" : "") + (p.revealed ? " revealed" : "");
+  return el("a", { href, class: cls, title: p.note || PACK_FROM[p.source] || "" },
     el("span", { class: "pack-top" }, "88x31 cLuB"),
-    el("span", { class: "pack-name" }, p.source === "welcome" ? "WELCOME" : p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED"),
-    el("span", { class: "pack-sub" }, p.revealed ? "opened!" : "sealed pack"));
+    el("span", { class: "pack-name" }, p.special ? "SPECIAL" : p.source === "welcome" ? "WELCOME" : p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED"),
+    el("span", { class: "pack-sub" }, p.revealed ? "opened!" : p.special ? (p.series ? `★ series ${p.series.toLowerCase()} ★` : "★ foils inside! ★") : "sealed pack"));
 }
 
 // The Packs section on your own page: today's daily packs and your sealed packs, side by side.
@@ -1452,6 +1562,7 @@ async function openPackCards(p, box, onDone = null) {
   box.textContent = "";
   box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   box.append(el("h3", { class: "center" }, `${packLabel(p)} #${p.id}`),
+    o.special ? el("p", { class: "center small" }, "★ A special pack: better odds and real foils, already on the cards! ★") : null,
     el("p", { class: "center" }, el("b", {}, o.keep >= o.options.length ? "They're all yours!" : `Pick ${o.keep} to keep!`)));
   const all = o.keep >= o.options.length;
   const picked = new Set(all ? o.options.map((_, i) => i) : []);
@@ -1495,9 +1606,10 @@ async function setupGivePacks() {
     const everyone = name.toLowerCase() === "everyone";
     if (!name) return say('Type a player\'s name, or "everyone".');
     const who = everyone ? "EVERYONE (bots too)" : name;
-    if (!(await ask(`Give ${count} sealed pack${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
+    const special = form.special.checked;
+    if (!(await ask(`Give ${count}${special ? " SPECIAL" : ""} sealed pack${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
     try {
-      const r = await api("/api/admin", { method: "POST", body: { action: "give_packs", everyone, name, count, series_id: form.series.value || null, note: form.note.value } });
+      const r = await api("/api/admin", { method: "POST", body: { action: "give_packs", everyone, name, count, special, series_id: form.series.value || null, note: form.note.value } });
       say(`Gave out ${r.made} pack${r.made === 1 ? "" : "s"}!`);
       form.note.value = "";
       loadShelf(true);
@@ -1551,7 +1663,7 @@ function fuseBox(b) {
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
 const GOT_HOW = {
   welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
-  guestbook: "as a guestbook gift", free_pack: "in their free pack", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to the cLuB",
+  guestbook: "as a guestbook gift", free_pack: "in their free pack", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to ~*~ tHe cLuB ~*~",
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
@@ -1589,41 +1701,37 @@ function credit(d) {
 // Webmaster entries on the ledger, said plainly (no names)
 const ADMIN_SAYS = {
   give_packs: "handed out sealed packs!",
+  series_create: "started planning something new...",
+  series_status: "changed which series are in packs",
   remove_design: "a button was removed by request",
   restore_design: "a removed button came back",
   block_uploader: "someone's button finding was paused",
   unblock_uploader: "someone's button finding was switched back on",
 };
 
-async function showAbout() {
-  const L = await api("/api/ledger?limit=100");
-  $("ledger-ok").textContent = L.ok ? "ALL GOOD! The chain is unbroken." : `BROKEN at entry #${L.broken_at}!`;
-  $("ledger-ok").className = L.ok ? "ok" : "bad";
-  $("ledger-count").textContent = L.entries;
-  $("ledger-head").textContent = L.head || "(none yet)";
-  api("/api/pubkey").then((k) => { $("pubkey").textContent = k.key || "(not set up yet)"; }).catch(() => {});
-  const SHOW = 15; // the rest go in the "Show more" dropdown
-  const list = $("ledger-recent"), older = $("ledger-older");
-  list.textContent = ""; older.textContent = "";
-  $("ledger-more").hidden = L.recent.length <= SHOW;
-  if (!L.recent.length) list.append(el("li", {}, "Nothing yet!"));
-  for (const [n, h] of L.recent.entries()) {
+// One ledger entry. Button names link to the copy's page (or the button's info on the Wall);
+// mystery buttons come from the server as "a mystery button" with nothing to link.
+const ledName = (h, name) => h.mystery ? el("span", { class: "mystery-name" }, "a mystery button ?")
+  : h.copy_id && h.kind !== "design" ? el("a", { href: "#banner/" + h.copy_id }, name)
+  : h.kind === "design" && h.design_id && me ? el("a", { href: "#wall/" + h.design_id }, name) : name;
+function ledgerItem(h) {
     // line 1 (small): when + fingerprint · line 2: what happened
     const meta = el("div", { class: "led-meta" }, fmtStamp(h.created_at), " · ",
       el("span", { class: "hash", title: h.hash }, h.hash.slice(0, 12) + "…"));
     let what;
     if (h.kind === "design") {
-      what = el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), `${h.design || "?"} (${h.rarity}`
+      what = h.mystery ? el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, ""), " joined ~*~ tHe cLuB ~*~")
+        : el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, h.design || "?"), ` (${h.rarity}`
         + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
         + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`);
     } else if (h.kind === "fusion") {
       const name = h.fused_status === "removed" ? "a removed button" : h.fused_design || "a button";
       const fin = finishName({ foil: h.fused_foil, pattern: h.fused_pattern, effect: h.fused_effect });
-      what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), `3 copies of ${name} became #${h.fused_edition ?? "?"}, now ${fin}!`);
+      what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), "3 copies of ", ledName(h, name), h.mystery ? " were fused!" : ` became #${h.fused_edition ?? "?"}, now ${fin}!`);
     } else if (h.kind === "foil") {
       const fin = finishName(h);
       const f = h.foil === "clear" && !h.effect ? "no foil" : !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
-      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came with ${f}`);
+      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, ` came with ${h.mystery ? "a finish" : f}`);
     } else if (h.kind === "request") {
       what = el("div", { class: "led-what" }, el("b", {}, "REQUEST "), "someone posted a wish on the request board");
     } else if (h.kind === "pack") {
@@ -1636,15 +1744,46 @@ async function showAbout() {
       what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {
       what = el("div", { class: "led-what" },
-        `${h.design || "a button"} #${h.edition ?? "?"}, ${HOW[h.reason] || h.reason}`,
+        ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, `, ${HOW[h.reason] || h.reason}`,
         h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
         ` → ${h.to_name || "a former player"}`);
     }
-    (n < SHOW ? list : older).append(el("li", { value: h.id }, meta, what));
-  }
-
-
+  return el("li", { value: h.id }, meta, what);
 }
+
+let ledgerLast = null, ledgerOldest = null;
+async function showAbout() {
+  const L = await api("/api/ledger?limit=15");
+  $("ledger-ok").textContent = L.ok ? "ALL GOOD! The chain is unbroken." : `BROKEN at entry #${L.broken_at}!`;
+  $("ledger-ok").className = L.ok ? "ok" : "bad";
+  $("ledger-count").textContent = L.entries;
+  $("ledger-head").textContent = L.head || "(none yet)";
+  api("/api/pubkey").then((k) => { $("pubkey").textContent = k.key || "(not set up yet)"; }).catch(() => {});
+  const list = $("ledger-recent");
+  list.textContent = ""; $("ledger-older").textContent = "";
+  if (!L.recent.length) list.append(el("li", {}, "Nothing yet!"));
+  for (const h of L.recent) list.append(ledgerItem(h));
+  ledgerOldest = L.oldest_id;
+  ledgerLast = L.recent.length ? L.recent[L.recent.length - 1].id : null;
+  ledgerButtons();
+}
+// "Show older entries": 100 more each time, all the way back to entry #1
+function ledgerButtons() {
+  const done = !ledgerLast || ledgerLast <= ledgerOldest;
+  $("ledger-older-btn").hidden = done;
+  $("ledger-start").hidden = !done || !ledgerLast;
+}
+$("ledger-older-btn").onclick = async () => {
+  const btn = $("ledger-older-btn");
+  btn.disabled = true;
+  try {
+    const L = await api(`/api/ledger?limit=100&before=${ledgerLast}`);
+    for (const h of L.recent) $("ledger-older").append(ledgerItem(h));
+    if (L.recent.length) ledgerLast = L.recent[L.recent.length - 1].id; else ledgerLast = ledgerOldest;
+    ledgerButtons();
+  } catch (e) { say(e.message); }
+  btn.disabled = false;
+};
 
 // ---------- save codes ----------
 
@@ -1719,15 +1858,16 @@ async function renderFreePack() {
     return;
   }
   if (st.state === "none") {
+    const fpOops = el("p", { class: "center sig-oops", role: "alert" });
     const tile = el("a", { href: "#", class: "pack-tile free glow" },
       el("span", { class: "pack-top" }, "88x31 cLuB"), el("span", { class: "pack-name" }, "FREE PACK"), el("span", { class: "pack-sub" }, "open me!"));
     tile.onclick = async (e) => {
       e.preventDefault();
       try { await api("/api/freepack", { method: "POST", body: { action: "open" } }); renderFreePack(); }
-      catch (err) { say(err.message); }
+      catch (err) { fpOops.textContent = err.message; }
     };
     box.append(el("p", { class: "small" }, "Collect tiny 88x31 buttons from the old web! Your first one's on us."),
-      el("p", { class: "center" }, tile));
+      el("p", { class: "center" }, tile), fpOops);
     return;
   }
   // waiting: the card, and the signature line
@@ -1736,18 +1876,25 @@ async function renderFreePack() {
   check.hidden = true;
   name.oninput = () => { check.hidden = !name.value.trim(); };
   const human = el("div", { class: "fp-human" });
-  const form = el("form", { class: "sig-form" }, el("label", { class: "sig-line" }, "Your name: ", name, check), human);
+  // what went wrong shows right under the signature line, where you're looking
+  const oops = el("p", { class: "center sig-oops", role: "alert", "aria-live": "polite" });
+  const form = el("form", { class: "sig-form" }, el("label", { class: "sig-line" }, "Your name: ", name, check), oops, human);
+  name.addEventListener("input", () => { oops.textContent = ""; });
   form.onsubmit = async (e) => {
     e.preventDefault();
-    if (!name.value.trim()) return;
-    say("");
+    if (!name.value.trim() || check.disabled) return;
+    oops.textContent = "";
+    check.disabled = true;           // greyed out while it signs, so it can't be pressed twice
+    check.textContent = "…";
     try {
       const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: name.value, turnstile: fpToken } });
       me = r.user;
       afterCode = "u/" + encodeURIComponent(r.user.name); // land on your new page once the code is saved
       showCode(r.code);
     } catch (err) {
-      say(err.message);
+      oops.textContent = err.message;
+      check.disabled = false;
+      check.textContent = "✓";
       if (window.turnstile) { try { window.turnstile.reset(); } catch {} fpToken = null; }
     }
   };

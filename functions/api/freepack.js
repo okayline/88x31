@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (await currentUser(env, request)) return json({ error: "You're already in the cLuB!" }, 400);
+  if (await currentUser(env, request)) return json({ error: "You're already in ~*~ tHe cLuB ~*~!" }, 400);
   const body = await readJson(request);
   if (body.action === "open") {
     const r = await openFreePack(env, request);

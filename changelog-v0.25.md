@@ -1,8 +1,21 @@
-# 88x31 cLuB Changelog — v0.24
+# 88x31 cLuB Changelog — v0.25
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.25 — "Hack the Planet"
+**Tue Oct 13, 2026 · 4:45 AM HST**
+
+- **Series Beta is here!** 26 new buttons straight out of a 90s computer lab, including a set of fractal rares (only 25 of each, ever) and two one-of-a-kind ultras, each with a foil all its own.
+- **Special packs!** Better odds, real foils already on the cards, and at least one foil in every pack. Keep your favorite 2.
+- The Wall of Buttons shuffles every visit, with the mystery buttons at the end. Show just the cLuB's own buttons or just the ones found on the web, and sort by rarity if you like. The Wall remembers your pick.
+- The Ledger on the About page got a fresh 90s write-up, and you can dig all the way back to entry #1.
+- Button names in the Ledger link straight to that copy.
+- No spoilers! Buttons you haven't found yet stay a mystery in the Ledger too.
+- Signing your free pack tells you right away if a name is taken, right under the line.
+- The menu says Home now when you're not logged in.
+- Behind-the-scenes webmaster tools.
 
 ## v0.24 — "First One's On Us"
 **Tue Oct 13, 2026 · 3:45 AM HST**

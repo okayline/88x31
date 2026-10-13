@@ -48,6 +48,9 @@ export async function onRequestPost({ request, env }) {
 
   const name = clean(String(file.name || "").replace(/\.gif$/i, ""), 40) || "untitled";
   const batch = !!me.is_admin && form.get("batch") === "1";
+  // webmasters can add the cLuB's own art straight into a series (series=<id>)
+  const intoSeries = me.is_admin && form.get("series") ? Number(form.get("series")) : null;
+  if (intoSeries && !(await env.DB.prepare("SELECT 1 FROM series WHERE id = ?").bind(intoSeries).first())) return json({ error: "No such series." }, 400);
 
   const today = (await env.DB.prepare(
     "SELECT COUNT(*) AS n FROM designs WHERE found_by = ? AND created_at > ?"
@@ -57,9 +60,24 @@ export async function onRequestPost({ request, env }) {
 
   const hash = await sha256Bytes(bytes);
   const dupe = await env.DB.prepare("SELECT id, name, status FROM designs WHERE image_hash = ?").bind(hash).first();
-  if (dupe) return json({ error: dupe.status === "removed" ? "That button was removed by request." : `That one's already in the cLuB: ${dupe.name}!`, design_id: dupe.status === "removed" ? null : dupe.id }, 409);
+  if (dupe) return json({ error: dupe.status === "removed" ? "That button was removed by request." : `That one's already in ~*~ tHe cLuB ~*~: ${dupe.name}!`, design_id: dupe.status === "removed" ? null : dupe.id }, 409);
 
   const t = now();
+  if (intoSeries) {
+    const r = await env.DB.prepare(
+      `INSERT INTO designs (name, image_key, image_hash, creator_id, type, rarity, stats, status, created_at,
+                            source_title, source_author, source_url, license, tier, series_id)
+       VALUES (?, 'pending', ?, ?, ?, ?, '{}', 'active', ?, ?, '88x31', NULL, 'Original', 'original', ?)`
+    ).bind(name, hash, me.id, form.get("kind") || "neon", ["common", "uncommon", "rare", "ultra"].includes(form.get("rarity")) ? form.get("rarity") : "common", t, name, intoSeries).run();
+    const did = r.meta.last_row_id;
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO design_images (design_id, data) VALUES (?, ?)").bind(did, bytes),
+      env.DB.prepare("UPDATE designs SET image_key = ? WHERE id = ?").bind(`api/img?d=${did}`, did),
+      env.DB.prepare("UPDATE designs SET max_editions = CASE rarity WHEN 'ultra' THEN 1 WHEN 'rare' THEN 25 ELSE NULL END WHERE id = ?").bind(did),
+    ]);
+    await sealSafe(env);
+    return json({ ok: true, design_id: did, original: true });
+  }
   const ins = await env.DB.prepare(
     `INSERT INTO designs (name, image_key, image_hash, creator_id, type, rarity, stats, status, created_at,
                           source_title, source_author, source_url, license, tier, found_by)

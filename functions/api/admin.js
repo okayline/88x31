@@ -93,9 +93,10 @@ export async function onRequestPost({ request, env }) {
     }
     let series = body.series_id ? Number(body.series_id) : null;
     if (series && !(await db.prepare("SELECT 1 FROM series WHERE id = ?").bind(series).first())) return json({ error: "No such series." }, 400);
-    const made = await givePacks(env, ids, count, { series, source: "webmaster", note });
+    const special = !!body.special;
+    const made = await givePacks(env, ids, count, { series, source: "webmaster", note, special });
     await db.prepare("INSERT INTO admin_actions (admin_id, action, user_id, note, created_at) VALUES (?, 'give_packs', ?, ?, ?)")
-      .bind(me.id, who, `${made} pack${made === 1 ? "" : "s"}${body.everyone ? " to everyone" : ""}${note ? ": " + note : ""}`, t).run();
+      .bind(me.id, who, `${made}${special ? " special" : ""} pack${made === 1 ? "" : "s"}${body.everyone ? " to everyone" : ""}${note ? ": " + note : ""}`, t).run();
     await sealSafe(env);
     return json({ ok: true, made });
   }

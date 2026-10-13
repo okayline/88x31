@@ -9,14 +9,14 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.24">
+<link rel="stylesheet" href="style.css?v=0.25">
 </head>
 <body>
 <main>
   <nav class="top-bar" id="top-nav">
     <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link my-page-name">My Page</a> ] -
     [ <a href="#trades" class="trades-link">Trades</a> ] -</span>
-    <span class="only-out">[ <a href="#">Join the cLuB!</a> ] -</span>
+    <span class="only-out">[ <a href="#">Home</a> ] -</span>
     <span class="only-in">[ <a href="#wall">Buttons</a> ] -</span>
     [ <a href="#about">About</a> ]
     <span class="only-in">- [ <a href="#" id="logout" class="logout-link">Log Out</a> ]</span>
@@ -65,6 +65,7 @@
           <datalist id="givepack-names"></datalist>
           <label>how many <input name="count" type="number" min="1" max="10" value="1"></label>
           <select name="series"><option value="">mixed</option></select>
+          <label title="better odds, at least one real foil"><input name="special" type="checkbox"> special</label>
           <input name="note" placeholder="note (optional)" maxlength="200" autocomplete="off">
           <button>Give!</button>
         </form>
@@ -113,7 +114,7 @@
   <section id="about" hidden>
     <div class="panel">
       <h2 class="center">~*~ About the 88x31 cLuB ~*~</h2>
-      <p>Welcome, web surfer!! You've found the 88x31 cLuB, a place for collecting, gifting and trading those IcONiC tiny cute 88&times;31 buttons from the cLASSic web in 1337 MoDerN way.</p>
+      <p>Welcome, web surfer!! You've found ~*~ 88x31 cLuB ~*~, a place for collecting, gifting and trading those IcONiC tiny cute 88&times;31 buttons from the cLASSic web in 1337 MoDerN way.</p>
       <p>Here's the deal: Open your packs every day, Keep your faves, Pass the extras on to your buddies, and Trade with friends to finish your collections. Keep an eye out for shiny ones.  There's lots of ways to get packs, most of them involve sharing and trading with friends!</p>
       <p><a href="#">&laquo; Back to the homepage</a></p>
     </div>
@@ -127,39 +128,36 @@
 
     <div class="panel">
       <h2>&raquo; Found a Button? &laquo;</h2>
-      <p>The web is full of old 88x31s, so bring 'em in! Drop one on the <a href="#wall">Wall of Buttons</a> and it joins the cLuB. Find one first and it's got your name on it forever.</p>
+      <p>The web is full of old 88x31s, so bring 'em in! Drop one on the <a href="#wall">Wall of Buttons</a> and it joins ~*~ tHe cLuB ~*~. Find one first and it's got your name on it forever.</p>
     </div>
 
     <div class="panel">
       <h2>&raquo; The Ledger &laquo;</h2>
-      <p>Every button copy has its own number (like <i>Neon Nite #12 of 50</i>), and every time one changes hands, the cLuB writes it down: who it came from, who it went to, when, and why (a daily pull, a gift, a guestbook stamp, a trade...).</p>
-      <p>New button designs go in too, the second they're added: a fingerprint of the artwork, its rarity, how many copies can EVER exist, and where the art came from. So nobody can sneakily swap a button's picture, mess with its credits, or print extra copies later. No funny business!!</p>
-      <p>All the entries are chained together, kinda like a blockchain but without the crypto. Each entry gets a <b>fingerprint</b> (a hash) made from that entry <i>plus the fingerprint of the entry before it</i>. So every fingerprint depends on the whole history behind it. Pretty kewl, huh?</p>
-      <p>That means nobody can quietly rewrite the past. Not even the webmaster! Change one old entry and its fingerprint stops matching, and so does every fingerprint after it. The site checks new entries as they come in, and double-checks the whole chain from the very first entry every day.</p>
-      <p>Wanna be extra sure? Write down the latest fingerprint below and check back later. If the history is honest, the chain will still lead right to it.</p>
-      <p><b>Good 2 know:</b></p>
+      <p>Every button in ~*~ 88x31 cLuB ~*~ has its own number, like a trading card. And EVERYTHING that happens to it gets written down in the Ledger: when it was found, every trade, every gift, every guestbook stamp. It's like a diary for your buttons!!</p>
+      <p>The cool part? Each new page of the diary is locked to the page before it with a secret fingerprint. Change even one tiny thing in the past and every fingerprint after it breaks. So nobody can sneak in and rewrite history... not even the webmaster!! ;)</p>
+      <p><b>What it means 4 you:</b></p>
       <ul>
-        <li>The ledger tracks who owns which copy. Anyone can save a picture of a button, but only the ledger says whose copy is the real #12.</li>
-        <li>Buttons are just for fun. They can't be bought or sold for real money. Ever.</li>
-        <li>If someone deletes their account, their name disappears from the ledger (it says "a former player"), and the chain still checks out A-OK.</li>
+        <li>Your buttons are really yours. Anybody can save a picture, but only the Ledger knows whose copy is the real #12.</li>
+        <li>Shiny ones can't be faked. If the Ledger says it came out Holo, it came out Holo.</li>
+        <li>You can see where any button has been. Click one and check out its travel log!</li>
+        <li>Buttons are just for fun. They can never be bought or sold for real money. Ever.</li>
       </ul>
     </div>
 
     <div class="panel">
       <h2>&raquo; Ledger Status &laquo;</h2>
-      <p class="small">Live from the cLuB's servers!!</p>
+      <p class="small">Live from ~*~ tHe cLuB ~*~'s servers!!</p>
       <p>Chain check: <b id="ledger-ok">checking...</b></p>
       <p>Entries recorded: <b id="ledger-count">...</b></p>
       <p>Latest fingerprint:<br><span class="hash" id="ledger-head">...</span></p>
       <h2>Latest entries</h2>
       <ol id="ledger-recent" class="log ledger-list"></ol>
-      <details class="ledger-more" id="ledger-more" hidden>
-        <summary>Show more of the ledger</summary>
-        <ol id="ledger-older" class="log ledger-list"></ol>
-      </details>
+      <ol id="ledger-older" class="log ledger-list"></ol>
+      <p class="center"><button type="button" id="ledger-older-btn" hidden>Show older entries</button></p>
+      <p class="center small" id="ledger-start" hidden>★ That's the very beginning! ★</p>
       <p class="small">Raw data: <a href="/api/ledger">/api/ledger</a></p>
       <p class="small">cLuB public key (Ed25519): <span class="hash" id="pubkey">...</span><br>
-        The cLuB signs button certificates with its secret key; this public half lets anyone check them. <a href="#check">Check a button</a></p>
+        ~*~ tHe cLuB ~*~ signs button certificates with its secret key; this public half lets anyone check them. <a href="#check">Check a button</a></p>
     </div>
 
 
@@ -169,9 +167,10 @@
   <section id="wall" hidden>
     <div class="panel">
       <h2 class="center">~*~ Wall of Buttons ~*~</h2>
-      <p class="center small wall-intro">Every button in the cLuB. Click one for its info, credits and who owns it!</p>
+      <p class="center small wall-intro">Every button in ~*~ tHe cLuB ~*~. Click one for its info, credits and who owns it!</p>
       <div class="wall-cols">
         <div>
+          <p class="center small wall-controls" id="wall-controls"></p>
           <div id="wall-grid" class="wall-grid"></div>
           <p class="center small" id="wall-count"></p>
         </div>
@@ -184,17 +183,34 @@
       <!-- add a button found in the wild (members only) -->
       <form class="add-button only-in" id="add-form" hidden>
         <h3 class="center">» Found a Button? «</h3>
-        <p class="small center">Got an old 88x31 GIF? Drop it in and it joins the cLuB. Find one first and it's got your name on it forever.</p>
+        <p class="small center">Got an old 88x31 GIF? Drop it in and it joins ~*~ tHe cLuB ~*~. Find one first and it's got your name on it forever.</p>
         <label class="drop" id="add-drop">
           <input type="file" id="add-file" accept="image/gif">
           <span id="add-pick">Click to pick a GIF, or drop one here</span>
         </label>
+        <p class="center small add-batch" id="add-as-row" hidden>
+          ☠ Add as: <select id="add-as"><option value="">a found button</option></select>
+          <span id="add-orig-opts" hidden>
+            <select id="add-rarity" aria-label="Rarity"><option>common</option><option>uncommon</option><option>rare</option><option>ultra</option></select>
+            <select id="add-kind" aria-label="Kind"><option>neon</option><option>construction</option><option>counter</option><option>guestbook</option><option>webring</option></select>
+          </span>
+        </p>
         <p class="center small add-batch" id="add-batch-row" hidden>
           <label><input type="checkbox" id="add-batch" checked> Batch mode: "Found on the internets", no copy #1, straight into packs</label>
         </p>
         <p class="center add-status" id="add-status" aria-live="polite"></p>
         <ul class="small add-skipped" id="add-skipped" hidden></ul>
       </form>
+      <!-- webmasters: the series of cLuB originals (what's coming, what's in packs, what's retired) -->
+      <div class="series-panel" id="series-panel" hidden>
+        <h3 class="center">☠ Series</h3>
+        <p class="small center" id="series-note"></p>
+        <p class="center add-status" id="series-msg" aria-live="polite"></p>
+        <table class="series-table"><tbody id="series-rows"></tbody></table>
+        <div id="series-detail"></div>
+        <form id="series-new" class="center small">New series: <input name="name" maxlength="30" placeholder="Gamma" autocomplete="off"> <button>Make it (upcoming)</button></form>
+        <div id="series-loose" class="small"></div>
+      </div>
     </div>
   </section>
 
@@ -230,7 +246,7 @@
         <h2 class="center own-title">~*~ Welcome 2 <span class="page-name-2"></span>'s Page ~*~</h2>
         <p class="center small bot-note" id="page-seen" hidden></p>
         <p class="center small wanted-line" id="page-wanted" hidden></p>
-        <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of the cLuB's friendly bots. Bots play once a day and can never win ultras.</p>
+        <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of ~*~ tHe cLuB ~*~'s friendly bots. Bots play once a day and can never win ultras.</p>
         <h2>&raquo; My Button Collection &laquo;</h2>
         <div id="page-collection" class="grid"></div>
         <p class="arrange-bar" id="arrange-bar" hidden>
@@ -275,7 +291,7 @@
       </div>
       <div class="panel" id="guestbook-panel">
         <h2>&raquo; Guestbook &laquo;</h2>
-        <p class="center join-note" id="join-note" hidden><a href="#"><b>Join the cLuB</b></a> to sign this guestbook! It's FREE!!</p>
+        <p class="center join-note" id="join-note" hidden><a href="#"><b>Join ~*~ tHe cLuB ~*~</b></a> to sign this guestbook! It's FREE!!</p>
         <form id="sign-form" hidden>
           <label>Leave a message:<br><textarea name="message" maxlength="280" rows="3" required></textarea></label>
           <div id="gift-chosen" class="gift-chosen" hidden></div>
@@ -307,7 +323,7 @@
       </div>
       <div class="panel">
         <h2>&raquo; Request Board &laquo;</h2>
-        <p class="small">Wish for a common or uncommon. Fill someone's wish and the cLuB sends you a sealed pack as thanks (one a day)!</p>
+        <p class="small">Wish for a common or uncommon. Fill someone's wish and ~*~ tHe cLuB ~*~ sends you a sealed pack as thanks (one a day)!</p>
         <details class="board-post"><summary>Post a request</summary><div id="rq-post"></div></details>
         <div id="rq-list"></div>
       </div>
@@ -370,7 +386,7 @@
 
   <p class="center small">
     <span class="only-in">[ <a href="#" class="my-page-link my-page-name">My Page</a> ] &nbsp; [ <a href="#trades" class="trades-link">Trades</a> ] &nbsp; [ <a href="#wall">Buttons</a> ] &nbsp;</span>
-    <span class="only-out">[ <a href="#">Join</a> ] &nbsp;</span>
+    <span class="only-out">[ <a href="#">Home</a> ] &nbsp;</span>
     [ <a href="#about">About</a> ]
     <span class="only-in">&nbsp; [ <a href="#" class="logout-link">Log Out</a> ]</span>
   </p>
@@ -385,14 +401,14 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.24</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.25</span>
   </p>
 
 </main>
 <!-- in-game dialog window -->
 <div id="dialog" class="dialog-backdrop" hidden>
   <div class="dialog-window" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
-    <div class="dialog-title" id="dialog-title">88x31 cLuB says...</div>
+    <div class="dialog-title" id="dialog-title">~*~ 88x31 cLuB ~*~ says...</div>
     <div class="dialog-body">
       <div id="dialog-pic" class="dialog-pic"></div>
       <p id="dialog-text"></p>
@@ -401,6 +417,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.24"></script>
+<script src="app.js?v=0.25"></script>
 </body>
 </html>

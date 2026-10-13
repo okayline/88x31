@@ -482,6 +482,30 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   box-shadow: inset 1px 1px 0 rgba(255, 236, 140, 0.95), inset -1px -1px 0 rgba(150, 90, 0, 0.95);
   animation: foil-sweep 3.6s linear infinite; animation-delay: var(--foil-delay);
 }
+/* --- signature foils: each belongs to one ultra and nothing else --- */
+/* Phosphor Glow: green CRT phosphor that breathes, with a soft halo round the edge */
+.foil-phosphor { border-radius: 2px; box-shadow: 0 0 4px rgba(80, 255, 120, 0.7); animation: phosphor-halo 3.2s ease-in-out infinite; animation-delay: var(--foil-delay); }
+.foil-phosphor::after {
+  background: radial-gradient(ellipse at 50% 50%, rgba(140, 255, 160, 0.6) 0%, rgba(40, 220, 100, 0.3) 60%, rgba(0, 120, 40, 0.15) 100%);
+  mix-blend-mode: screen;
+  box-shadow: inset 0 0 0 1px rgba(110, 255, 150, 0.9);
+  animation: phosphor-breathe 3.2s ease-in-out infinite; animation-delay: var(--foil-delay);
+}
+@keyframes phosphor-breathe { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes phosphor-halo { 0%, 100% { box-shadow: 0 0 3px 1px rgba(80, 255, 120, 0.6); } 50% { box-shadow: 0 0 10px 3px rgba(80, 255, 120, 1); } }
+/* Scanline Shimmer: fine scanlines with a bright line rolling down, like a picture loading from disk */
+.foil-scanline::before {
+  display: block;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, rgba(0, 0, 0, 0) 1px 2px);
+}
+.foil-scanline::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(160, 255, 255, 0) 40%, rgba(220, 255, 255, 0.95) 50%,
+    rgba(160, 255, 255, 0) 60%, rgba(255, 255, 255, 0) 100%);
+  background-size: 100% 300%; mix-blend-mode: screen;
+  box-shadow: inset 1px 1px 0 rgba(200, 255, 255, 0.9), inset -1px -1px 0 rgba(0, 120, 140, 0.9);
+  animation: scan-roll 2.6s linear infinite; animation-delay: var(--foil-delay);
+}
+@keyframes scan-roll { from { background-position: 0 100%; } to { background-position: 0 0%; } }
 /* Oil Slick: a dark, swirly iridescent sheen */
 .foil-oil-slick::after {
   background:
@@ -592,7 +616,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 
 /* Respect "reduce motion": every foil holds still, effects stop moving */
 @media (prefers-reduced-motion: reduce) {
-  .foil-wrap::after, .foil-wrap::before, .fx, .fx::after, .fx > .foil-wrap, .fx-track { animation: none !important; }
+  .foil-wrap, .foil-wrap::after, .foil-wrap::before, .fx, .fx::after, .fx > .foil-wrap, .fx-track { animation: none !important; }
   .fx-dialup > .foil-wrap { clip-path: none; }
 }
 
@@ -717,3 +741,36 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .sig-input { width: 9em; max-width: 55vw; }
 .pack-tile.welcome { background: linear-gradient(160deg, #ff99cc 0%, #ff3399 50%, #9933ff 100%); background-size: 200% 200%; }
 .fp-note { margin-top: 2px; }
+
+/* Wall of Buttons: show / order choices */
+.wall-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; }
+.wall-controls button { font-size: 11px; padding: 1px 6px; margin: 0 2px; }
+.wall-controls button.on { background: #ffff00; color: #000080; font-weight: bold; }
+
+/* signing the free pack: what went wrong, right under the line */
+.sig-oops { color: #ff6666; font-weight: bold; min-height: 1em; margin: 4px 0; }
+.sig-oops:empty { display: none; }
+.sig-check:disabled { opacity: .45; cursor: wait; filter: grayscale(1); }
+
+/* special packs: a shimmering silver-and-rainbow wrapper */
+.pack-tile.special {
+  background: linear-gradient(135deg, #c0c0c0 0%, #ffffff 18%, #ff66cc 34%, #66ccff 50%, #ffff66 66%, #ffffff 82%, #a0a0a0 100%);
+  background-size: 300% 300%;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 12px 2px rgba(255, 200, 255, 0.6);
+}
+.pack-tile.special .pack-name { color: #000080; text-shadow: 0 0 3px #ffffff; }
+.pack-tile.special .pack-top, .pack-tile.special .pack-sub { color: #330066; text-shadow: 0 0 2px #ffffff; }
+.card-finish { color: #ff99ff; font-weight: bold; }
+
+/* webmaster series panel */
+.series-panel { margin-top: 14px; border: 2px dashed #808080; padding: 8px; }
+.series-table { margin: 0 auto; border-collapse: collapse; font-size: 12px; }
+.series-table td { padding: 3px 8px; border-bottom: 1px dotted #808080; }
+.series-status { padding: 0 4px; font-weight: bold; }
+.st-active { background: #00cc00; color: #fff; }
+.st-upcoming { background: #ffcc00; color: #000; }
+.st-retired { background: #808080; color: #fff; }
+.loose-item { display: inline-block; margin: 2px 10px 2px 0; }
+#series-new { margin-top: 8px; }
+#add-as-row select, #series-new input, .loose-item select { width: auto; display: inline-block; }
+#series-new input { width: 140px; }
