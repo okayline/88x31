@@ -101,9 +101,11 @@ const foilName = (id) => (FOILS[id] && FOILS[id].name) || id;
 const tierOf = (id) => (FOILS[id] && FOILS[id].tier) || 0;
 const drawn = (id) => FOILS[id] && DRAWN.has(FOILS[id].effect) ? FOILS[id].effect : null;
 // "VHS Fracture Holo", "Glitter", "Clear", or null for a First Print
+// A plain foil is called "None"; next to an effect it's just left out ("VHS", not "VHS None").
 function finishName(b) {
   if (!b.foil) return null;
-  return [b.effect && foilName(b.effect), b.pattern && foilName(b.pattern), foilName(b.foil)].filter(Boolean).join(" ");
+  const foil = b.foil === "clear" ? (b.effect ? null : "None") : foilName(b.foil);
+  return [b.effect && foilName(b.effect), b.pattern && foilName(b.pattern), foil].filter(Boolean).join(" ");
 }
 
 function bannerImg(design, scale = 1) {
@@ -111,7 +113,7 @@ function bannerImg(design, scale = 1) {
   const img = el("img", {
     src: design.image_key, alt: design.name, width: 88 * scale, height: 31 * scale,
     class: "banner rarity-" + design.rarity,
-    title: `${design.name} (${design.rarity}${fin && fin !== "Clear" ? ", " + fin : ""})`,
+    title: `${design.name} (${design.rarity}${fin && fin !== "None" ? ", " + fin : ""})`,
   });
   const foil = design.foil && drawn(design.foil), pat = design.pattern && drawn(design.pattern), fx = design.effect && drawn(design.effect);
   if (!foil && !fx) return img;
@@ -1245,7 +1247,7 @@ async function showAbout() {
       what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), `3 copies of ${name} became #${h.fused_edition ?? "?"}, now ${fin}!`);
     } else if (h.kind === "foil") {
       const fin = finishName(h);
-      const f = !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
+      const f = h.foil === "clear" && !h.effect ? "no foil" : !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
       what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came with ${f}`);
     } else if (h.kind === "admin") {
       what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");

@@ -332,7 +332,7 @@ ALTER TABLE foils ADD COLUMN kind TEXT NOT NULL DEFAULT 'foil';
 ALTER TABLE foils ADD COLUMN tier INTEGER NOT NULL DEFAULT 0;
 
 -- foils (weights out of 10000): base 91%, tier 1 8%, tier 2 0.9%, tier 3 0.1%
-UPDATE foils SET weight = 7600, tier = 0, sort = 0 WHERE id = 'clear';
+UPDATE foils SET weight = 7600, tier = 0, sort = 0, name = 'None' WHERE id = 'clear';
 UPDATE foils SET weight = 267, tier = 1, max_per_design = NULL, sort = 10 WHERE id = 'holo';
 INSERT OR IGNORE INTO foils (id, name, effect, kind, tier, weight, sort) VALUES
   ('glitter',        'Glitter',        'glitter',        'foil', 0, 750, 1),
