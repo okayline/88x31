@@ -4,6 +4,12 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.25.1 — "Clean Desk"
+**Tue Oct 13, 2026 · 4:50 AM HST**
+
+- Fixed the button info window not opening on the Wall of Buttons.
+- The Wall's Show and Order switches are smaller and tucked into the top corner, and only for members.
+
 ## v0.25 — "Hack the Planet"
 **Tue Oct 13, 2026 · 4:45 AM HST**
 

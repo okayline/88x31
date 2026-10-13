@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.25">
+<link rel="stylesheet" href="style.css?v=0.25.1">
 </head>
 <body>
 <main>
@@ -167,10 +167,10 @@
   <section id="wall" hidden>
     <div class="panel">
       <h2 class="center">~*~ Wall of Buttons ~*~</h2>
+      <div class="wall-controls" id="wall-controls" hidden></div>
       <p class="center small wall-intro">Every button in ~*~ tHe cLuB ~*~. Click one for its info, credits and who owns it!</p>
       <div class="wall-cols">
         <div>
-          <p class="center small wall-controls" id="wall-controls"></p>
           <div id="wall-grid" class="wall-grid"></div>
           <p class="center small" id="wall-count"></p>
         </div>
@@ -188,13 +188,6 @@
           <input type="file" id="add-file" accept="image/gif">
           <span id="add-pick">Click to pick a GIF, or drop one here</span>
         </label>
-        <p class="center small add-batch" id="add-as-row" hidden>
-          ☠ Add as: <select id="add-as"><option value="">a found button</option></select>
-          <span id="add-orig-opts" hidden>
-            <select id="add-rarity" aria-label="Rarity"><option>common</option><option>uncommon</option><option>rare</option><option>ultra</option></select>
-            <select id="add-kind" aria-label="Kind"><option>neon</option><option>construction</option><option>counter</option><option>guestbook</option><option>webring</option></select>
-          </span>
-        </p>
         <p class="center small add-batch" id="add-batch-row" hidden>
           <label><input type="checkbox" id="add-batch" checked> Batch mode: "Found on the internets", no copy #1, straight into packs</label>
         </p>
@@ -401,7 +394,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.25</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.25.1</span>
   </p>
 
 </main>
@@ -417,6 +410,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.25"></script>
+<script src="app.js?v=0.25.1"></script>
 </body>
 </html>

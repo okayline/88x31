@@ -476,7 +476,7 @@ let wallDesigns = [];
 const wallPref = (k, def) => { try { return localStorage.getItem("wall-" + k) || def; } catch { return def; } };
 const setWallPref = (k, v) => { try { localStorage.setItem("wall-" + k, v); } catch {} };
 function renderWallGrid() {
-  const show = wallPref("show", "all"), order = wallPref("order", "shuffle");
+  const show = me ? wallPref("show", "all") : "all", order = me ? wallPref("order", "shuffle") : "shuffle";
   const RANK = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
   let list = wallDesigns.filter((d) => show === "all" || (show === "found" ? d.tier === "archive" : d.tier !== "archive"));
   const known = list.filter((d) => !d.hidden), mystery = list.filter((d) => d.hidden);
@@ -495,14 +495,15 @@ function wallControls() {
   const box = $("wall-controls");
   if (box.childElementCount) return;
   const btn = (k, v, label) => el("button", { type: "button", "data-k": k, "data-v": v, onclick: () => { setWallPref(k, v); renderWallGrid(); } }, label);
-  box.append(el("span", {}, "Show: ", btn("show", "all", "All"), btn("show", "original", "cLuB Originals"), btn("show", "found", "Found")),
-    el("span", {}, " Order: ", btn("order", "shuffle", "Shuffle"), btn("order", "rarity", "Rarity")));
+  box.append(el("span", {}, "Show ", btn("show", "all", "All"), btn("show", "original", "cLuB Originals"), btn("show", "found", "Found")),
+    el("span", {}, "Order ", btn("order", "shuffle", "Shuffle"), btn("order", "rarity", "Rarity")));
 }
 async function showWall(openId) {
   loadSeriesPanel();
   // logged out, the Wall is pictures only: no info box, no "click one" line
   $("info-win").hidden = !me;
   document.querySelectorAll(".wall-intro").forEach((x) => (x.hidden = !me));
+  $("wall-controls").hidden = !me;   // sorting is for members; logged out it's just pictures
   if (!me) openId = null;
   if (!wallLoaded) {
     const { designs } = await api("/api/designs");
@@ -513,6 +514,9 @@ async function showWall(openId) {
   }
   if (openId) await openWallHash(openId);
 }
+
+// How many owners the info box lists: 12 in two columns, 6 on narrow screens (one column).
+const OWNERS_SHOWN = () => (window.matchMedia("(min-width: 700px)").matches ? 12 : 6);
 
 // "#wall/7" = design 7's info; "#wall/7/c/42" = copy 42 of it, shown in the same info box.
 function openWallHash(rest) {
@@ -569,11 +573,8 @@ closeInfo();
   const status = (text, bad = false) => { const e = $("add-status"); e.textContent = text || ""; e.className = "center add-status" + (bad ? " bad-text" : ""); };
   let busy = false;
   const isGif = (f) => /\.gif$/i.test(f.name) || f.type === "image/gif";
-  // webmasters can add the cLuB's own art straight into a series, with a rarity and kind
-  const intoSeries = () => (me && me.is_admin && $("add-as").value) || "";
   const upload = async (file, batch) => {
     const fd = new FormData(); fd.append("file", file); if (batch) fd.append("batch", "1");
-    if (intoSeries()) { fd.append("series", intoSeries()); fd.append("rarity", $("add-rarity").value); fd.append("kind", $("add-kind").value); }
     const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
     const r = await res.json().catch(() => ({}));
     return { ok: res.ok, status: res.status, ...r };
@@ -585,7 +586,7 @@ closeInfo();
     busy = true; $("add-drop").classList.add("busy");
     const skipped = $("add-skipped"); skipped.textContent = ""; skipped.hidden = true;
     try {
-      if (!many || files.length === 1 && !$("add-batch").checked && !intoSeries()) {
+      if (!many || files.length === 1 && !$("add-batch").checked) {
         // one button, credited to you
         const file = files[0];
         if (!isGif(file)) return status("It has to be a GIF.", true);
@@ -598,7 +599,7 @@ closeInfo();
         return;
       }
       // webmaster: many at once, one after another, with a running tally
-      const batch = !intoSeries() && $("add-batch").checked;
+      const batch = $("add-batch").checked;
       let added = 0, dupes = 0, wrong = 0, failed = 0;
       const skip = (name, why) => { skipped.hidden = false; skipped.append(el("li", {}, `${name}: ${why}`)); };
       for (const [i, file] of files.entries()) {
@@ -612,9 +613,7 @@ closeInfo();
           else { failed++; skip(file.name, r.error || "something went wrong"); }
         } catch { failed++; skip(file.name, "couldn't upload"); }
       }
-      const where = intoSeries() ? ` to ${$("add-as").selectedOptions[0].textContent}` : "";
-      status(`Done! ${added} added${where} · ${dupes} already in ~*~ tHe cLuB ~*~ · ${wrong} not 88x31` + (failed ? ` · ${failed} failed` : ""), !added);
-      if (intoSeries()) seriesPanelLoaded = false;
+      status(`Done! ${added} added · ${dupes} already in ~*~ tHe cLuB ~*~ · ${wrong} not 88x31` + (failed ? ` · ${failed} failed` : ""), !added);
       wallLoaded = false;
       if (added) showWall();
     } finally { busy = false; $("add-drop").classList.remove("busy"); $("add-file").value = ""; }
@@ -718,19 +717,9 @@ async function showSeriesDetail(x) {
 }
 
 // webmasters get multi-file drops and the batch switch
-let addAsReady = false;
 function setUploadMode() {
   const admin = !!(me && me.is_admin);
   $("add-batch-row").hidden = !admin;
-  $("add-as-row").hidden = !admin;
-  if (admin && !addAsReady) {
-    addAsReady = true;
-    const pick = $("add-as");
-    pick.onchange = () => { $("add-orig-opts").hidden = !pick.value; $("add-batch-row").hidden = !!pick.value; };
-    api("/api/series").then(({ series }) => {
-      for (const x of series) pick.append(el("option", { value: x.id }, `a cLuB original → Series ${x.name}` + (x.status !== "active" ? ` (${x.status})` : "")));
-    }).catch(() => {});
-  }
   if (admin) $("add-file").setAttribute("multiple", "multiple"); else $("add-file").removeAttribute("multiple");
   $("add-pick").textContent = admin ? "Click to pick GIFs, or drop a bunch here" : "Click to pick a GIF, or drop one here";
 }
