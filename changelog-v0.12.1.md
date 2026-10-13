@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.12
+# 88x31 cLuB Changelog — v0.12.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.12.1 — "Plug It Back In"
+**Mon Oct 12, 2026 · 6:02 PM HST**
+
+- Fix for switching on signed button downloads.
 
 ## v0.12 — "Take Me Home"
 **Mon Oct 12, 2026 · 5:50 PM HST**
