@@ -9,16 +9,16 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.27.1">
+<link rel="stylesheet" href="style.css?v=0.28">
 </head>
 <body>
 <main>
   <nav class="top-bar" id="top-nav">
-    <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link my-page-name">My Page</a> ] -
-    [ <a href="#trades" class="trades-link">Trades</a> ] -</span>
+    <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link my-page-name">My Page</a> ] -</span>
     <span class="only-out">[ <a href="#">Home</a> ] -</span>
     <span class="only-in">[ <a href="#wall">Buttons</a> ] -</span>
-    [ <a href="#about">About</a> ]
+    [ <a href="#howto">How to Play</a> ] -
+    [ <a href="#fair">Fair Play</a> ]
     <span class="only-in">- [ <a href="#" id="logout" class="logout-link">Log Out</a> ]</span>
   </nav>
 
@@ -118,37 +118,70 @@
   </section>
 
   <!-- about (open to everyone) -->
-  <section id="about" hidden>
+  <!-- How to Play (open to everyone). Numbers in <b data-n="..."> are filled in from /api/odds. -->
+  <section id="howto" hidden>
     <div class="panel">
-      <h2 class="center">~*~ About the 88x31 cLuB ~*~</h2>
-      <p>Welcome, web surfer!! You've found ~*~ 88x31 cLuB ~*~, a place for collecting, gifting and trading those IcONiC tiny cute 88&times;31 buttons from the cLASSic web in 1337 MoDerN way.</p>
-      <p>Here's the deal: Open your packs every day, Keep your faves, Pass the extras on to your buddies, and Trade with friends to finish your collections. Keep an eye out for shiny ones.  There's lots of ways to get packs, most of them involve sharing and trading with friends!</p>
-      <p><a href="#">&laquo; Back to the homepage</a></p>
+      <h2 class="center">~*~ How to Play ~*~</h2>
+      <p>Welcome, web surfer!! ~*~ 88x31 cLuB ~*~ is all about collecting, gifting and trading those tiny cute 88&times;31 buttons from the classic web. Open packs, keep your faves, share the extras, and trade with friends to finish your collection!</p>
+      <p class="small">Want the exact chances? See <a href="#fair">Fair Play</a>.</p>
     </div>
 
-    <div class="panel">
-      <h2>&raquo; Foils &laquo;</h2>
-      <p>Some buttons come in a foil. Some shimmer, some sparkle, and a lucky few do even stranger things. No two shimmer quite the same.</p>
-      <p>Got extras? Fuse three of the same button into one shinier one.</p>
-      <p>There are four tiers of foil, including fracture foils and other special effects!</p>
+    <div class="panel" id="ht-start">
+      <h2>&raquo; Joining &laquo;</h2>
+      <p>Open the <b>free pack</b> on the front page and sign your card with your name. That's it, you're in! You'll get a <b>save code</b>: it's your key back in, so write it down somewhere safe. You can also add a <b>passkey</b> to log in with your fingerprint or face.</p>
     </div>
 
-    <div class="panel">
-      <h2>&raquo; Found a Button? &laquo;</h2>
-      <p>The web is full of old 88x31s, so bring 'em in! Drop one on the <a href="#wall">Wall of Buttons</a> and it joins ~*~ tHe cLuB ~*~. Find one first and it's got your name on it forever.</p>
+    <div class="panel" id="ht-packs">
+      <h2>&raquo; Packs &laquo;</h2>
+      <p>You get <b data-n="packs.daily.per_day">2</b> <b>daily packs</b> every day. Pick 1 button to keep, and you can gift one of the others to a friend!</p>
+      <p>You can also earn <b>sealed packs</b> (keep 2 of 3) by helping people on the Request Board, finishing sets, and more. Save them for later or give them away. Look out for series packs and the numbered limited packs!</p>
     </div>
 
-    <div class="panel">
-      <h2>&raquo; The Ledger &laquo;</h2>
-      <p>Every button in ~*~ 88x31 cLuB ~*~ has its own number, like a trading card. And EVERYTHING that happens to it gets written down in the Ledger: when it was found, every trade, every gift, every guestbook stamp. It's like a diary for your buttons!!</p>
-      <p>The cool part? Each new page of the diary is locked to the page before it with a secret fingerprint. Change even one tiny thing in the past and every fingerprint after it breaks. So nobody can sneak in and rewrite history... not even the webmaster!! ;)</p>
-      <p><b>What it means 4 you:</b></p>
+    <div class="panel" id="ht-buttons">
+      <h2>&raquo; Buttons &laquo;</h2>
+      <p>Every button is numbered, like a trading card: your Lava Lamp might be <b>#12</b>, and nobody else has #12. Buttons come in <b>common</b>, <b>uncommon</b>, <b>rare</b> (limited editions) and <b>ultra</b> (one of a kind!). Some come in a shiny <b>foil</b>, and a lucky few do strange things on screen.</p>
+      <p>The cLuB's own buttons come in <b>series</b> (Alpha, Beta...), and each series only prints so many copies before it's gone for good.</p>
+    </div>
+
+    <div class="panel" id="ht-friends">
+      <h2>&raquo; Trading &amp; Gifting &laquo;</h2>
+      <p>Visit anyone's page to propose a <b>trade</b> or sign their guestbook with a <b>gift</b>. On the <b>Request Board</b> you can wish for a button you're missing, or fill someone else's wish and get a sealed pack as thanks!</p>
+    </div>
+
+    <div class="panel" id="ht-more">
+      <h2>&raquo; More Fun Stuff &laquo;</h2>
       <ul>
-        <li>Your buttons are really yours. Anybody can save a picture, but only the Ledger knows whose copy is the real #12.</li>
-        <li>Shiny ones can't be faked. If the Ledger says it came out Holo, it came out Holo.</li>
-        <li>You can see where any button has been. Click one and check out its travel log!</li>
-        <li>Buttons are just for fun. They can never be bought or sold for real money. Ever.</li>
+        <li><b>Fusion:</b> fuse 3 of the same button into 1 shinier one.</li>
+        <li><b>Sets:</b> collect a whole set to win a special reward button.</li>
+        <li><b>Found a Button?</b> Add old 88x31s from around the web on the <a href="#wall">Wall of Buttons</a> and get copy #1 with your name on it.</li>
+        <li><b>Your Page:</b> show off your collection, pick a color theme, and collect guestbook messages.</li>
+        <li><b>The Bots:</b> seven friendly 90s bots hang out here too. Say hi!</li>
       </ul>
+    </div>
+
+    <div class="panel" id="ht-faq">
+      <h2>&raquo; FAQ &laquo;</h2>
+      <p><b>I lost my save code!</b> Log in with your passkey if you made one, then make a new code. Otherwise there's no way back in, so keep it safe!</p>
+      <p><b>Can I buy buttons?</b> Nope! Buttons are just for fun, and can never be bought or sold for real money.</p>
+      <p><b>Is it fair?</b> Yep! Every chance is on <a href="#fair">Fair Play</a>, and every button's history is in the Ledger, where nobody can change it.</p>
+      <p class="center"><a href="#">&laquo; Back to the homepage</a></p>
+    </div>
+  </section>
+
+  <!-- Fair Play (open to everyone): the chances, live from /api/odds, plus the Ledger. -->
+  <section id="fair" hidden>
+    <div class="panel">
+      <h2 class="center">~*~ Fair Play ~*~</h2>
+      <p>Here are the chances behind every pack, straight from the game itself. If anything ever changes, this page changes with it!</p>
+      <p class="center small" id="fair-oops"></p>
+    </div>
+    <div class="panel" id="fp-odds"><h2>&raquo; Rarity Chances &laquo;</h2><p class="small">The chance for each card in a pack.</p><div id="fair-odds">Loading...</div></div>
+    <div class="panel" id="fp-packs"><h2>&raquo; Packs &laquo;</h2><div id="fair-packs">Loading...</div></div>
+    <div class="panel" id="fp-foils"><h2>&raquo; Foils &laquo;</h2><p class="small">The chance a new button comes out shiny.</p><div id="fair-foils">Loading...</div></div>
+    <div class="panel" id="fp-runs"><h2>&raquo; Print Runs &laquo;</h2><p class="small">Live! Once a series runs out, it's gone for good.</p><div id="fair-runs">Loading...</div></div>
+    <div class="panel" id="fp-ledger">
+      <h2>&raquo; The Ledger &laquo;</h2>
+      <p>Everything that happens to every button (every pack, trade and gift) gets written down in the Ledger. Each entry is locked to the one before it, so nobody can sneak in and change history... not even the webmaster!! ;)</p>
     </div>
 
     <div class="panel">
@@ -166,8 +199,7 @@
       <p class="center"><button type="button" id="ledger-older-btn" hidden>Show older entries</button></p>
       <p class="center small" id="ledger-start" hidden>★ That's the very beginning! ★</p>
     </div>
-
-
+    <p class="center"><a href="#">&laquo; Back to the homepage</a></p>
   </section>
 
   <!-- Wall of Buttons (open to everyone) -->
@@ -308,12 +340,6 @@
         <div id="tr-in"></div>
       </div>
       <div class="panel">
-        <h2>&raquo; Open Trades &laquo;</h2>
-        <p class="small">Trades anyone can take. Offer some of your buttons for one you want!</p>
-        <details class="board-post"><summary>Post an open trade</summary><div id="ot-post"></div></details>
-        <div id="ot-list"></div>
-      </div>
-      <div class="panel">
         <h2>&raquo; Request Board &laquo;</h2>
         <p class="small">Wish for a common or uncommon. Fill someone's wish and ~*~ tHe cLuB ~*~ sends you a sealed pack as thanks (one a day)!</p>
         <details class="board-post"><summary>Post a request</summary><div id="rq-post"></div></details>
@@ -385,7 +411,7 @@
   <p class="center small">
     <span class="only-in">[ <a href="#" class="my-page-link my-page-name">My Page</a> ] &nbsp; [ <a href="#trades" class="trades-link">Trades</a> ] &nbsp; [ <a href="#wall">Buttons</a> ] &nbsp;</span>
     <span class="only-out">[ <a href="#">Home</a> ] &nbsp;</span>
-    [ <a href="#about">About</a> ]
+    [ <a href="#howto">How to Play</a> ] &nbsp; [ <a href="#fair">Fair Play</a> ]
     <span class="only-in">&nbsp; [ <a href="#" class="logout-link">Log Out</a> ]</span>
   </p>
 
@@ -399,7 +425,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.27.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.28</span>
   </p>
 
 </main>
@@ -415,6 +441,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.27.1"></script>
+<script src="app.js?v=0.28"></script>
 </body>
 </html>

@@ -974,3 +974,20 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   .pack-tile, .pack-tile * { animation: none !important; }
   .pack-art .gleam, .pack-art .refresh, .pack-art .rain, .pack-art .spark { display: none; }
 }
+
+/* ---------- How to Play & Fair Play (v0.28) ---------- */
+.toc { columns: 2; column-gap: 24px; margin: 8px 0 4px; padding-left: 24px; }
+.toc li { margin: 2px 0; break-inside: avoid; }
+@media (max-width: 600px) { .toc { columns: 1; } }
+#howto .panel, #fair .panel { scroll-margin-top: 8px; }
+.odds-table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 13px; }
+.odds-table th, .odds-table td { border: 1px solid #4040a0; padding: 4px 6px; text-align: left; vertical-align: top; }
+.odds-table thead th { background: #000040; color: var(--ink); }
+.odds-table tbody th { white-space: nowrap; }
+.odds-table td:not(:last-child) { white-space: nowrap; }
+.fair-series h3 { margin: 10px 0 4px; color: #00ffff; }
+.fair-series p { margin: 3px 0; }
+.fair-bar { display: inline-block; width: 140px; max-width: 40vw; height: 9px; border: 1px solid #c0c0c0; background: #000040; vertical-align: middle; }
+.fair-bar > span { display: block; height: 100%; background: linear-gradient(90deg, #00ff66, #ffff00, #ff6600); }
+@media (max-width: 600px) { .odds-table { font-size: 12px; } .odds-table td:not(:last-child) { white-space: normal; } }
+#fair-odds, #fair-packs, #fair-foils { overflow-x: auto; }

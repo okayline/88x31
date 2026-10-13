@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.27.1
+# 88x31 cLuB Changelog — v0.28
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.28 — "Read Me First"
+**Tue Oct 13, 2026 · 7:03 AM HST**
+
+- **How to Play!** The About page is now a quick, friendly guide to everything in ~*~ tHe cLuB ~*~. New here? Start there!
+- **Fair Play!** A brand-new page with all the chances: rarity odds for every kind of pack, how many cards you get and keep, foil chances, and live print runs. The Ledger lives there now too.
+- The menu up top is now My Page, Buttons, How to Play and Fair Play. Trades is still in your Hi! box and at the bottom of the page.
+- Open trades are gone, so trading is simpler now: propose a trade from anyone's page, or use the Request Board. Any buttons waiting in an open trade come back to you.
+- Series Alpha packs shine now, as well as twinkle!
 
 ## v0.27.1 — "House Special"
 **Tue Oct 13, 2026 · 6:43 AM HST**

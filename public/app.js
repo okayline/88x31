@@ -6,7 +6,7 @@ const $ = (id) => document.getElementById(id);
   Element.prototype.append = function (...kids) { return orig.apply(this, kids.filter((k) => k != null && k !== false)); };
 }
 const say = (text) => ($("msg").textContent = text || "");
-const TOP = ["loading", "out", "in", "code-card", "about", "check", "wall"];
+const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall"];
 const showTop = (id) => {
   TOP.forEach((s) => ($(s).hidden = s !== id));
   $("top-nav").hidden = id === "code-card"; // one-line menu at the very top (members get more links)
@@ -209,9 +209,14 @@ async function route() {
   say("");
   setPageMode();
   const hash = decodeURIComponent(location.hash.slice(1));
-  if (hash === "about") {
-    showTop("about");
-    return showAbout().catch((e) => say(e.message));
+  // How to Play and Fair Play are open to everyone; "#howto/faq" jumps to a section ("#about" is the old name)
+  if (hash === "about") { location.replace("#howto"); return; }
+  if (/^(howto|fair)(\/|$)/.test(hash)) {
+    const [page, part] = hash.split("/");
+    showTop(page);
+    const jump = () => { const t = part && $((page === "howto" ? "ht-" : "fp-") + part); if (t) t.scrollIntoView({ block: "start" }); };
+    jump();
+    return (page === "howto" ? showHowto() : showFair()).then(jump).catch((e) => say(e.message));
   }
   if (hash === "check") { showTop("check"); return; }
   if (hash === "wall" || hash.startsWith("wall/")) {
@@ -962,7 +967,7 @@ function pickGrid(box, list, picked, label) {
   for (const b of usable) {
     const busy = b.locked && label === "to give";
     const tile = el("button", { type: "button", class: "tile pick-tile" + (picked.has(b.id) ? " picked" : "") + (busy ? " busy" : ""),
-      title: busy ? "Already in another open trade" : `${b.name} ${edition(b)}` },
+      title: busy ? "Already in another trade" : `${b.name} ${edition(b)}` },
       bannerImg(b), el("span", { class: "small" }, busy ? "in a trade" : edition(b)));
     if (busy) tile.disabled = true;
     tile.onclick = () => {
@@ -1034,7 +1039,7 @@ async function showTrades() {
   }
 }
 
-// ---------- request board + open trades ----------
+// ---------- request board ----------
 const wantLabel = (name, foil) => (foil ? `${foilName(foil) === "None" ? "plain" : foilName(foil)} ` : "") + name;
 
 async function loadWanted(owner) {
@@ -1062,7 +1067,7 @@ function foilSelect() {
 }
 
 async function renderBoard() {
-  const [{ requests, open_trades }, { designs }] = await Promise.all([api("/api/board"), api("/api/designs")]);
+  const [{ requests }, { designs }] = await Promise.all([api("/api/board"), api("/api/designs")]);
   const seen = designs.filter((d) => !d.hidden && d.status !== "removed");
   const who = (name, bot) => [el("a", { href: "#u/" + encodeURIComponent(name) }, name), bot ? el("span", { class: "bot-badge" }, " [BOT]") : null];
   const picker = (copies, label, onGo) => {
@@ -1098,38 +1103,6 @@ async function renderBoard() {
     el("button", { type: "button", onclick: () => rqSel.value ? post({ action: "request", design_id: rqSel.value, foil: rqFoil.value || null }, "Request posted!") : say("Pick a button first.") }, "Post it")),
     el("p", { class: "small" }, "Up to 3 at a time. They last a week."));
 
-  // open trades: mine first
-  const ol = $("ot-list");
-  ol.textContent = "";
-  const ots = [...open_trades].sort((a, b) => (b.from_user === me.id) - (a.from_user === me.id));
-  if (!ots.length) ol.append(el("p", { class: "small" }, "No open trades right now."));
-  for (const t of ots) {
-    const mine = t.from_user === me.id;
-    ol.append(el("div", { class: "entry" },
-      el("p", { class: "small" }, mine ? el("b", {}, "Your open trade") : who(t.user, t.is_bot), ` · until ${fmtDate(t.expires_at)}`),
-      el("p", {}, mine ? "You give " : "You get ", ...smallList(t.give)),
-      el("p", {}, mine ? "for " : "for your ", el("b", {}, wantLabel(t.name, t.want_foil))),
-      t.message ? el("p", { class: "small" }, `"${t.message}"`) : null,
-      el("p", { class: "sign-buttons" }, mine ? el("button", { type: "button", onclick: () => post({ action: "cancel_trade", id: t.id }, "Trade taken down.") }, "Take it down")
-        : picker(t.can_give, "Accept!", async (copy) => {
-          if (!(await ask(`Trade your ${t.name} for ${t.give.map((g) => g.name).join(", ")}? It happens right away.`, { ok: "Deal!" }))) return;
-          post({ action: "accept", id: t.id, copy }, "Trade done! Enjoy ur new buttons!");
-        }) || (mine ? null : el("span", { class: "small" }, "(you don't have a matching copy)")))));
-  }
-  // post an open trade
-  const op = $("ot-post");
-  op.textContent = "";
-  const give = new Set(), grid = el("div", { class: "grid" });
-  const otSel = designSelect(seen, (d) => d.rarity !== "ultra"), otFoil = foilSelect();
-  const note = el("input", { placeholder: "a little note (optional)", maxlength: "200" });
-  try { pickGrid(grid, (await api("/api/collection")).banners, give, "to give"); } catch {}
-  op.append(el("p", { class: "small" }, "Pick 1 to 3 of yours to offer:"), grid,
-    el("p", {}, "for a ", otSel, " in ", otFoil),
-    el("p", {}, note, " ", el("button", { type: "button", onclick: () => {
-      if (!give.size) return say("Pick at least one of yours to offer.");
-      if (!otSel.value) return say("Pick the button you want.");
-      post({ action: "trade", give: [...give], design_id: otSel.value, foil: otFoil.value || null, message: note.value }, "Open trade posted!");
-    } }, "Post it")));
 }
 
 // ---------- guestbook color themes ----------
@@ -1395,7 +1368,7 @@ async function showBanner(id) {
 
     el("h2", {}, "» On the Ledger «"),
     el("p", {}, "Chain check: ", el("b", { class: chain.ok ? "ok-text" : "bad-text" }, chain.ok ? "ALL GOOD" : "BROKEN"),
-      ` (${chain.entries} entries) · `, el("a", { href: "#about" }, "how this works")),
+      ` (${chain.entries} entries) · `, el("a", { href: "#fair/ledger" }, "how this works")),
     el("p", { class: "small" }, "Design recorded: ",
       de ? `${fmtStamp(de.created_at)} as ledger entry #${de.id}` : "not sealed yet"),
     de ? el("p", { class: "small" }, "Design fingerprint: ", el("span", { class: "hash" }, de.hash)) : null,
@@ -1463,7 +1436,7 @@ function packTile(p, href) {
       parts = [spanC("gleam"), top(sTop), name(special), spanC("pack-sub", sub)];
     } else if (s === "alpha") {
       theme = "alpha";
-      parts = [...packSparks(), top(), spanC("rainbow"), spanC("pack-name", "ALPHA"), spanC("pack-sub", p.revealed ? sub : "series alpha"), spanC("hazard")];
+      parts = [spanC("gleam"), ...packSparks(), top(), spanC("rainbow"), spanC("pack-name", "ALPHA"), spanC("pack-sub", p.revealed ? sub : "series alpha"), spanC("hazard")];
     } else if (s === "beta") {
       theme = "beta";
       parts = [...packRain(), spanC("scan"), spanC("refresh"), top(), spanC("win", el("img", { src: "banners/beta/beta-dos-prompt.gif", alt: "", width: "88", height: "31" })),
@@ -1840,7 +1813,7 @@ function ledgerItem(h) {
 }
 
 let ledgerLast = null, ledgerOldest = null;
-async function showAbout() {
+async function showLedger() {
   const L = await api("/api/ledger?limit=15");
   $("ledger-ok").textContent = L.ok ? "ALL GOOD! The chain is unbroken." : `BROKEN at entry #${L.broken_at}!`;
   $("ledger-ok").className = L.ok ? "ok" : "bad";
@@ -1855,6 +1828,71 @@ async function showAbout() {
   ledgerLast = L.recent.length ? L.recent[L.recent.length - 1].id : null;
   ledgerButtons();
 }
+// ---------- How to Play & Fair Play ----------
+// Every number on both pages comes from /api/odds, which reads the game's own settings.
+let oddsCache = null;
+const getOdds = async () => (oddsCache ||= await api("/api/odds"));
+const pathGet = (o, path) => path.split(".").reduce((x, k) => (x == null ? x : x[k]), o);
+// percent, without trailing zeros: 69.9%, 0.1%, 0.263%
+const pctTxt = (n) => (n == null ? "-" : `${n >= 1 ? +n.toFixed(2) : +n.toFixed(3)}%`);
+function fillNumbers(root, o) {
+  for (const b of root.querySelectorAll("[data-n]")) {
+    const v = pathGet(o, b.dataset.n);
+    if (v != null) b.textContent = (typeof v === "number" ? +v.toFixed(3) : v) + (b.dataset.suf || "");
+  }
+}
+async function showHowto() { try { fillNumbers($("howto"), await getOdds()); } catch {} }
+
+const RARITIES = ["common", "uncommon", "rare", "ultra"];
+const cell = (tag, ...kids) => el(tag, {}, ...kids);
+function table(head, rows) {
+  return el("table", { class: "odds-table" }, el("thead", {}, el("tr", {}, head.map((h) => cell("th", h)))),
+    el("tbody", {}, rows.map((r) => el("tr", {}, r.map((c, i) => el(i ? "td" : "th", i ? {} : { scope: "row" }, c))))));
+}
+async function showFair() {
+  showLedger().catch(() => {});
+  let o;
+  try { o = await getOdds(); } catch (e) { $("fair-oops").textContent = "Couldn't load the numbers right now. Try again in a minute!"; return; }
+  fillNumbers($("fair"), o);
+  const R = o.rarity, P = o.packs, F = o.foils;
+  const live = o.series.filter((s) => s.status === "active");
+  const cap = (r) => r[0].toUpperCase() + r.slice(1);
+
+  // rarity chances, per card
+  $("fair-odds").replaceChildren(
+    table(["Rarity", "Most packs", "Limited packs", "Free pack"],
+      RARITIES.map((r) => [cap(r), pctTxt(R.normal[r]), pctTxt(R.special[r]), R.free[r] == null ? "none" : pctTxt(R.free[r])])),
+    live.length > 1 ? el("p", { class: "small" }, "Newer series show up more often: ",
+      live.flatMap((s, i) => [i ? ", " : "", `Series ${s.name} ${pctTxt(s.pack_share)}`]), ".") : null);
+
+  // packs: cards and keeps
+  $("fair-packs").replaceChildren(table(["Pack", "Cards", "You keep", "Good to know"], [
+    ["Daily", "3", String(P.daily.keep), `${P.daily.per_day} a day. ${pctTxt(P.daily.found_chance)} have a found button, ${pctTxt(P.daily.bonus_chance)} have a BONUS PACK card!`],
+    ["Welcome & ~*~cLuB~*~", "3", String(P.sealed.keep), `${pctTxt(P.daily.found_chance)} have a found button`],
+    ["Series", "3", String(P.sealed.keep), "Only that series"],
+    ["Limited", "3", String(P.sealed.keep), "Only that series, 1 uncommon guaranteed, always at least 1 foil"],
+    ["Free", "1", "1", "No ultras"],
+  ]));
+
+  // foils, by tier
+  const anyFoil = (t) => 100 - (t[0] || 0);
+  const tierRow = (label, k) => [label, pctTxt(F.normal.tiers[k]), pctTxt(F.special.tiers[k])];
+  $("fair-foils").replaceChildren(
+    table(["Finish", "Most packs", "Limited packs"], [
+      tierRow("Plain, Glitter or Sheen", 0), tierRow("Tier 1 (Holo, Galaxy, Ripple)", 1),
+      tierRow("Tier 2 (Chrome, Gold, Oil Slick)", 2), tierRow("Tier 3 (Prismatic, Double Rainbow, Liquid Metal)", 3),
+      ["Any real foil", pctTxt(anyFoil(F.normal.tiers)), pctTxt(anyFoil(F.special.tiers))],
+    ]),
+    el("p", { class: "small" }, `Some real foils also get a pattern (${pctTxt(F.pattern_chance)}), and ${pctTxt(F.effect_chance)} of new buttons do something strange on screen. Finding a button first gives you a ${pctTxt(anyFoil(F.finder.tiers))} foil chance on copy #1!`));
+
+  // print runs and limited packs, live
+  const bar = (done, total) => el("span", { class: "fair-bar", title: `${done} of ${total}` }, el("span", { style: `width:${total ? Math.min(100, (done / total) * 100) : 0}%` }));
+  $("fair-runs").replaceChildren(...(o.series.length ? o.series.map((s) => el("div", { class: "fair-series" },
+    el("h3", {}, `Series ${s.name} `, s.out_of_print ? el("span", { class: "series-status st-oop" }, "out of print") : null),
+    s.print_run != null ? el("p", {}, bar(s.printed, s.print_run), ` ${s.left} of ${s.print_run} left`) : el("p", {}, "No print run limit"),
+    el("p", { class: "small" }, `${s.special_name} Packs: ${s.special_left} of ${s.special_limit} left`))) : [el("p", {}, "No series yet!")]));
+}
+
 // "Show older entries": 100 more each time, all the way back to entry #1
 function ledgerButtons() {
   const done = !ledgerLast || ledgerLast <= ledgerOldest;
