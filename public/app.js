@@ -144,6 +144,7 @@ function setPageMode() {
 window.addEventListener("hashchange", setPageMode);
 
 async function refresh() {
+  wallLoaded = false;
   const { user, trades_waiting } = await api("/api/me");
   me = user;
   if (!me) return route();
@@ -379,9 +380,11 @@ async function showWall(openId) {
     const grid = $("wall-grid");
     grid.textContent = "";
     const order = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
-    designs.sort((a, b) => (order[a.rarity] ?? 9) - (order[b.rarity] ?? 9) || a.id - b.id);
+    designs.sort((a, b) => (a.hidden ? 8 : order[a.rarity] ?? 9) - (b.hidden ? 8 : order[b.rarity] ?? 9) || a.id - b.id);
     for (const d of designs) {
-      grid.append(el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.name }, bannerImg(d)));
+      grid.append(d.hidden
+        ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: "???" }, el("span", { class: "mystery-tile" }, "?"))
+        : el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.name }, bannerImg(d)));
     }
     $("wall-count").textContent = `${designs.length} buttons and counting!`;
     wallLoaded = true;
@@ -400,13 +403,33 @@ function closeInfo() {
 closeInfo();
 $("info-close").onclick = () => { closeInfo(); history.replaceState(null, "", "#wall"); };
 
+const MYSTERY_LINES = [
+  "Some buttons stay hidden until you've owned one yourself...",
+  "Nobody knows what this one looks like. Well, somebody does.",
+  "Keep pulling packs, trading, and finishing sets. Maybe it'll find you.",
+  "Rumor has it this one is really something.",
+  "ERROR 404: button not found... yet.",
+  "Maybe someone you know has one. Check their page!",
+  "This button is still under construction. For you, anyway.",
+  "Shhh. It's a secret.",
+];
+
 async function openInfo(id) {
   const body = $("info-body");
   body.textContent = "Loading...";
   $("info-title").textContent = "Button info";
   document.querySelectorAll(".wall-tile").forEach((t) => t.classList.toggle("on", t.getAttribute("href") === "#wall/" + id));
   $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" }); // bring the info box into view
-  const { design: d, ledger, sets, copies } = await api("/api/designs?id=" + id);
+  const info = await api("/api/designs?id=" + id);
+  if (info.hidden) {
+    $("info-title").textContent = "???";
+    body.textContent = "";
+    body.append(el("p", { class: "center" }, el("span", { class: "mystery-tile big" }, "?")),
+      el("p", { class: "center" }, el("b", {}, "A mystery button!")),
+      el("p", { class: "center small" }, MYSTERY_LINES[Math.floor(Math.random() * MYSTERY_LINES.length)]));
+    return;
+  }
+  const { design: d, ledger, sets, copies } = info;
   $("info-title").textContent = d.name;
   let st = {}; try { st = JSON.parse(d.stats || "{}"); } catch {}
   const who = (c) => c.owner ? el("a", { href: "#u/" + encodeURIComponent(c.owner) }, c.owner) : "nobody";
@@ -1129,6 +1152,7 @@ const doLogout = async (e) => {
   e.preventDefault();
   await api("/api/logout", { method: "POST" }).catch(() => {});
   me = null;
+  wallLoaded = false;
   say("");
   location.hash = "";
   showTop("out");

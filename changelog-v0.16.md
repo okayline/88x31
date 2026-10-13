@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.15.1
+# 88x31 cLuB Changelog — v0.16
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.16 — "???"
+**Mon Oct 12, 2026 · 7:23 PM HST**
+
+- Some buttons on the Wall are now a mystery... until you own one yourself.
+- Know someone who has one? Their page might give you a peek.
 
 ## v0.15.1 — "Window Shopping"
 **Mon Oct 12, 2026 · 7:18 PM HST**

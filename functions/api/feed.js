@@ -59,7 +59,7 @@ export async function onRequestGet({ env }) {
     if (m.reason === "guestbook") text = `${who(m.from_name)} stamped ${label(m)} into ${who(m.to_name)}'s guestbook`;
     else if (m.reason === "pass_on") text = `${who(m.from_name)} passed ${label(m)} on to ${who(m.to_name)}`;
     else if (m.reason === "gift") text = `${who(m.from_name)} gave ${label(m)} to ${who(m.to_name)}`;
-    else text = `★ ${who(m.to_name)} found the ULTRA ${label(m)}! ★`;
+    else text = `★ ${who(m.to_name)} found a one-of-a-kind ULTRA button! ★`;
     items.push({ at: m.at, kind: m.rarity === "ultra" ? "ultra" : m.reason, text });
   }
   items.sort((a, b) => b.at - a.at);
