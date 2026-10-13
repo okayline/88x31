@@ -6,6 +6,15 @@ const $ = (id) => document.getElementById(id);
   Element.prototype.append = function (...kids) { return orig.apply(this, kids.filter((k) => k != null && k !== false)); };
 }
 const say = (text) => ($("msg").textContent = text || "");
+// iPhones only show :active styles (like a pack squishing when you press it) if a touch listener exists
+document.addEventListener("touchstart", () => {}, { passive: true });
+// letting go of a pack pops it bigger for a moment (see .pack-tile.pop)
+document.addEventListener("pointerup", (e) => {
+  const t = e.target.closest && e.target.closest(".pack-tile");
+  if (!t) return;
+  t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop");
+});
+document.addEventListener("animationend", (e) => { if (e.animationName === "pack-pop") e.target.classList.remove("pop"); });
 const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall"];
 const showTop = (id) => {
   TOP.forEach((s) => ($(s).hidden = s !== id));
@@ -65,6 +74,8 @@ async function api(path, opts = {}) {
 const fmtDate = (t) => new Date(t * 1000).toLocaleDateString();
 // date + time, for the ledger (e.g. "10/11/2026, 9:52:13 PM")
 const fmtStamp = (t) => new Date(t * 1000).toLocaleString();
+// "Oct 13, 2026, 7:20 AM" in the viewer's own time zone (guestbook entries)
+const fmtWhen = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 
 // In-game "are you sure?" window instead of the browser's popup. Resolves true/false.
 function ask(text, { ok = "OK", cancel = "Cancel", pic = null, input = null } = {}) {
@@ -295,7 +306,7 @@ async function showPull() {
   if (pull.bonus_pack) box.append(el("p", { class: "center bonus-head" }, el("b", {}, "★ BONUS PACK! ★")));
   else if (pull.pulls_per_day > 1) box.append(el("p", { class: "center" }, el("b", {}, `Pack ${pull.pull_number} of ${pull.pulls_per_day} today`)));
 
-  if (pull.status === "done") { box.textContent = ""; loadPacksPanel(true); return; } // all used up today
+  if (pull.status === "done") { box.textContent = ""; openingKey = null; loadPacksPanel(true); return; } // all used up today
   let keep = null;
   const giftBox = el("div", { class: "gift-choices" });
   const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off", list: "player-names" });
@@ -401,6 +412,7 @@ async function showPage(name) {
   $("page-name").textContent = owner;
   document.querySelectorAll(".page-name-2").forEach((x) => (x.textContent = owner));
   $("page-bot").hidden = !col.owner.is_bot;
+  playerAdminBox(owner, col.owner);
   $("page-seen").hidden = !col.owner.last_seen;
   if (col.owner.last_seen) $("page-seen").textContent = `${owner} was last online ${ago(col.owner.last_seen)}`;
 
@@ -463,7 +475,7 @@ async function showPage(name) {
     const g = it.g;
     list.append(el("div", { class: "entry" + (g.author_is_bot ? " from-bot" : "") },
       el("p", { class: "small" },
-        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtDate(g.created_at)}:`),
+        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtWhen(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect })),
@@ -1039,6 +1051,24 @@ async function showTrades() {
   }
 }
 
+// Webmaster-only box on someone else's page: delete their account (bots and webmasters are protected).
+function playerAdminBox(name, owner) {
+  const box = $("page-admin");
+  box.textContent = "";
+  box.hidden = !(me && me.is_admin) || owner.is_bot || name.toLowerCase() === me.name.toLowerCase();
+  if (box.hidden) return;
+  box.append(el("p", { class: "small" }, el("b", {}, "☠ Webmaster")), el("button", { type: "button", onclick: async () => {
+    const typed = await askText(`Delete ${name}'s account? Their buttons, packs, guestbook and wishes all go, and it can't be undone. Type their name to confirm:`, "", { ok: "Delete forever" });
+    if (typed === null) return;
+    if (typed.trim().toLowerCase() !== name.toLowerCase()) return say("The name didn't match, so nothing was deleted.");
+    try {
+      await api("/api/admin", { method: "POST", body: { action: "delete_player", name, confirm: typed } });
+      say(`${name}'s account was deleted.`);
+      location.hash = "#u/" + encodeURIComponent(me.name);
+    } catch (e) { say(e.message); }
+  } }, "Delete this player"));
+}
+
 // ---------- request board ----------
 const wantLabel = (name, foil) => (foil ? `${foilName(foil) === "None" ? "plain" : foilName(foil)} ` : "") + name;
 
@@ -1529,18 +1559,29 @@ async function loadPacksPanel(mine) {
     for (let i = 1; i <= sum.pulls_per_day; i++) {
       const done = i <= used;
       const t = dailyTile(done, `pack ${i} of ${sum.pulls_per_day}`);
-      t.onclick = (e) => { e.preventDefault(); if (!done) showPull().catch((err) => say(err.message)); };
+      t.onclick = (e) => { e.preventDefault(); if (!done && startOpening("daily", t)) showPull().catch((err) => say(err.message)); };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
     }
     for (const p of packs) {
       const t = packTile(p, "#pack/" + p.id);
-      t.onclick = (e) => { e.preventDefault(); openPackCards(p, $("pack-open"), afterOpening); };
+      t.onclick = (e) => { e.preventDefault(); if (startOpening("pack" + p.id, t)) openPackCards(p, $("pack-open"), afterOpening); };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, p.note || PACK_FROM[p.source] || "")));
     }
   } catch {}
 }
+// Which pack is open right now. Clicking it again just takes you back to its cards instead of
+// opening it all over again; the tile shows "opened!" while you pick.
+let openingKey = null;
+function startOpening(key, tile) {
+  if (openingKey === key && $("pack-open").childElementCount) { $("pack-open").scrollIntoView({ behavior: "smooth", block: "nearest" }); return false; }
+  openingKey = key;
+  tile.classList.add("revealed");
+  const sub = tile.querySelector(".pack-sub");
+  if (sub) sub.textContent = "opened!";
+  return true;
+}
 // after any pack is opened: refresh the packs and the collection under them
-function afterOpening() { loadPacksPanel(true); if (me) showPage(me.name).catch(() => {}); }
+function afterOpening() { openingKey = null; loadPacksPanel(true); if (me) showPage(me.name).catch(() => {}); }
 const loadShelf = loadPacksPanel;
 
 async function showPack(id) {
@@ -1569,7 +1610,7 @@ async function showPack(id) {
       try { await api("/api/packs", { method: "POST", body: { action: "give", id: p.id, to } }); say(`Sent to ${to}!`); location.hash = "#u/" + encodeURIComponent(me.name); }
       catch (err) { say(err.message); }
     };
-    open.onclick = () => openPackCards(p, box);
+    open.onclick = () => { open.disabled = true; openPackCards(p, box); };
     box.append(el("p", { class: "center" }, open), el("p", { class: "center small" }, give));
     return;
   }
@@ -1758,6 +1799,7 @@ function credit(d) {
 
 // Webmaster entries on the ledger, said plainly (no names)
 const ADMIN_SAYS = {
+  delete_player: "a player's account was deleted",
   give_packs: "handed out sealed packs!",
   series_create: "started planning something new...",
   series_status: "changed which series are in packs",
@@ -1870,7 +1912,7 @@ async function showFair() {
     ["Daily", "3", String(P.daily.keep), `${P.daily.per_day} a day. ${pctTxt(P.daily.found_chance)} have a found button, ${pctTxt(P.daily.bonus_chance)} have a BONUS PACK card!`],
     ["Welcome & ~*~cLuB~*~", "3", String(P.sealed.keep), `${pctTxt(P.daily.found_chance)} have a found button`],
     ["Series", "3", String(P.sealed.keep), "Only that series"],
-    ["Limited", "3", String(P.sealed.keep), "Only that series, 1 uncommon guaranteed, always at least 1 foil"],
+    ["Limited", "3", String(P.sealed.keep), "Only that series, 1 rare guaranteed, always at least 1 foil"],
     ["Free", "1", "1", "No ultras"],
   ]));
 

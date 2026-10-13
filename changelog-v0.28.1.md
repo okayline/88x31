@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.28
+# 88x31 cLuB Changelog — v0.28.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.28.1 — "Squishy"
+**Tue Oct 13, 2026 · 7:21 AM HST**
+
+- **Limited packs got better!** Every Gold Master and Cool Site of the Day pack now has a **guaranteed rare**, and ultras show up 5 times as often (1% per card). Check the new chances on Fair Play!
+- Packs **squish** when you press them and **pop** when you let go!
+- Clicking a pack you already opened just takes you back to your cards, instead of opening it all over again.
+- Guestbook messages show the time they were written, not just the day.
+- Fixed "Delete My Account", which wasn't working for newer members. Sorry about that!
 
 ## v0.28 — "Read Me First"
 **Tue Oct 13, 2026 · 7:03 AM HST**

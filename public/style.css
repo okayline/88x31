@@ -760,8 +760,15 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
    (Alpha twinkles, Beta has a CRT refresh line). Everything else (daily, welcome, free, mixed)
    keeps the rounded outline with a little picture and a soft gleam.
    .pack-tile is the outer link (shadow, hover); .pack-art is the wrapper itself. */
-.pack-tile { display: inline-block; position: relative; width: 100px; height: 136px; text-decoration: none; vertical-align: top; transition: transform .15s; }
+.pack-tile { display: inline-block; position: relative; width: 100px; height: 136px; text-decoration: none; vertical-align: top;
+  transition: transform .15s; -webkit-tap-highlight-color: transparent; }
 .pack-tile:hover { transform: translateY(-3px) rotate(-1deg); }
+/* pressing a pack squishes it; letting go pops it bigger, then it settles (.pop is added on release) */
+.pack-tile:active { transform: scale(.88); transition: transform .08s ease-out; }
+.pack-tile.pop { animation: pack-pop .35s ease-out; }
+@keyframes pack-pop { 0% { transform: scale(.88); } 45% { transform: scale(1.12); } 100% { transform: none; } }
+.pack-tile.used:active, .open-stage .pack-tile:active { transform: none; }
+.pack-tile.used.pop, .open-stage .pack-tile.pop { animation: none; }
 .pack-tile .pack-art { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px;
   padding: 8px 6px 10px; box-sizing: border-box; color: #fff; font: bold 11px Arial, sans-serif; text-shadow: 1px 1px 0 #000; }
 .pack-art > span { display: block; }

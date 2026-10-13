@@ -3,6 +3,8 @@
 //   { action: "restore_design", design_id }           undoes a removal
 //   { action: "block_uploader",   name, remove_uploads?: bool }   stops them adding buttons
 //   { action: "unblock_uploader", name }
+//   { action: "delete_player", name, confirm }      deletes a player's account (confirm = their name again);
+//     same routine as "Delete My Account" (lib/accounts.js). Webmasters and bots can't be deleted.
 //   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, special?, note? }   sealed packs (keep 2);
 //     special packs are numbered per series (#7 of 25) and never go to bots
 // Every action is written to admin_actions and sealed into the ledger (no images, just what and when).
@@ -10,6 +12,7 @@ import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { userByName, seriesPrinted } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { givePacks, everyoneIds, specialRun } from "../../lib/packs.js";
+import { deleteAccount } from "../../lib/accounts.js";
 
 const TOMBSTONE = "banners/removed.gif";
 
@@ -81,6 +84,20 @@ export async function onRequestPost({ request, env }) {
     await db.batch(stmts);
     await sealSafe(env);
     return json({ ok: true, removed });
+  }
+
+  if (body.action === "delete_player") {
+    const u = await userByName(env, body.name);
+    if (!u) return json({ error: "No player by that name." }, 404);
+    if (String(body.confirm || "").trim().toLowerCase() !== u.name.toLowerCase()) return json({ error: "Type their name exactly to confirm." }, 400);
+    if (u.id === me.id || u.is_admin) return json({ error: "Webmaster accounts can't be deleted here." }, 400);
+    if (u.is_bot) return json({ error: "The bots live here! They can't be deleted." }, 400);
+    // on the Ledger first (by id, never the name), then the account goes
+    await db.prepare("INSERT INTO admin_actions (admin_id, action, user_id, note, created_at) VALUES (?, 'delete_player', ?, ?, ?)")
+      .bind(me.id, u.id, note, t).run();
+    const r = await deleteAccount(env, u.id);
+    await sealSafe(env);
+    return r.ok ? json({ ok: true }) : json(r, 400);
   }
 
   if (body.action === "give_packs") {
