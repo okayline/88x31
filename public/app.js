@@ -104,7 +104,7 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack",
+  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", request: "request filled", open_trade: "open trade",
 };
 
 // ---------- foils, patterns, effects ----------
@@ -197,7 +197,7 @@ function adminBox(designId, name, status, finder, after) {
   return box;
 }
 
-const GIFTY = ["pass_on", "guestbook", "trade", "gift"]; // reasons that always have a giver
+const GIFTY = ["pass_on", "guestbook", "trade", "gift", "open_trade", "request"]; // reasons that always have a giver
 
 let me = null;
 
@@ -417,6 +417,7 @@ async function showPage(name) {
   const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
   $("dash").hidden = !mine;
   loadShelf(mine);
+  loadWanted(owner);
 
   stopArranging(false);
   $("arrange-bar").hidden = !mine || col.banners.length < 2;
@@ -896,8 +897,10 @@ let tradeTheirs = [];
 const pickedGive = new Set(), pickedWant = new Set();
 
 function setTradeCount(n) {
-  $("nav-trades").textContent = n ? `Trades (${n})` : "Trades";
-  $("nav-trades").classList.toggle("has-offers", !!n);
+  document.querySelectorAll(".trades-link").forEach((a) => {
+    a.textContent = n ? `Trades (${n})` : "Trades";
+    a.classList.toggle("has-offers", !!n);
+  });
 }
 
 const smallList = (list) => list.map((b) => el("span", { class: "tr-item", title: `${b.name} ${edition(b)}` },
@@ -978,6 +981,7 @@ async function showTrades() {
   };
   fill($("tr-in"), incoming, "No offers right now. Go make one on somebody's guestbook!", (t) => [act(t, "accept", "Accept!"), " ", act(t, "decline", "No thanks")]);
   fill($("tr-out"), outgoing, "You haven't sent any offers.", (t) => [act(t, "cancel", "Cancel offer")]);
+  renderBoard().catch((e) => say(e.message));
   const past = $("tr-past");
   past.textContent = "";
   if (!history.length) past.append(el("p", { class: "small" }, "No trades yet."));
@@ -986,6 +990,104 @@ async function showTrades() {
     past.append(el("p", { class: "small" }, `${fmtDate(t.resolved_at || t.created_at)}: with `,
       el("a", { href: "#u/" + encodeURIComponent(other) }, other), ` · ${t.status.toUpperCase()}`));
   }
+}
+
+// ---------- request board + open trades ----------
+const wantLabel = (name, foil) => (foil ? `${foilName(foil) === "None" ? "plain" : foilName(foil)} ` : "") + name;
+
+async function loadWanted(owner) {
+  const line = $("page-wanted");
+  line.hidden = true;
+  try {
+    const { wanted } = await api("/api/board?user=" + encodeURIComponent(owner));
+    if (!wanted.length) return;
+    line.textContent = "";
+    line.append("★ Wanted: ", wanted.map((w) => wantLabel(w.name, w.foil)).join(", "), " ", el("a", { href: "#trades" }, "(request board)"));
+    line.hidden = false;
+  } catch {}
+}
+
+// a <select> of buttons you could ask for, and one of finishes
+function designSelect(designs, filter) {
+  const sel = el("select", {}, el("option", { value: "" }, "pick a button..."));
+  for (const d of designs.filter(filter).sort((a, b) => a.name.localeCompare(b.name))) sel.append(el("option", { value: d.id }, `${d.name} (${d.rarity})`));
+  return sel;
+}
+function foilSelect() {
+  const sel = el("select", {}, el("option", { value: "" }, "any finish"));
+  for (const f of Object.values(FOILS).filter((f) => (f.kind || "foil") === "foil")) sel.append(el("option", { value: f.id }, f.id === "clear" ? "plain (no foil)" : f.name));
+  return sel;
+}
+
+async function renderBoard() {
+  const [{ requests, open_trades }, { designs }] = await Promise.all([api("/api/board"), api("/api/designs")]);
+  const seen = designs.filter((d) => !d.hidden && d.status !== "removed");
+  const who = (name, bot) => [el("a", { href: "#u/" + encodeURIComponent(name) }, name), bot ? el("span", { class: "bot-badge" }, " [BOT]") : null];
+  const picker = (copies, label, onGo) => {
+    if (!copies || !copies.length) return null;
+    const sel = el("select", {}, copies.map((c) => el("option", { value: c.id }, `#${c.edition}` + (finishName(c) === "None" ? "" : ` ${finishName(c) || "First Print"}`))));
+    return el("span", { class: "board-act" }, copies.length > 1 ? sel : null, " ",
+      el("button", { type: "button", onclick: () => onGo(Number(copies.length > 1 ? sel.value : copies[0].id)) }, label));
+  };
+  const post = async (body, msg) => { try { const r = await api("/api/board", { method: "POST", body }); say(typeof msg === "function" ? msg(r) : msg); showTrades(); } catch (e) { say(e.message); } };
+
+  // request board: mine first
+  const rq = $("rq-list");
+  rq.textContent = "";
+  const reqs = [...requests].sort((a, b) => (b.user_id === me.id) - (a.user_id === me.id));
+  if (!reqs.length) rq.append(el("p", { class: "small" }, "No requests right now."));
+  for (const r of reqs) {
+    const mine = r.user_id === me.id;
+    rq.append(el("div", { class: "entry board-row" },
+      el("span", { class: "board-pic" }, bannerImg({ ...r })),
+      el("span", {}, mine ? el("b", {}, "You") : who(r.user, r.is_bot), " wish for ", el("b", {}, wantLabel(r.name, r.foil)),
+        el("span", { class: "small" }, ` · until ${fmtDate(r.expires_at)}`)),
+      mine ? el("button", { type: "button", onclick: () => post({ action: "cancel_request", id: r.id }, "Request taken down.") }, "Take it down")
+        : picker(r.can_fill, "Fill it!", async (copy) => {
+          if (!(await ask(`Give your ${r.name} to ${r.user}? You'll get a sealed pack as thanks (one a day).`, { ok: "Give it!" }))) return;
+          post({ action: "fill", id: r.id, copy }, (x) => x.pack ? "Filled! A sealed pack is on your shelf as thanks!" : "Filled! (You already got today's thank-you pack.)");
+        })));
+  }
+  // post a request
+  const rp = $("rq-post");
+  rp.textContent = "";
+  const rqSel = designSelect(seen, (d) => ["common", "uncommon"].includes(d.rarity)), rqFoil = foilSelect();
+  rp.append(el("p", {}, "I wish I had ", rqSel, " in ", rqFoil, " ",
+    el("button", { type: "button", onclick: () => rqSel.value ? post({ action: "request", design_id: rqSel.value, foil: rqFoil.value || null }, "Request posted!") : say("Pick a button first.") }, "Post it")),
+    el("p", { class: "small" }, "Up to 3 at a time. They last a week."));
+
+  // open trades: mine first
+  const ol = $("ot-list");
+  ol.textContent = "";
+  const ots = [...open_trades].sort((a, b) => (b.from_user === me.id) - (a.from_user === me.id));
+  if (!ots.length) ol.append(el("p", { class: "small" }, "No open trades right now."));
+  for (const t of ots) {
+    const mine = t.from_user === me.id;
+    ol.append(el("div", { class: "entry" },
+      el("p", { class: "small" }, mine ? el("b", {}, "Your open trade") : who(t.user, t.is_bot), ` · until ${fmtDate(t.expires_at)}`),
+      el("p", {}, mine ? "You give " : "You get ", ...smallList(t.give)),
+      el("p", {}, mine ? "for " : "for your ", el("b", {}, wantLabel(t.name, t.want_foil))),
+      t.message ? el("p", { class: "small" }, `"${t.message}"`) : null,
+      el("p", { class: "sign-buttons" }, mine ? el("button", { type: "button", onclick: () => post({ action: "cancel_trade", id: t.id }, "Trade taken down.") }, "Take it down")
+        : picker(t.can_give, "Accept!", async (copy) => {
+          if (!(await ask(`Trade your ${t.name} for ${t.give.map((g) => g.name).join(", ")}? It happens right away.`, { ok: "Deal!" }))) return;
+          post({ action: "accept", id: t.id, copy }, "Trade done! Enjoy ur new buttons!");
+        }) || (mine ? null : el("span", { class: "small" }, "(you don't have a matching copy)")))));
+  }
+  // post an open trade
+  const op = $("ot-post");
+  op.textContent = "";
+  const give = new Set(), grid = el("div", { class: "grid" });
+  const otSel = designSelect(seen, (d) => d.rarity !== "ultra"), otFoil = foilSelect();
+  const note = el("input", { placeholder: "a little note (optional)", maxlength: "200" });
+  try { pickGrid(grid, (await api("/api/collection")).banners, give, "to give"); } catch {}
+  op.append(el("p", { class: "small" }, "Pick 1 to 3 of yours to offer:"), grid,
+    el("p", {}, "for a ", otSel, " in ", otFoil),
+    el("p", {}, note, " ", el("button", { type: "button", onclick: () => {
+      if (!give.size) return say("Pick at least one of yours to offer.");
+      if (!otSel.value) return say("Pick the button you want.");
+      post({ action: "trade", give: [...give], design_id: otSel.value, foil: otFoil.value || null, message: note.value }, "Open trade posted!");
+    } }, "Post it")));
 }
 
 // ---------- guestbook color themes ----------
@@ -1203,6 +1305,9 @@ async function loadPlayers() {
   const dl = $("player-names");
   dl.textContent = "";
   for (const p of players) dl.append(el("option", { value: p.name }));
+  // webmasters' give-packs list: every player, then "everyone" last
+  const gl = $("givepack-names");
+  if (gl) { gl.textContent = ""; for (const p of players) gl.append(el("option", { value: p.name })); gl.append(el("option", { value: "everyone" })); }
 }
 
 
@@ -1384,11 +1489,11 @@ async function setupGivePacks() {
     const { series } = await api("/api/series");
     for (const x of series) form.series.append(el("option", { value: x.id }, `Series ${x.name}` + (x.status !== "active" ? ` (${x.status})` : "")));
   } catch {}
-  form.everyone.onchange = () => { form.name.disabled = form.everyone.checked; };
   form.onsubmit = async (e) => {
     e.preventDefault();
-    const everyone = form.everyone.checked, name = form.name.value.trim(), count = Number(form.count.value) || 1;
-    if (!everyone && !name) return say("Type a player's name, or tick everyone.");
+    const name = form.name.value.trim(), count = Number(form.count.value) || 1;
+    const everyone = name.toLowerCase() === "everyone";
+    if (!name) return say('Type a player\'s name, or "everyone".');
     const who = everyone ? "EVERYONE (bots too)" : name;
     if (!(await ask(`Give ${count} sealed pack${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
     try {
@@ -1446,7 +1551,7 @@ function fuseBox(b) {
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
 const GOT_HOW = {
   welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
-  guestbook: "as a guestbook gift", trade: "in a trade", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to the cLuB",
+  guestbook: "as a guestbook gift", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to the cLuB",
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
@@ -1519,6 +1624,8 @@ async function showAbout() {
       const fin = finishName(h);
       const f = h.foil === "clear" && !h.effect ? "no foil" : !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
       what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came with ${f}`);
+    } else if (h.kind === "request") {
+      what = el("div", { class: "led-what" }, el("b", {}, "REQUEST "), "someone posted a wish on the request board");
     } else if (h.kind === "pack") {
       what = el("div", { class: "led-what" }, el("b", {}, "PACK "), "sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`),
         h.pack_reason === "made" ? ` made for ${h.pack_to || "a former player"} (${PACK_FROM[h.pack_source] || h.pack_source})`

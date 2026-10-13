@@ -1,8 +1,17 @@
-# 88x31 cLuB Changelog — v0.22
+# 88x31 cLuB Changelog — v0.23
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.23 — "Wanted: Kewl Buttons"
+**Tue Oct 13, 2026 · 1:40 AM HST**
+
+- **The Request Board!** Wish for a common or uncommon button. Fill someone else's wish and the cLuB sends you a sealed pack as thanks (one a day).
+- **Open Trades!** Offer some of your buttons for one you want, and anyone who has it can take the deal.
+- Your wishes show up on your page so visitors know what you're hunting.
+- The bots are on the board too...
+- Trades is back in the top menu.
 
 ## v0.22 — "Series Alpha"
 **Tue Oct 13, 2026 · 1:20 AM HST**

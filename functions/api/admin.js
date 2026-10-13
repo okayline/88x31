@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
   if (body.action === "give_packs") {
     const count = Math.max(1, Math.min(10, Number(body.count) || 1));
     let ids, who = null;
-    if (body.everyone) ids = await everyoneIds(env);
+    if (body.everyone || String(body.name || "").trim().toLowerCase() === "everyone") { body.everyone = true; ids = await everyoneIds(env); }
     else {
       const u = await userByName(env, body.name);
       if (!u) return json({ error: "No player by that name." }, 404);

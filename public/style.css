@@ -681,3 +681,11 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .wall-tile.still:hover img.banner, .wall-tile.still:hover .mystery-tile { outline: none; }
 /* [ ? ] tiles in the Buttons you can collect strip */
 .strip-track .strip-q { display: inline-block; width: 88px; height: 31px; line-height: 31px; vertical-align: top; font-size: 18px; }
+
+/* request board + open trades (v0.23) */
+.board-post { margin: 6px 0 10px; }
+.board-post summary { cursor: pointer; font-weight: bold; }
+.board-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.board-row .board-pic { line-height: 0; }
+.board-act select { max-width: 160px; }
+.wanted-line { color: #ffcc66; }

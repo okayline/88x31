@@ -13,6 +13,8 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Name must be 3-20 letters, numbers, _ or -." }, 400);
   }
   if (/-bot$/i.test(clean)) return json({ error: "Names ending in -bot are saved for the bots!" }, 400);
+  // names the game uses for itself
+  if (["everyone", "nobody", "webmaster"].includes(clean.toLowerCase())) return json({ error: "That name is taken." }, 409);
   const taken = await env.DB.prepare("SELECT 1 FROM users WHERE name = ?").bind(clean).first();
   if (taken) return json({ error: "That name is taken." }, 409);
 

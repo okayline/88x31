@@ -180,6 +180,23 @@ npx wrangler d1 execute 88x31-db --remote --file=016_series_packs.sql
 - **Webmasters** give packs to a player or everyone (bots too) from the Hi! box.
 - **Milestones**: `MILESTONES` in functions/api/hit.js; each one gives everyone a pack, once.
 
+## Updating to v0.23 (request board, open trades)
+
+Run once, **before** pushing the v0.23 code:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/017_requests_open_trades.sql
+npx wrangler d1 execute 88x31-db --remote --file=017_requests_open_trades.sql
+```
+
+- **Requests** (lib/board.js): wishes for commons/uncommons (optionally a foil); filling one gives your
+  copy to the requester and earns you a sealed pack (1 a day). Max 3 open, 7 days. Posting is sealed
+  into the ledger (kind `request`); the copy's move is a transfer with reason `request`.
+- **Open trades**: 1-3 of your copies (locked while open) for a copy of a button (optionally a foil);
+  anyone with a match can accept. Max 3 open, 7 days, no ultras. Transfers use reason `open_trade`.
+- Bots fill requests (givers more often), accept open trades they like, and post their own.
+- Webmasters type "everyone" in the give-packs name box. "everyone", "nobody" and "webmaster" can't be signed up.
+
 ## Run locally (optional)
 
 ```
