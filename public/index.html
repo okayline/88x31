@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.25.1">
+<link rel="stylesheet" href="style.css?v=0.26">
 </head>
 <body>
 <main>
@@ -51,7 +51,7 @@
       <ul class="dash-list" id="dash-list"><li>Loading your news...</li></ul>
       <div class="dash-side">
         <p>[ <a href="#trades" id="nav-trades" class="trades-link">Trades</a> ]</p>
-        <p>[ <a href="#codes">Save Codes</a> ]</p>
+        <p>[ <a href="#codes">Save Codes &amp; Passkeys</a> ]</p>
         <p>[ <a href="#check">Check a Button</a> ]</p>
         <form id="visit-form" class="visit">
           <label>Visit a page:<br><input name="name" placeholder="player name" autocomplete="off" list="player-names"></label>
@@ -68,6 +68,8 @@
           <label title="better odds, at least one real foil"><input name="special" type="checkbox"> special</label>
           <input name="note" placeholder="note (optional)" maxlength="200" autocomplete="off">
           <button>Give!</button>
+          <span class="small" id="givepacks-hint"></span>
+          <span class="add-status" id="givepacks-msg" aria-live="polite"></span>
         </form>
       </div>
     </div>
@@ -90,6 +92,8 @@
             <label>Your save code:<br><input name="code" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" required></label>
             <button>Enter!</button>
           </form>
+          <p class="center small pk-or" id="pk-login-row" hidden>&mdash; or &mdash;<br><button type="button" id="pk-login">&#128273; Log in with a passkey</button></p>
+          <p class="center sig-oops" id="login-oops" role="alert"></p>
         </td>
       </tr>
     </table>
@@ -106,6 +110,8 @@
         <button id="download-code">Download .txt</button>
         <button id="print-code">Print it</button>
       </p>
+      <p class="center pk-card" id="pk-card-row" hidden><button type="button" id="pk-card-add">&#128273; Also add a passkey on this device</button><br>
+        <span class="small" id="pk-card-msg">Next time, just log in with your fingerprint, face or PIN. (Keep the code anyway, as your backup!)</span></p>
       <p class="center"><button id="code-done">OK, I saved it!</button></p>
     </div>
   </section>
@@ -201,7 +207,10 @@
         <p class="center add-status" id="series-msg" aria-live="polite"></p>
         <table class="series-table"><tbody id="series-rows"></tbody></table>
         <div id="series-detail"></div>
-        <form id="series-new" class="center small">New series: <input name="name" maxlength="30" placeholder="Gamma" autocomplete="off"> <button>Make it (upcoming)</button></form>
+        <form id="series-new" class="center small">New series: <input name="name" maxlength="30" placeholder="Gamma" autocomplete="off">
+          special packs: <input name="special" maxlength="30" placeholder="Big Box Edition" autocomplete="off">
+          print run: <input name="run" type="number" min="1" placeholder="500" class="run-input">
+          <button>Make it (upcoming)</button></form>
         <div id="series-loose" class="small"></div>
       </div>
     </div>
@@ -336,6 +345,12 @@
       <ul id="codes"></ul>
       <button id="new-code">Make Another Code</button>
 
+      <h2>&raquo; My Passkeys &laquo;</h2>
+      <p class="small">Log in with your fingerprint, face or PIN instead of typing your save code. Your save codes still work as a backup.</p>
+      <ul id="passkeys"></ul>
+      <button id="pk-add">&#128273; Add a passkey on this device</button>
+      <p class="add-status" id="pk-msg" aria-live="polite"></p>
+
       <h2 class="danger-head">&raquo; Delete My Account &laquo;</h2>
       <p class="small">This removes your account, your guestbook, the messages you left on other guestbooks, and your buttons. Buttons you already gave away stay with their new owners. <b>This can't be undone.</b></p>
       <button id="delete-account">Delete My Account</button>
@@ -383,7 +398,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.25.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.26</span>
   </p>
 
 </main>
@@ -399,6 +414,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.25.1"></script>
+<script src="app.js?v=0.26"></script>
 </body>
 </html>

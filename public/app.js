@@ -671,12 +671,31 @@ async function loadSeriesPanel() {
   };
   const rows = $("series-rows");
   rows.textContent = "";
+  // print run: set or raise it (never below what's printed)
+  const setRun = async (x) => {
+    const v = await askText(`Series ${x.name} print run: how many copies, all its buttons together? It has printed ${x.printed} so far.`, String(x.print_run ?? ""), { ok: "Set" });
+    if (v === null || !v.trim()) return;
+    try { await api("/api/series", { method: "POST", body: { action: "print_run", id: x.id, print_run: Number(v) } }); sSay(`Series ${x.name} prints ${Number(v)} copies.`); seriesPanelLoaded = false; loadSeriesPanel(); }
+    catch (e) { sSay(e.message); }
+  };
+  const setSpecial = async (x) => {
+    const v = await askText(`What are Series ${x.name}'s special packs called? (Like "Gold Master": "${x.name} Gold Master Pack #7 of 25")`, x.special_name || "", { ok: "Name them" });
+    if (v === null || !v.trim()) return;
+    try { await api("/api/series", { method: "POST", body: { action: "special_name", id: x.id, special_name: v } }); sSay(`${x.name} ${v.trim()} Packs it is!`); seriesPanelLoaded = false; loadSeriesPanel(); givePacksReady = false; setupGivePacks(); }
+    catch (e) { sSay(e.message); }
+  };
   for (const x of r.series) {
+    const pct = x.print_run ? Math.min(100, Math.round((100 * x.printed) / x.print_run)) : 0;
     rows.append(el("tr", {},
-      el("td", {}, el("b", {}, `Series ${x.name}`)),
-      el("td", {}, el("span", { class: "series-status st-" + x.status }, x.status)),
-      el("td", {}, `${x.buttons} button${x.buttons === 1 ? "" : "s"}`),
-      el("td", {}, el("button", { type: "button", class: "mini series-look", "data-id": x.id, onclick: () => showSeriesDetail(x) }, "Look"),
+      el("td", { class: "nw" }, el("b", {}, `Series ${x.name}`), el("br"), el("span", { class: "small" }, `${x.buttons} button${x.buttons === 1 ? "" : "s"}`)),
+      el("td", { class: "nw" }, el("span", { class: "series-status st-" + (x.out_of_print ? "oop" : x.status) }, x.out_of_print ? "out of print" : x.status)),
+      el("td", { class: "run-cell" }, x.print_run
+        ? [el("span", { class: "run-bar", title: `${pct}% printed` }, el("span", { style: `width:${pct}%` })), ` ${x.printed} / ${x.print_run}`]
+        : `${x.printed} printed · no run`),
+      el("td", {}, el("span", { class: "small" }, `${x.special_name || "Special"} Packs: ${x.special_made} / ${x.special_limit}`)),
+      el("td", { class: "nw" }, el("button", { type: "button", class: "mini series-look", "data-id": x.id, onclick: () => showSeriesDetail(x) }, "Look"),
+        " ", el("button", { type: "button", class: "mini", onclick: () => setRun(x) }, "Run"),
+        " ", el("button", { type: "button", class: "mini", onclick: () => setSpecial(x) }, "Pack name"),
         x.status === "upcoming" ? [" ", el("button", { type: "button", class: "mini", onclick: () => release(x) }, "Release")] : null)));
   }
   // cLuB originals that aren't in a series yet
@@ -698,7 +717,7 @@ async function loadSeriesPanel() {
     e.preventDefault();
     const name = form.name.value.trim();
     if (!name) return;
-    try { await api("/api/series", { method: "POST", body: { action: "create", name } }); form.reset(); sSay(`Series ${name} made! It's hidden until you release it.`); seriesPanelLoaded = false; loadSeriesPanel(); }
+    try { await api("/api/series", { method: "POST", body: { action: "create", name, special_name: form.special.value, print_run: form.run.value } }); form.reset(); sSay(`Series ${name} made! It's hidden until you release it.`); seriesPanelLoaded = false; loadSeriesPanel(); }
     catch (err) { sSay(err.message); }
   };
 }
@@ -774,6 +793,8 @@ async function openInfo(id) {
     el("p", { class: "center" }, bannerImg(d, 3)),
     st.variant_of ? el("p", { class: "variant center" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`) : null,
     el("p", {}, d.series ? el("b", { class: "series-tag" }, `Series ${d.series} · `) : null, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
+    d.series_run ? el("p", { class: "small" }, d.series_out ? `Series ${d.series} is out of print! (${d.series_printed} printed)`
+      : `Series ${d.series} print run: ${d.series_printed} of ${d.series_run} printed`) : null,
     el("p", {}, d.max_editions ? `${d.minted} of ${d.max_editions} copies made` + (d.minted >= d.max_editions ? " (all gone!)" : "")
       : `${d.minted} copies so far (unlimited)`,
       d.left_count != null && d.left_count < d.minted ? ` · ${d.left_count} left` : ""),
@@ -1384,14 +1405,20 @@ async function showBanner(id) {
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
 const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
 const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "Mixed") + " Pack";
+// Limited special packs are numbered per series: "Beta Gold Master Pack #7 of 25". Others use the pack's id.
+const limitedName = (p) => `${p.series} ${p.special_name || "Special"} Pack`;
+const packTitle = (p) => (p.special_no ? `${limitedName(p)} #${p.special_no} of ${p.special_limit || 25}` : `${packLabel(p)} #${p.id}`);
 
-// Special packs: better odds, foils guaranteed, and a shinier wrapper.
+// Special packs: better odds, foils guaranteed, and a shinier wrapper (with their series' own name).
 function packTile(p, href) {
   const cls = "pack-tile" + (p.source === "welcome" ? " welcome" : "") + (p.special ? " special" : "") + (p.revealed ? " revealed" : "");
-  return el("a", { href, class: cls, title: p.note || PACK_FROM[p.source] || "" },
-    el("span", { class: "pack-top" }, "88x31 cLuB"),
-    el("span", { class: "pack-name" }, p.special ? "SPECIAL" : p.source === "welcome" ? "WELCOME" : p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED"),
-    el("span", { class: "pack-sub" }, p.revealed ? "opened!" : p.special ? (p.series ? `★ series ${p.series.toLowerCase()} ★` : "★ foils inside! ★") : "sealed pack"));
+  const name = p.special_no ? (p.special_name || "Special").toUpperCase()
+    : p.special ? "SPECIAL" : p.source === "welcome" ? "WELCOME" : p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED";
+  return el("a", { href, class: cls, title: p.special_no ? packTitle(p) : p.note || PACK_FROM[p.source] || "" },
+    el("span", { class: "pack-top" }, p.special_no ? `88x31 cLuB · ${p.series}` : "88x31 cLuB"),
+    el("span", { class: "pack-name" + (name.length > 11 ? " long" : "") }, name),
+    el("span", { class: "pack-sub" }, p.revealed ? "opened!" : p.special_no ? `#${p.special_no} of ${p.special_limit || 25}`
+      : p.special ? (p.series ? `★ series ${p.series.toLowerCase()} ★` : "★ foils inside! ★") : "sealed pack"));
 }
 
 // The Packs section on your own page: today's daily packs and your sealed packs, side by side.
@@ -1434,7 +1461,7 @@ async function showPack(id) {
   const p = st.pack;
   const mine = me && p.owner && p.owner.toLowerCase() === me.name.toLowerCase();
   box.textContent = "";
-  box.append(el("h2", {}, `» ${packLabel(p)} #${p.id} «`),
+  box.append(el("h2", {}, `» ${packTitle(p)} «`),
     el("p", { class: "center" }, packTile({ ...p, revealed: !!p.opened_at }, "#pack/" + p.id)),
     el("p", { class: "center small" }, `Made ${fmtDate(p.created_at)} · ${p.note || PACK_FROM[p.source] || p.source} · keep ${p.keep} of 3`));
 
@@ -1479,7 +1506,7 @@ async function openPackCards(p, box, onDone = null) {
   catch (err) { return say(err.message); }
   box.textContent = "";
   box.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  box.append(el("h3", { class: "center" }, `${packLabel(p)} #${p.id}`),
+  box.append(el("h3", { class: "center" }, packTitle(p)),
     o.special ? el("p", { class: "center small" }, "★ A special pack: better odds and real foils, already on the cards! ★") : null,
     el("p", { class: "center" }, el("b", {}, o.keep >= o.options.length ? "They're all yours!" : `Pick ${o.keep} to keep!`)));
   const all = o.keep >= o.options.length;
@@ -1507,31 +1534,50 @@ async function openPackCards(p, box, onDone = null) {
   };
 }
 
-// Webmasters: hand out sealed packs to a player or everyone.
-let givePacksReady = false;
+// Webmasters: hand out sealed packs to a player or everyone. Special packs are the limited ones:
+// numbered per series ("Beta Gold Master Pack #7 of 25"), never for bots.
+let givePacksReady = false, giveSeries = [];
 async function setupGivePacks() {
   const form = $("givepacks-form");
   form.hidden = !(me && me.is_admin);
   if (form.hidden || givePacksReady) return;
   givePacksReady = true;
+  const msg = $("givepacks-msg");
+  const gSay = (t) => { msg.textContent = t || ""; };
   try {
-    const { series } = await api("/api/series");
-    for (const x of series) form.series.append(el("option", { value: x.id }, `Series ${x.name}` + (x.status !== "active" ? ` (${x.status})` : "")));
+    giveSeries = (await api("/api/series")).series;
+    const keep = form.series.value;
+    form.series.textContent = "";
+    form.series.append(el("option", { value: "" }, "mixed"),
+      ...giveSeries.map((x) => el("option", { value: x.id }, `Series ${x.name}` + (x.out_of_print ? " (out of print)" : x.status !== "active" ? ` (${x.status})` : ""))));
+    form.series.value = keep;
   } catch {}
+  const hint = () => {
+    const x = giveSeries.find((g) => String(g.id) === form.series.value);
+    $("givepacks-hint").textContent = !form.special.checked ? ""
+      : !x ? "Pick a series: special packs belong to one."
+      : `${x.name} ${x.special_name || "Special"} Packs: ${x.special_limit - x.special_made} of ${x.special_limit} left`;
+  };
+  form.special.onchange = hint; form.series.onchange = hint; hint();
   form.onsubmit = async (e) => {
     e.preventDefault();
+    gSay("");
     const name = form.name.value.trim(), count = Number(form.count.value) || 1;
     const everyone = name.toLowerCase() === "everyone";
-    if (!name) return say('Type a player\'s name, or "everyone".');
-    const who = everyone ? "EVERYONE (bots too)" : name;
+    if (!name) return gSay('Type a player\'s name, or "everyone".');
     const special = form.special.checked;
-    if (!(await ask(`Give ${count}${special ? " SPECIAL" : ""} sealed pack${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
+    const x = giveSeries.find((g) => String(g.id) === form.series.value);
+    if (special && !x) return gSay("Special packs belong to a series. Pick one!");
+    const who = everyone ? (special ? "EVERYONE (people only)" : "EVERYONE (bots too)") : name;
+    const what = special ? `${x.name} ${x.special_name || "Special"} Pack` : "sealed pack";
+    if (!(await ask(`Give ${count} ${what}${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
     try {
       const r = await api("/api/admin", { method: "POST", body: { action: "give_packs", everyone, name, count, special, series_id: form.series.value || null, note: form.note.value } });
-      say(`Gave out ${r.made} pack${r.made === 1 ? "" : "s"}!`);
+      gSay(`Gave out ${r.made} ${special ? what : "pack"}${r.made === 1 ? "" : "s"}!`);
       form.note.value = "";
       loadShelf(true);
-    } catch (err) { say(err.message); }
+      givePacksReady = false; setupGivePacks();
+    } catch (err) { gSay(err.message); }
   };
 }
 
@@ -1621,6 +1667,7 @@ const ADMIN_SAYS = {
   give_packs: "handed out sealed packs!",
   series_create: "started planning something new...",
   series_status: "changed which series are in packs",
+  series_run: "changed a series' print run",
   remove_design: "a button was removed by request",
   restore_design: "a removed button came back",
   block_uploader: "someone's button finding was paused",
@@ -1653,11 +1700,13 @@ function ledgerItem(h) {
     } else if (h.kind === "request") {
       what = el("div", { class: "led-what" }, el("b", {}, "REQUEST "), "someone posted a wish on the request board");
     } else if (h.kind === "pack") {
-      what = el("div", { class: "led-what" }, el("b", {}, "PACK "), "sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`),
+      const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
+      what = el("div", { class: "led-what" }, el("b", {}, "PACK "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)],
         h.pack_reason === "made" ? ` made for ${h.pack_to || "a former player"} (${PACK_FROM[h.pack_source] || h.pack_source})`
           : ` given by ${h.pack_from || "a former player"} to ${h.pack_to || "a former player"}`);
     } else if (h.kind === "pack_open") {
-      what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), "sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`), " was opened");
+      const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
+      what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)], " was opened");
     } else if (h.kind === "admin") {
       what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {
@@ -1707,6 +1756,7 @@ $("ledger-older-btn").onclick = async () => {
 
 async function showCodes() {
   showView("view-codes");
+  showPasskeys();
   const { codes } = await api("/api/codes");
   const list = $("codes");
   list.textContent = "";
@@ -1722,6 +1772,76 @@ async function showCodes() {
     list.append(li);
   }
 }
+
+// ---------- passkeys ----------
+// The browser speaks WebAuthn in ArrayBuffers; the server speaks base64url. These convert both ways.
+const pkSupported = () => !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);
+const fromB64 = (s) => { const t = s.replace(/-/g, "+").replace(/_/g, "/"); return Uint8Array.from(atob(t + "===".slice((t.length + 3) % 4)), (c) => c.charCodeAt(0)).buffer; };
+const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const deviceName = () => {
+  const u = navigator.userAgent;
+  return /iPhone/.test(u) ? "iPhone" : /iPad/.test(u) ? "iPad" : /Android/.test(u) ? "Android" : /Mac/.test(u) ? "Mac" : /Windows/.test(u) ? "Windows PC" : /Linux/.test(u) ? "Linux" : "this device";
+};
+const pkOops = (e) => (e && e.name === "NotAllowedError" ? "Passkey cancelled (or it timed out)." : e && e.name === "InvalidStateError" ? "This device already has a passkey for you!" : (e && e.message) || "The passkey didn't work.");
+
+async function addPasskey() {
+  const o = await api("/api/passkey", { method: "POST", body: { action: "register_options" } });
+  const cred = await navigator.credentials.create({ publicKey: {
+    ...o, challenge: fromB64(o.challenge), user: { ...o.user, id: fromB64(o.user.id) },
+    excludeCredentials: o.excludeCredentials.map((c) => ({ ...c, id: fromB64(c.id) })),
+  } });
+  await api("/api/passkey", { method: "POST", body: { action: "register", label: deviceName(), credential: {
+    id: cred.id, response: { clientDataJSON: toB64(cred.response.clientDataJSON), attestationObject: toB64(cred.response.attestationObject) },
+  } } });
+}
+
+async function loginWithPasskey() {
+  const o = await api("/api/passkey", { method: "POST", body: { action: "login_options" } });
+  const cred = await navigator.credentials.get({ publicKey: { ...o, challenge: fromB64(o.challenge) } });
+  return api("/api/passkey", { method: "POST", body: { action: "login", credential: {
+    id: cred.id, response: { clientDataJSON: toB64(cred.response.clientDataJSON), authenticatorData: toB64(cred.response.authenticatorData),
+      signature: toB64(cred.response.signature) },
+  } } });
+}
+
+async function showPasskeys() {
+  const list = $("passkeys"), msg = $("pk-msg");
+  list.textContent = "";
+  $("pk-add").hidden = !pkSupported();
+  if (!pkSupported()) msg.textContent = "This browser can't do passkeys. Your save code works everywhere!";
+  let keys = [];
+  try { keys = (await api("/api/passkey")).passkeys; } catch { return; }
+  if (!keys.length) list.append(el("li", { class: "small" }, "No passkeys yet."));
+  for (const k of keys) {
+    list.append(el("li", {}, `${k.label || "passkey"} (added ${fmtDate(k.created_at)}${k.last_used_at ? ", last used " + fmtDate(k.last_used_at) : ""}) `,
+      el("button", { onclick: async () => {
+        if (!(await ask(`Remove the passkey for "${k.label || "this device"}"? It stops working here. (Also delete it from that device's passwords if you like.)`, { ok: "Remove it", cancel: "Keep it" }))) return;
+        try { await api("/api/passkey", { method: "POST", body: { action: "remove", id: k.id } }); msg.textContent = "Passkey removed."; showPasskeys(); }
+        catch (e) { msg.textContent = e.message; }
+      } }, "remove")));
+  }
+}
+$("pk-add").onclick = async () => {
+  const msg = $("pk-msg"); msg.textContent = "";
+  $("pk-add").disabled = true;
+  try { await addPasskey(); msg.textContent = "Passkey saved! Next time, log in with it."; showPasskeys(); }
+  catch (e) { msg.textContent = pkOops(e); }
+  finally { $("pk-add").disabled = false; }
+};
+$("pk-card-add").onclick = async () => {
+  const b = $("pk-card-add"), m = $("pk-card-msg");
+  b.disabled = true;
+  try { await addPasskey(); b.textContent = "✓ Passkey saved!"; m.textContent = "Next time, log in with it. Keep the code too, as your backup!"; }
+  catch (e) { m.textContent = pkOops(e); b.disabled = false; }
+};
+$("pk-login").onclick = async () => {
+  const b = $("pk-login"), oops = $("login-oops");
+  oops.textContent = ""; b.disabled = true;
+  try { await loginWithPasskey(); await refresh(); }
+  catch (e) { oops.textContent = pkOops(e); }
+  finally { b.disabled = false; }
+};
+$("pk-login-row").hidden = !pkSupported();
 
 $("new-code").onclick = async () => {
   const label = await askText("Name this code (like 'phone' or 'notebook'):", "extra code", { ok: "Make code" });
@@ -1747,6 +1867,8 @@ $("delete-account").onclick = async () => {
 
 function showCode(code) {
   $("code-text").textContent = code;
+  $("pk-card-row").hidden = !pkSupported();
+  $("pk-card-add").disabled = false; $("pk-card-add").textContent = "🔑 Also add a passkey on this device";
   showTop("code-card");
 }
 
@@ -1825,12 +1947,12 @@ async function renderFreePack() {
 
 $("login-form").onsubmit = async (e) => {
   e.preventDefault();
-  say("");
+  $("login-oops").textContent = "";
   try {
     await api("/api/login", { method: "POST", body: { code: e.target.code.value } });
     e.target.reset();
     await refresh();
-  } catch (err) { say(err.message); }
+  } catch (err) { $("login-oops").textContent = err.message; }
 };
 
 $("print-code").onclick = () => { document.body.classList.add("printing-code"); window.print(); setTimeout(() => document.body.classList.remove("printing-code"), 500); };

@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.25
+# 88x31 cLuB Changelog — v0.26
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.26 — "Limited Edition"
+**Tue Oct 13, 2026 · 5:45 AM HST**
+
+- **Print runs!** Every series now prints a set number of copies, all its buttons together. Series Beta prints 500, and Series Alpha has 150 left. When a series runs out, it's **out of print** and no new copies are ever made. Check any button's info to see how its series is doing.
+- **Limited packs!** Special packs are now numbered, and every series gets 25 of its own: **Beta Gold Master Packs** and **Alpha Cool Site of the Day Packs**. Each one says which number it is, like "#7 of 25."
+- Found buttons are a nice surprise now: they turn up in about 1 in 5 daily packs. Series packs and limited packs are all series buttons.
+- The bots are **web crawlers** now! They mostly drag home found buttons from the old web, so the print runs go to real people. Ask them nicely on the Request Board...
+- The free pack can hold a **rare** now! And it waits 2 days for you to sign it.
+- **Passkeys!** Log in with your fingerprint, face or PIN. Add one under Save Codes & Passkeys, or right after you sign your free pack. Your save code still works as a backup.
 
 ## v0.25.1 — "Clean Desk"
 **Tue Oct 13, 2026 · 4:50 AM HST**

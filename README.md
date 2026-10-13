@@ -254,6 +254,32 @@ npx wrangler d1 execute 88x31-db --remote --file=020_beta_tape_era.sql
 
 Adds 10 buttons to Series Beta (6 rares at 25 copies each, 4 uncommons), art in `public/banners/beta/`. Safe to run twice.
 
+## Updating to v0.26 (print runs, limited packs, passkeys)
+
+Run once, **before** pushing the v0.26 code:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/021_print_runs_limited_passkeys.sql
+npx wrangler d1 execute 88x31-db --remote --file=021_print_runs_limited_passkeys.sql
+```
+
+- **Print runs** (`series.print_run`): a series prints that many copies in total (every copy of its
+  buttons counts; fusion doesn't make copies). Beta 500; Alpha = its copies at migration time + 150.
+  When it's used up, packs skip the series (sealed packs of it still open with it), Give packs
+  refuses it, and it stays active until the webmaster retires it. Rares (25) and ultras (1) keep
+  their own caps. The Series panel shows the bars and can set or raise a run (never below printed).
+- **Limited packs**: special packs are numbered per series (`packs.special_no`, unique per series),
+  `series.special_limit` (25) of them, named by `series.special_name` ("Beta Gold Master Pack #7 of 25").
+  They need a series and never go to bots.
+- **Found buttons** turn up in `FOUND_CHANCE` (1 in 5) of daily and mixed packs; never in series or
+  special packs. **Bots** are web crawlers: their pulls (and the sealed packs they open) are found
+  buttons, with `CRAWLER_SERIES_CHANCE` (10%) of one series card, never ultras.
+- **Free pack**: normal odds without ultras (rares possible), held 2 days; a held card counts
+  against its button's cap.
+- **Passkeys** (`passkeys`, `passkey_challenges`; lib/passkeys.js, /api/passkey): WebAuthn with no
+  libraries, ES256 and RS256, discoverable credentials, checked against the request's own origin and
+  hostname. Save codes stay as the backup.
+
 ## Run locally (optional)
 
 ```

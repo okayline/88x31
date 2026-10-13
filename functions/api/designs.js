@@ -1,6 +1,7 @@
 // GET /api/designs        -> { designs: [...every button design, with copies made...] }
 // GET /api/designs?id=N   -> { design, ledger, sets, copies } one design's info window
 import { json, currentUser } from "../../lib/auth.js";
+import { seriesPrinted } from "../../lib/game.js";
 
 // Rares, ultras and set rewards stay a mystery on the Wall until you've owned one yourself.
 const HIDDEN = new Set(["rare", "ultra", "special"]);
@@ -43,6 +44,11 @@ export async function onRequestGet({ request, env }) {
      FROM designs d LEFT JOIN users f ON f.id = d.found_by
      WHERE d.id = ? AND d.status IN ('active', 'reward', 'frozen', 'removed') ${UPCOMING_OUT(viewer)}`
   ).bind(id).first();
+  if (design && design.series) {
+    // the series' print run: "Series Beta · 312 of 500 printed"
+    const r = (await seriesPrinted(env)).find((x) => x.name === design.series);
+    if (r) Object.assign(design, { series_printed: r.printed, series_run: r.print_run, series_out: r.out_of_print });
+  }
   if (design && design.status === "removed") {
     // a tombstone: the record stays, the art and credits don't
     return json({ removed: true, design: { id: design.id, name: viewer && viewer.is_admin ? design.name : "Removed by request",

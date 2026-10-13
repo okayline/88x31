@@ -774,3 +774,15 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 #series-new input, .loose-item select { width: auto; display: inline-block; }
 #series-new input { width: 140px; }
 .series-look.on { background: #ffff00; color: #000080; font-weight: bold; }
+.pack-tile .pack-name.long { font-size: 9px; line-height: 1.1; text-align: center; }
+.st-oop { background: #cc0000; color: #fff; }
+.run-cell { white-space: nowrap; font-size: 11px; }
+.run-bar { display: inline-block; width: 60px; height: 7px; border: 1px solid #c0c0c0; background: #000040; vertical-align: middle; }
+.run-bar > span { display: block; height: 100%; background: linear-gradient(90deg, #00cc66, #ffff00); }
+#series-new input[name="special"] { width: 130px; }
+#series-new .run-input { width: 70px; }
+.pk-or { margin-top: 8px; }
+.pk-card { margin: 10px 0; }
+#passkeys li { margin: 3px 0; }
+.series-table td.nw { white-space: nowrap; }
+#view-codes h2 { margin-top: 18px; }

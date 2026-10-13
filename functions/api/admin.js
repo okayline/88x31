@@ -3,12 +3,13 @@
 //   { action: "restore_design", design_id }           undoes a removal
 //   { action: "block_uploader",   name, remove_uploads?: bool }   stops them adding buttons
 //   { action: "unblock_uploader", name }
-//   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, note? }   sealed packs (keep 2)
+//   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, special?, note? }   sealed packs (keep 2);
+//     special packs are numbered per series (#7 of 25) and never go to bots
 // Every action is written to admin_actions and sealed into the ledger (no images, just what and when).
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
-import { userByName } from "../../lib/game.js";
+import { userByName, seriesPrinted } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
-import { givePacks, everyoneIds } from "../../lib/packs.js";
+import { givePacks, everyoneIds, specialRun } from "../../lib/packs.js";
 
 const TOMBSTONE = "banners/removed.gif";
 
@@ -92,11 +93,22 @@ export async function onRequestPost({ request, env }) {
       ids = [u.id]; who = u.id;
     }
     let series = body.series_id ? Number(body.series_id) : null;
-    if (series && !(await db.prepare("SELECT 1 FROM series WHERE id = ?").bind(series).first())) return json({ error: "No such series." }, 400);
     const special = !!body.special;
-    const made = await givePacks(env, ids, count, { series, source: "webmaster", note, special });
+    if (special && !series) return json({ error: "Special packs belong to a series. Pick one!" }, 400);
+    if (series) {
+      const sr = (await seriesPrinted(env)).find((x) => x.id === series);
+      if (!sr) return json({ error: "No such series." }, 400);
+      if (sr.out_of_print) return json({ error: `Series ${sr.name} is out of print, so no new packs of it.` }, 400);
+    }
+    // the numbered special packs are for people: "everyone" skips the bots
+    if (special && who && (await db.prepare("SELECT is_bot FROM users WHERE id = ?").bind(who).first()).is_bot) return json({ error: "Limited packs are for people, not bots!" }, 400);
+    if (special && body.everyone) ids = (await db.prepare("SELECT id FROM users WHERE is_bot = 0").all()).results.map((r) => r.id);
+    let made, label = "";
+    try { made = await givePacks(env, ids, count, { series, source: "webmaster", note, special }); }
+    catch (e) { return json({ error: e.message }, 400); }
+    if (special) { const run = await specialRun(env, series); label = ` ${run.series} ${run.name}`; }
     await db.prepare("INSERT INTO admin_actions (admin_id, action, user_id, note, created_at) VALUES (?, 'give_packs', ?, ?, ?)")
-      .bind(me.id, who, `${made}${special ? " special" : ""} pack${made === 1 ? "" : "s"}${body.everyone ? " to everyone" : ""}${note ? ": " + note : ""}`, t).run();
+      .bind(me.id, who, `${made}${label} pack${made === 1 ? "" : "s"}${body.everyone ? " to everyone" : ""}${note ? ": " + note : ""}`, t).run();
     await sealSafe(env);
     return json({ ok: true, made });
   }

@@ -35,6 +35,7 @@ export async function onRequestDelete({ request, env }) {
     s("UPDATE ownership_history SET to_user = NULL WHERE to_user = ?", id),
     s("UPDATE designs SET creator_id = NULL WHERE creator_id = ?", id),
     s("UPDATE reports SET reporter_id = NULL WHERE reporter_id = ?", id),
+    s("DELETE FROM passkeys WHERE user_id = ?", id),
     s("DELETE FROM users WHERE id = ?", id), // save codes + sessions cascade
   ]);
 
