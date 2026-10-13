@@ -9,16 +9,15 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.23">
+<link rel="stylesheet" href="style.css?v=0.23.1">
 </head>
 <body>
 <main>
   <nav class="top-bar" id="top-nav">
     <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link my-page-name">My Page</a> ] -
-    [ <a href="#pull">Daily Pull</a> ] -
     [ <a href="#trades" class="trades-link">Trades</a> ] -</span>
     <span class="only-out">[ <a href="#">Join the cLuB!</a> ] -</span>
-    <span class="only-in">[ <a href="#wall">Wall of Buttons</a> ] -</span>
+    <span class="only-in">[ <a href="#wall">Buttons</a> ] -</span>
     [ <a href="#about">About</a> ]
     <span class="only-in">- [ <a href="#" id="logout" class="logout-link">Log Out</a> ]</span>
   </nav>
@@ -225,24 +224,21 @@
   <section id="in" hidden>
 
     <!-- daily pull -->
-    <div id="view-pull" class="view panel" hidden>
-      <h2>&raquo; Today's Pull &laquo;</h2>
-      <p class="small">Each pack has 3 buttons. Keep 1, and you can pass one of the others to a friend.</p>
-      <div id="pull-body"></div>
-      <p class="small" id="pull-odds"></p>
-    </div>
 
     <!-- a player's page: collection + guestbook -->
     <div id="view-page" class="view" hidden>
+      <!-- your packs: today's daily packs + sealed packs, opened right here (own page only) -->
+      <div class="panel packs-panel" id="packs-panel" hidden>
+        <h2>&raquo; Packs &laquo;</h2>
+        <div id="packs-grid" class="packs-grid"></div>
+        <div id="pack-open" class="pack-open"></div>
+        <p class="small" id="pull-odds"></p>
+      </div>
       <div class="panel">
         <h2 class="center own-title">~*~ Welcome 2 <span class="page-name-2"></span>'s Page ~*~</h2>
         <p class="center small bot-note" id="page-seen" hidden></p>
         <p class="center small wanted-line" id="page-wanted" hidden></p>
         <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of the cLuB's friendly bots. Bots play once a day and can never win ultras.</p>
-        <div id="packs-shelf" class="packs-shelf" hidden>
-          <h2>&raquo; Unopened Packs &laquo;</h2>
-          <div id="packs-grid" class="packs-grid"></div>
-        </div>
         <h2>&raquo; My Button Collection &laquo;</h2>
         <div id="page-collection" class="grid"></div>
         <p class="arrange-bar" id="arrange-bar" hidden>
@@ -381,7 +377,7 @@
   </div>
 
   <p class="center small">
-    <span class="only-in">[ <a href="#" class="my-page-link my-page-name">My Page</a> ] &nbsp; [ <a href="#pull">Daily Pull</a> ] &nbsp; [ <a href="#wall">Wall of Buttons</a> ] &nbsp;</span>
+    <span class="only-in">[ <a href="#" class="my-page-link my-page-name">My Page</a> ] &nbsp; [ <a href="#trades" class="trades-link">Trades</a> ] &nbsp; [ <a href="#wall">Buttons</a> ] &nbsp;</span>
     <span class="only-out">[ <a href="#">Join</a> ] &nbsp;</span>
     [ <a href="#about">About</a> ]
     <span class="only-in">&nbsp; [ <a href="#" class="logout-link">Log Out</a> ]</span>
@@ -397,7 +393,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.23</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.23.1</span>
   </p>
 
 </main>
@@ -413,6 +409,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.23"></script>
+<script src="app.js?v=0.23.1"></script>
 </body>
 </html>

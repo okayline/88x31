@@ -5,6 +5,9 @@ import { json, currentUser } from "../../lib/auth.js";
 // Rares, ultras and set rewards stay a mystery on the Wall until you've owned one yourself.
 const HIDDEN = new Set(["rare", "ultra", "special"]);
 const HIDDEN_OUT = HIDDEN;
+// Buttons in a series that hasn't been released yet stay off the Wall (webmasters still see them).
+const UPCOMING_OUT = (viewer) => (viewer && viewer.is_admin ? ""
+  : "AND NOT EXISTS (SELECT 1 FROM series s WHERE s.id = d.series_id AND s.status = 'upcoming')");
 async function uncovered(env, viewer) {
   if (!viewer) return new Set();
   if (viewer.is_admin) return { has: () => true }; // admins (the webmaster) can see every button
@@ -25,7 +28,7 @@ export async function onRequestGet({ request, env }) {
     const { results } = await db.prepare(
       `SELECT d.id, d.name, d.type, d.rarity, d.status, d.image_key, d.max_editions, d.stats, d.tier,
               (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted
-       FROM designs d WHERE d.status IN ('active', 'reward', 'frozen') ORDER BY d.id`
+       FROM designs d WHERE d.status IN ('active', 'reward', 'frozen') ${UPCOMING_OUT(viewer)} ORDER BY d.id`
     ).all();
     return json({ designs: results.map((d) => (hide.has(d.rarity) && !seen.has(d.id)
       ? { id: d.id, hidden: true }   // a mystery: no name, picture or rarity
@@ -38,7 +41,7 @@ export async function onRequestGet({ request, env }) {
             (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted,
             (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id AND i.consumed = 0) AS left_count
      FROM designs d LEFT JOIN users f ON f.id = d.found_by
-     WHERE d.id = ? AND d.status IN ('active', 'reward', 'frozen', 'removed')`
+     WHERE d.id = ? AND d.status IN ('active', 'reward', 'frozen', 'removed') ${UPCOMING_OUT(viewer)}`
   ).bind(id).first();
   if (design && design.status === "removed") {
     // a tombstone: the record stays, the art and credits don't

@@ -34,7 +34,7 @@ function showFront() {
   showTop("out");
   $("wall").hidden = false;
 }
-const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades", "view-pack"];
+const VIEWS = ["view-page", "view-banner", "view-codes", "view-trades", "view-pack"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
 
 // Tiny element builder. Text always goes in as text, never as HTML.
@@ -232,7 +232,7 @@ async function route() {
     if (hash.startsWith("pack/")) return await showPack(hash.slice(5));
     if (hash === "codes") return await showCodes();
     if (hash === "trades") return await showTrades();
-    if (hash === "pull") return await showPull();
+    if (hash === "pull") { location.replace("#u/" + encodeURIComponent(me.name)); return; } // daily packs live on your page now
     return await showPage(me.name); // your guestbook is home
   } catch (e) { say(e.message); }
 }
@@ -276,9 +276,10 @@ async function refresh() {
 
 // ---------- daily pull ----------
 
+// Today's daily pack, opened inside the Packs section on your page (keep 1, pass one on if you like).
 async function showPull() {
-  showView("view-pull");
-  const box = $("pull-body");
+  const box = $("pack-open");
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   box.textContent = "Loading...";
   const pull = await api("/api/pull");
   const o = pull.odds;
@@ -287,29 +288,7 @@ async function showPull() {
   if (pull.bonus_pack) box.append(el("p", { class: "center bonus-head" }, el("b", {}, "★ BONUS PACK! ★")));
   else if (pull.pulls_per_day > 1) box.append(el("p", { class: "center" }, el("b", {}, `Pack ${pull.pull_number} of ${pull.pulls_per_day} today`)));
 
-  if (pull.status === "done") {
-    const kept = pull.options[pull.kept_index];
-    box.append(el("p", {}, kept && kept.bonus ? "You took the BONUS PACK!" : "You kept: ", kept && kept.bonus ? null : el("b", {}, kept ? kept.name : "?")));
-    if (pull.passed_to) {
-      const passed = pull.options[pull.passed_index];
-      box.append(el("p", {}, "You passed ", el("b", {}, passed ? passed.name : "?"), " on to ",
-        el("a", { href: "#u/" + encodeURIComponent(pull.passed_to) }, pull.passed_to), "."));
-    }
-    box.append(el("div", { class: "pull-row" }, pull.options.map((d, i) => card(d, i, pull))));
-    box.append(el("p", { class: "center" }, "That's all your packs for today. Come back tomorrow!"));
-    return;
-  }
-
-  // Not opened yet in this visit: show the pack closed until clicked.
-  const opened = sessionStorage.getItem("opened-" + pull.day) === "1";
-  if (!opened) {
-    box.append(el("div", { class: "pull-row" }, [0, 1, 2].map(() => el("div", { class: "card back" }, "?"))));
-    box.append(el("p", { class: "center" }, el("button", {
-      onclick: () => { try { sessionStorage.setItem("opened-" + pull.day, "1"); } catch {} showPull(); },
-    }, "Open Today's Pack!")));
-    return;
-  }
-
+  if (pull.status === "done") { box.textContent = ""; loadPacksPanel(true); return; } // all used up today
   let keep = null;
   const giftBox = el("div", { class: "gift-choices" });
   const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off", list: "player-names" });
@@ -362,7 +341,8 @@ async function showPull() {
       if (r.bonus) { say("★ BONUS PACK! ★ Here's a fresh one!"); return await showPull(); }
       loadSummary();
       say(pass !== "" && !r.passed ? "Kept! (The one you gifted sold out, sorry.)" : pass !== "" ? "Kept, and your gift is on its way!" : "Added to your collection!");
-      await showPull();
+      box.textContent = "";
+      afterOpening();
     } catch (err) { say(err.message); }
   };
   box.append(form);
@@ -872,7 +852,7 @@ async function loadSummary() {
   const label = (g) => `${g.design} #${g.edition}${g.max_editions ? " of " + g.max_editions : ""}`;
   const who = (n) => n ? el("a", { href: "#u/" + encodeURIComponent(n) }, n) : "a former player";
   li(s.packs_left
-    ? el("span", {}, el("b", {}, `${s.packs_left} pack${s.packs_left === 1 ? "" : "s"}`), " left to open today! ", el("a", { href: "#pull" }, "Open them »"))
+    ? el("span", {}, el("b", {}, `${s.packs_left} pack${s.packs_left === 1 ? "" : "s"}`), " left to open today! ", el("a", { href: "#", onclick: (e) => { e.preventDefault(); $("packs-panel").scrollIntoView({ behavior: "smooth" }); } }, "Open them »"))
     : "You've opened all your packs today. New ones tomorrow!");
   li(s.trades_waiting
     ? el("span", {}, el("b", {}, `${s.trades_waiting} trade offer${s.trades_waiting === 1 ? "" : "s"}`), " waiting for you. ", el("a", { href: "#trades" }, "Take a look »"))
@@ -1385,20 +1365,35 @@ function packTile(p, href) {
     el("span", { class: "pack-sub" }, p.revealed ? "opened!" : "sealed pack"));
 }
 
-async function loadShelf(mine) {
-  const shelf = $("packs-shelf");
-  shelf.hidden = true;
+// The Packs section on your own page: today's daily packs and your sealed packs, side by side.
+// Clicking one opens it right there.
+async function loadPacksPanel(mine) {
+  const panel = $("packs-panel");
+  panel.hidden = !mine;
   if (!mine) return;
+  const grid = $("packs-grid");
   try {
-    const { packs } = await api("/api/packs");
-    const grid = $("packs-grid");
+    const [sum, { packs }] = await Promise.all([api("/api/summary"), api("/api/packs")]);
     grid.textContent = "";
-    if (!packs.length) return;
-    for (const p of packs) grid.append(el("div", { class: "pack-slot" }, packTile(p, "#pack/" + p.id),
-      el("span", { class: "small" }, p.note || PACK_FROM[p.source] || "")));
-    shelf.hidden = false;
+    const used = sum.pulls_per_day - sum.packs_left;
+    for (let i = 1; i <= sum.pulls_per_day; i++) {
+      const done = i <= used;
+      const t = el("a", { href: "#", class: "pack-tile daily" + (done ? " used" : ""), title: done ? "Opened! New ones tomorrow." : "Today's daily pack" },
+        el("span", { class: "pack-top" }, "88x31 cLuB"), el("span", { class: "pack-name" }, "DAILY"),
+        el("span", { class: "pack-sub" }, done ? "back tomorrow!" : `pack ${i} of ${sum.pulls_per_day}`));
+      t.onclick = (e) => { e.preventDefault(); if (!done) showPull().catch((err) => say(err.message)); };
+      grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
+    }
+    for (const p of packs) {
+      const t = packTile(p, "#pack/" + p.id);
+      t.onclick = (e) => { e.preventDefault(); openPackCards(p, $("pack-open"), afterOpening); };
+      grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, p.note || PACK_FROM[p.source] || "")));
+    }
   } catch {}
 }
+// after any pack is opened: refresh the packs and the collection under them
+function afterOpening() { loadPacksPanel(true); if (me) showPage(me.name).catch(() => {}); }
+const loadShelf = loadPacksPanel;
 
 async function showPack(id) {
   const seq = ++loadSeq;
@@ -1449,12 +1444,13 @@ async function showPack(id) {
 }
 
 // The opening: 3 cards, pick `keep` of them.
-async function openPackCards(p, box) {
+async function openPackCards(p, box, onDone = null) {
   let o;
   try { o = await api("/api/packs", { method: "POST", body: { action: "open", id: p.id } }); }
   catch (err) { return say(err.message); }
   box.textContent = "";
-  box.append(el("h2", {}, `» ${packLabel(p)} #${p.id} «`), el("p", { class: "center" }, el("b", {}, `Pick ${o.keep} to keep!`)));
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  box.append(el("h3", { class: "center" }, `${packLabel(p)} #${p.id}`), el("p", { class: "center" }, el("b", {}, `Pick ${o.keep} to keep!`)));
   const picked = new Set();
   const go = el("button", { type: "button", disabled: "disabled" }, `Keep these ${o.keep}!`);
   const cards = o.options.map((d, i) => {
@@ -1473,7 +1469,7 @@ async function openPackCards(p, box) {
       const r = await api("/api/packs", { method: "POST", body: { action: "keep", id: p.id, picks: [...picked] } });
       say(r.sold_out ? "Kept! (One of them sold out a moment ago, sorry.)" : "Added to your collection!");
       loadSummary();
-      showPack(p.id);
+      if (onDone) { box.textContent = ""; onDone(); } else showPack(p.id);
     } catch (err) { say(err.message); go.disabled = false; }
   };
 }

@@ -1,8 +1,16 @@
-# 88x31 cLuB Changelog — v0.23
+# 88x31 cLuB Changelog — v0.23.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.23.1 — "Rip It Open"
+**Tue Oct 13, 2026 · 1:50 AM HST**
+
+- Your daily packs now live on your page in a new **Packs** section, right next to your sealed packs. Open any of them right there!
+- Your button collection has its own section below.
+- "Wall of Buttons" is just "Buttons" in the menu now, and Daily Pull moved to your page.
+- No peeking at buttons that haven't been released yet...
 
 ## v0.23 — "Wanted: Kewl Buttons"
 **Tue Oct 13, 2026 · 1:40 AM HST**

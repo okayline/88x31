@@ -689,3 +689,11 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .board-row .board-pic { line-height: 0; }
 .board-act select { max-width: 160px; }
 .wanted-line { color: #ffcc66; }
+
+/* Packs section (v0.23.1): daily packs look different from sealed ones; used ones go grey */
+.pack-tile.daily { background: linear-gradient(160deg, #ffcc00 0%, #ff6600 50%, #ff0066 100%); background-size: 200% 200%; }
+.pack-tile.daily .pack-name { color: #ffffff; }
+.pack-tile.used { filter: grayscale(1) brightness(0.6); animation: none; cursor: default; }
+.pack-tile.used:hover { transform: none; }
+.pack-open:empty { display: none; }
+.pack-open { margin-top: 10px; }
