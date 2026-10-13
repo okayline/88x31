@@ -1418,7 +1418,7 @@ async function showBanner(id) {
 // Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
 const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
-const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "Mixed") + " Pack";
+const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "~*~ cLuB ~*~") + " Pack";
 // Limited special packs are numbered per series: "Beta Gold Master Pack #7 of 25". Others use the pack's id.
 const limitedName = (p) => `${p.series} ${p.special_name || "Special"} Pack`;
 const packTitle = (p) => (p.special_no ? `${limitedName(p)} #${p.special_no} of ${p.special_limit || 25}` : `${packLabel(p)} #${p.id}`);
@@ -1479,8 +1479,14 @@ function packTile(p, href) {
     theme = "welcome";
     parts = [spanC("confetti"), spanC("gleam"), top(), spanC("script", "Welcome"), spanC("pack-sub", sub)];
   } else {
-    theme = "mixed";
-    parts = [spanC("gleam"), top(), spanC("minis", Array.from({ length: 9 }, () => el("i"))), spanC("pack-name", "MIXED"), spanC("pack-sub", sub)];
+    // the ~*~ cLuB ~*~ pack: one of three looks, picked by its number so a pack always keeps its look
+    const look = "abc"[(Number(p.id) || 0) % 3];
+    theme = "club-" + look;
+    const name = spanC("club-name", "~*~cLuB~*~ pack"), sealed = spanC("pack-sub", p.revealed ? "opened!" : "Sealed Pack");
+    parts = look === "a" ? [spanC("gleam"), top(), spanC("sticker", "NEW!"), spanC("logo", "88x31"), name, sealed]
+      : look === "b" ? [spanC("gleam"), top(), el("span", { class: "club-btn" }, el("i", {}, "~*~"), "\u00a0cLuB\u00a0", el("i", {}, "~*~")), name, spanC("stars3", "★★★"), sealed]
+      : [spanC("gleam"), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "88x31.app"),
+          el("span", { class: "pg" }, el("b", {}, "Welcome 2"), el("em", {}, "~*~ 88x31 cLuB ~*~"), spanC("uc"))), name, sealed];
   }
   return packArt({ shape, theme, parts, title, href, cls: cls + (p.revealed ? " revealed" : "") });
 }
@@ -1663,7 +1669,7 @@ async function setupGivePacks() {
     giveSeries = (await api("/api/series")).series;
     const keep = form.series.value;
     form.series.textContent = "";
-    form.series.append(el("option", { value: "" }, "mixed"),
+    form.series.append(el("option", { value: "" }, "~*~ cLuB ~*~ pack"),
       ...giveSeries.map((x) => el("option", { value: x.id }, `Series ${x.name}` + (x.out_of_print ? " (out of print)" : x.status !== "active" ? ` (${x.status})` : ""))));
     form.series.value = keep;
   } catch {}

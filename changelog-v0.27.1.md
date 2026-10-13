@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.27
+# 88x31 cLuB Changelog — v0.27.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.27.1 — "House Special"
+**Tue Oct 13, 2026 · 6:43 AM HST**
+
+- Say goodbye to the Mixed pack and hello to the **~*~cLuB~*~ pack**! It's the cLuB's own pack: the one you earn for visitor milestones, filling wishes on the Request Board, and finishing sets.
+- It comes in **three looks**: a rainbow 88x31 logo on the night sky (with a blinking NEW! sticker), the cLuB's own little button, and a tiny 90s browser window showing the cLuB's homepage. Each pack keeps its own look, so your shelf gets a mix.
 
 ## v0.27 — "Fresh Packs"
 **Tue Oct 13, 2026 · 6:33 AM HST**
