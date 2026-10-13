@@ -1,12 +1,18 @@
 // 88x31 front page: accounts, daily pull, player pages, guestbooks, save codes.
 const $ = (id) => document.getElementById(id);
+// Let code pass "maybe" pieces (null/undefined/false) to append() without them printing as text.
+{
+  const orig = Element.prototype.append;
+  Element.prototype.append = function (...kids) { return orig.apply(this, kids.filter((k) => k != null && k !== false)); };
+}
 const say = (text) => ($("msg").textContent = text || "");
-const TOP = ["loading", "out", "in", "code-card", "about", "check"];
+const TOP = ["loading", "out", "in", "code-card", "about", "check", "wall"];
 const showTop = (id) => {
   TOP.forEach((s) => ($(s).hidden = s !== id));
-  const on = !!me && id !== "code-card";
-  $("top-nav").hidden = !on;   // one-line menu at the very top
-  $("dash").hidden = !on;      // "Hi, space!" dashboard under the rainbow
+  $("top-nav").hidden = id === "code-card"; // one-line menu at the very top (members get more links)
+  document.querySelectorAll(".only-in").forEach((x) => (x.hidden = !me));
+  document.querySelectorAll(".only-out").forEach((x) => (x.hidden = !!me));
+  $("dash").hidden = true; // the "Hi!" box only shows on your own page (showPage turns it on)
 };
 const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
@@ -96,12 +102,24 @@ let me = null;
 
 async function route() {
   say("");
+  setPageMode();
   const hash = decodeURIComponent(location.hash.slice(1));
   if (hash === "about") {
     showTop("about");
     return showAbout().catch((e) => say(e.message));
   }
   if (hash === "check") { showTop("check"); return; }
+  if (hash === "wall" || hash.startsWith("wall/")) {
+    showTop("wall");
+    return showWall(hash.slice(5)).catch((e) => say(e.message));
+  }
+  closeInfo();
+  // Player pages and button pages are public: anyone can look, members can interact.
+  if (!me && (hash.startsWith("u/") || hash.startsWith("banner/"))) {
+    showTop("in");
+    try { return hash.startsWith("u/") ? await showPage(hash.slice(2)) : await showBanner(hash.slice(7)); }
+    catch (e) { say(e.message); return; }
+  }
   if (!me) return showTop("out");
   showTop("in");
   if (!hash || hash === "u/" + me.name) loadSummary(); // refresh the dashboard when coming back home
@@ -116,6 +134,16 @@ async function route() {
 }
 window.addEventListener("hashchange", () => { window.scrollTo(0, 0); route(); });
 
+// Player pages are pared down: no marquee, ticker, button strip, counter or webring,
+// and the "Welcome 2 X's Page" title sits between the rainbow bars.
+function setPageMode() {
+  // pared-down look for public views of a page: logged out, or someone else's page
+  const m = /^#u\/(.+)$/.exec(location.hash);
+  const name = m ? decodeURIComponent(m[1]).toLowerCase() : null;
+  document.body.classList.toggle("on-page", !!name && (!me || name !== me.name.toLowerCase()));
+}
+window.addEventListener("hashchange", setPageMode);
+
 async function refresh() {
   const { user, trades_waiting } = await api("/api/me");
   me = user;
@@ -123,7 +151,7 @@ async function refresh() {
   setTradeCount(trades_waiting || 0);
   loadSummary();
   $("who").textContent = me.name;
-  $("nav-mine").href = "#u/" + encodeURIComponent(me.name);
+  document.querySelectorAll(".my-page-link").forEach((a) => (a.href = "#u/" + encodeURIComponent(me.name)));
   loadPlayers();
   await route();
 }
@@ -249,6 +277,7 @@ async function showPage(name) {
   const seq = ++loadSeq;
   showView("view-page");
   $("page-name").textContent = name;
+  document.querySelectorAll(".page-name-2").forEach((x) => (x.textContent = name));
   $("page-collection").textContent = "Loading...";
   $("page-guestbook").textContent = "";
   const [col, gb] = await Promise.all([
@@ -262,12 +291,14 @@ async function showPage(name) {
   if (col.owner.is_bot) $("sets-panel").hidden = true;
   else api("/api/sets?user=" + encodeURIComponent(owner)).then((r) => { if (seq === loadSeq) renderSets(owner, r); }).catch(() => {});
   $("page-name").textContent = owner;
+  document.querySelectorAll(".page-name-2").forEach((x) => (x.textContent = owner));
   $("page-bot").hidden = !col.owner.is_bot;
   $("page-seen").hidden = !col.owner.last_seen;
   if (col.owner.last_seen) $("page-seen").textContent = `${owner} was last online ${ago(col.owner.last_seen)}`;
 
   // homepage link (everyone sees it) and the editor (only on your own page)
-  const mine = owner.toLowerCase() === me.name.toLowerCase();
+  const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
+  $("dash").hidden = !mine;
   const home = $("page-home");
   home.textContent = "";
   home.hidden = !col.owner.homepage;
@@ -290,7 +321,8 @@ async function showPage(name) {
 
   // Sign form: only on other people's pages.
   const form = $("sign-form");
-  form.hidden = owner.toLowerCase() === me.name.toLowerCase();
+  form.hidden = !me || owner.toLowerCase() === me.name.toLowerCase();
+  $("join-note").hidden = !!me;
   if (!form.hidden) {
     form.dataset.user = owner;
     chooseGift(null);
@@ -308,7 +340,7 @@ async function showPage(name) {
 
   // Trade panel: only on other people's pages.
   const tp = $("trade-panel");
-  tp.hidden = owner.toLowerCase() === me.name.toLowerCase();
+  tp.hidden = !me || owner.toLowerCase() === me.name.toLowerCase();
   $("trade-builder").hidden = true;
   if (!tp.hidden) {
     document.querySelectorAll(".tb-name").forEach((n) => (n.textContent = owner));
@@ -337,10 +369,73 @@ async function showPage(name) {
   }
 }
 
+// ---------- Wall of Buttons + info window ----------
+
+const RARITY_LABEL = { common: "common", uncommon: "uncommon", rare: "rare", ultra: "ULTRA RARE", special: "set reward" };
+let wallLoaded = false;
+
+async function showWall(openId) {
+  if (!wallLoaded) {
+    const { designs } = await api("/api/designs");
+    const grid = $("wall-grid");
+    grid.textContent = "";
+    const order = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
+    designs.sort((a, b) => (order[a.rarity] ?? 9) - (order[b.rarity] ?? 9) || a.id - b.id);
+    for (const d of designs) {
+      grid.append(el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.name }, bannerImg(d)));
+    }
+    $("wall-count").textContent = `${designs.length} buttons and counting!`;
+    wallLoaded = true;
+  }
+  if (openId) await openInfo(Number(openId)); else closeInfo();
+}
+
+function closeInfo() { $("info-win").hidden = true; }
+$("info-close").onclick = () => { closeInfo(); history.replaceState(null, "", "#wall"); };
+$("info-win").addEventListener("click", (e) => { if (e.target === $("info-win")) $("info-close").onclick(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("info-win").hidden) $("info-close").onclick(); });
+
+async function openInfo(id) {
+  const body = $("info-body");
+  body.textContent = "Loading...";
+  $("info-title").textContent = "Button info";
+  $("info-win").hidden = false;
+  const { design: d, ledger, sets, copies } = await api("/api/designs?id=" + id);
+  $("info-title").textContent = d.name;
+  let st = {}; try { st = JSON.parse(d.stats || "{}"); } catch {}
+  const who = (c) => c.owner ? el("a", { href: "#u/" + encodeURIComponent(c.owner), onclick: closeInfo }, c.owner) : "nobody";
+  body.textContent = "";
+  body.append(...[
+    el("p", { class: "center" }, bannerImg(d, 3)),
+    st.variant_of ? el("p", { class: "variant center" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`) : null,
+    el("p", {}, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
+    el("p", {}, d.max_editions ? `${d.minted} of ${d.max_editions} copies made` + (d.minted >= d.max_editions ? " (all gone!)" : "")
+      : `${d.minted} copies so far (unlimited)`),
+    d.status === "reward" ? el("p", { class: "small" }, "Only given as a set reward. Never found in packs.") : null,
+    ...sets.map((s) => el("p", { class: "small" }, s.name === "a secret set"
+      ? (s.role === "reward" ? "Reward for finishing a secret set..." : "Part of a secret set... 🤫")
+      : (s.role === "reward" ? `Reward for finishing the ${s.name} set.` : `Part of the ${s.name} set.`))),
+    el("h3", {}, "Credits"),
+    credit(d) || el("p", { class: "small" }, "No credit recorded."),
+    d.source_url ? el("p", { class: "small" }, "Original: ", el("a", { href: d.source_url, target: "_blank", rel: "noopener" }, d.source_url)) : null,
+    el("p", { class: "small" }, "Art is CC0: free to use anywhere. ",
+      el("a", { href: "/" + d.image_key, download: d.image_key.split("/").pop() }, "Download the picture")),
+    el("h3", {}, "On the Ledger"),
+    el("p", { class: "small" }, ledger ? `Recorded ${fmtStamp(ledger.created_at)} as entry #${ledger.id}` : "Not sealed yet."),
+    ledger ? el("p", { class: "small" }, "Fingerprint: ", el("span", { class: "hash" }, ledger.hash)) : null,
+    el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash" }, d.image_hash)),
+    el("h3", {}, "Who has one"),
+    copies.length
+      ? el("ul", { class: "owners" }, copies.map((c) => el("li", {},
+          el("a", { href: "#banner/" + c.id, onclick: closeInfo }, `#${c.edition}`), " · ", who(c), c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null)))
+      : el("p", { class: "small" }, "Nobody yet! Could be you..."),
+    copies.length >= 60 ? el("p", { class: "small" }, "...and more!") : null].filter(Boolean));
+}
+
 // ---------- sets ----------
 
 function renderSets(owner, r) {
-  const mine = owner.toLowerCase() === me.name.toLowerCase();
+  const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
   $("sets-panel").hidden = false;
   $("sets-title").textContent = mine ? "My Sets" : `${owner}'s Sets`;
   const body = $("sets-body");
@@ -376,7 +471,7 @@ function cardImg(c, href, title) {
 }
 
 function renderLinks(owner, gb, col) {
-  const mine = owner.toLowerCase() === me.name.toLowerCase();
+  const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
   const go = (name) => async (action) => {
     try { await api("/api/links", { method: "POST", body: { to: name, action } }); await showPage(owner); loadSummary(); }
     catch (e) { say(e.message); }
@@ -407,7 +502,7 @@ function renderLinks(owner, gb, col) {
   // requests waiting (only on your own page)
   const req = $("links-requests");
   req.textContent = "";
-  for (const q of gb.link_requests || []) {
+  for (const q of mine ? gb.link_requests || [] : []) {
     req.append(el("p", { class: "link-req" }, el("a", { href: "#u/" + encodeURIComponent(q.name) }, el("b", {}, q.name)),
       " wants to swap links! ",
       el("button", { type: "button", class: "mini", onclick: () => go(q.name)("accept") }, "Swap!"), " ",
@@ -431,7 +526,8 @@ function renderLinks(owner, gb, col) {
   // the swap button for visitors
   const swap = $("links-swap");
   swap.textContent = "";
-  if (!mine) {
+  if (!me) swap.append(el("span", { class: "small" }, el("a", { href: "#" }, "Join the cLuB"), " to swap links!"));
+  else if (!mine) {
     const st = gb.link_state;
     if (st === "linked") swap.append(el("span", { class: "small" }, "You and ", el("b", {}, owner), " are linked ✓ "),
       el("button", { type: "button", class: "mini", onclick: () => go(owner)("remove") }, "unlink"));
@@ -460,10 +556,11 @@ async function loadSummary() {
     : "No trade offers waiting.");
   if (s.guestbook_today) li(el("b", {}, `${s.guestbook_today} new guestbook message${s.guestbook_today === 1 ? "" : "s"}`), " today. ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "Read »"));
-  if (s.last_received) li("Last gift you got: ", el("a", { href: "#banner/" + s.last_received.id }, label(s.last_received)),
-    " from ", who(s.last_received.who), `, ${ago(s.last_received.at)}`);
-  if (s.last_given) li("Last thing you gave: ", el("a", { href: "#banner/" + s.last_given.id }, label(s.last_given)),
-    " to ", who(s.last_given.who), `, ${ago(s.last_given.at)}`);
+  const pic = (g) => el("a", { href: "#banner/" + g.id, class: "dash-pic", title: label(g) }, bannerImg(g));
+  if (s.last_received) li("Last gift you got: ", pic(s.last_received), el("br"),
+    el("a", { href: "#banner/" + s.last_received.id }, label(s.last_received)), " from ", who(s.last_received.who), `, ${ago(s.last_received.at)}`);
+  if (s.last_given) li("Last thing you gave: ", pic(s.last_given), el("br"),
+    el("a", { href: "#banner/" + s.last_given.id }, label(s.last_given)), " to ", who(s.last_given.who), `, ${ago(s.last_given.at)}`);
   if (s.sets_ready) li(el("b", { class: "hot" }, `★ ${s.sets_ready} set${s.sets_ready === 1 ? "" : "s"} complete!`), " Claim your reward on ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "your guestbook »"));
   if (s.link_requests) li(el("b", {}, `${s.link_requests} link swap request${s.link_requests === 1 ? "" : "s"}`), " waiting. ",
@@ -820,20 +917,6 @@ $("visit-form").onsubmit = (e) => {
   e.target.reset();
 };
 
-// Footer links: "View" opens your guestbook; "Sign" jumps to the form on the guestbook you're viewing.
-$("foot-view").onclick = (e) => {
-  e.preventDefault();
-  if (!me) return say("Log in to see your guestbook!");
-  location.hash = "u/" + encodeURIComponent(me.name);
-};
-$("foot-sign").onclick = (e) => {
-  e.preventDefault();
-  if (!me) return say("Log in to sign guestbooks!");
-  if ($("view-page").hidden) return say("Visit someone's guestbook to sign it!");
-  if ($("sign-form").hidden) return say("You can't sign your own guestbook. Visit a friend's!");
-  $("guestbook-panel").scrollIntoView();
-  $("sign-form").message.focus();
-};
 
 // ---------- banner detail ----------
 
@@ -943,12 +1026,7 @@ async function showAbout() {
   }
 
   api("/api/pubkey").then((k) => { $("pubkey").textContent = k.key || "(not set up yet)"; }).catch(() => {});
-  const { designs } = await api("/api/credits");
-  const credits = $("credits");
-  credits.textContent = "";
-  for (const d of designs) {
-    credits.append(el("li", {}, bannerImg(d), el("span", {}, el("b", {}, d.name), " ", credit(d) || "")));
-  }
+
 }
 
 // ---------- save codes ----------
@@ -1041,7 +1119,7 @@ $("code-done").onclick = async () => {
   await refresh();
 };
 
-$("logout").onclick = async (e) => {
+const doLogout = async (e) => {
   e.preventDefault();
   await api("/api/logout", { method: "POST" }).catch(() => {});
   me = null;
@@ -1049,6 +1127,7 @@ $("logout").onclick = async (e) => {
   location.hash = "";
   showTop("out");
 };
+document.querySelectorAll(".logout-link").forEach((a) => (a.onclick = doLogout));
 
 // Front-page ticker of recent trades, gifts and ultra finds (refreshes every few minutes).
 async function loadTicker() {

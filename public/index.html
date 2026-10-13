@@ -13,11 +13,14 @@
 </head>
 <body>
 <main>
-  <nav class="top-bar" id="top-nav" hidden>
-    [ <a href="#" id="nav-mine">My Guestbook</a> ] -
-    [ <a href="#trades" id="nav-trades">Trades</a> ] -
-    [ <a href="#about">About</a> ] -
-    [ <a href="#" id="logout">Log Out</a> ]
+  <nav class="top-bar" id="top-nav">
+    <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link">My Page</a> ] -
+    [ <a href="#pull">Daily Pull</a> ] -
+    [ <a href="#trades" id="nav-trades">Trades</a> ] -</span>
+    <span class="only-out">[ <a href="#">Join the cLuB!</a> ] -</span>
+    [ <a href="#wall">Wall of Buttons</a> ] -
+    [ <a href="#about">About</a> ]
+    <span class="only-in">- [ <a href="#" id="logout" class="logout-link">Log Out</a> ]</span>
   </nav>
 
 
@@ -28,30 +31,35 @@
     <p class="subtitle">The Internet's #1 Tiny Button Collecting Club!!!</p>
   </header>
 
-  <div class="marquee" aria-hidden="true">
+  <div class="marquee site-extra" aria-hidden="true">
     <span>*** WELCOME 2 MY HOMEPAGE *** COLLECT THEM ALL *** TRADE WITH FRIENDS *** SIGN MY GUESTBOOK *** THANX 4 VISITING ***</span>
   </div>
 
   <hr class="rainbow">
 
-  <p class="center"><img src="deco/under-construction.gif" alt="Under construction" class="uc-bar" width="574" height="51"></p>
-  <p class="center small">This page is always being worked on. Check back soon for more cool stuff!</p>
+  <div class="site-extra">
+    <p class="center"><img src="deco/under-construction.gif" alt="Under construction" class="uc-bar" width="574" height="51"></p>
+    <p class="center small">This page is always being worked on. Check back soon for more cool stuff!</p>
+  </div>
+  <h2 class="page-banner page-only">~*~ Welcome 2 <span id="page-name"></span>'s Page ~*~</h2>
 
   <hr class="rainbow">
 
   <!-- "Hi, space!" dashboard (logged in) -->
   <section class="panel dash" id="dash" hidden>
     <h2 class="center">Hi, <span id="who"></span>!</h2>
-    <ul class="dash-list" id="dash-list"><li>Loading your news...</li></ul>
-    <p class="center dash-menu">
-      [ <a href="#pull">Daily Pull</a> ]
-      [ <a href="#codes">Save Codes</a> ]
-      [ <a href="#check">Check a Button</a> ]
-    </p>
-    <form id="visit-form" class="visit center">
-      Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off" list="player-names"> <button>Go!</button>
-    </form>
-    <datalist id="player-names"></datalist>
+    <div class="dash-cols">
+      <ul class="dash-list" id="dash-list"><li>Loading your news...</li></ul>
+      <div class="dash-side">
+        <p>[ <a href="#codes">Save Codes</a> ]</p>
+        <p>[ <a href="#check">Check a Button</a> ]</p>
+        <form id="visit-form" class="visit">
+          <label>Visit a page:<br><input name="name" placeholder="player name" autocomplete="off" list="player-names"></label>
+          <button>Go!</button>
+        </form>
+        <datalist id="player-names"></datalist>
+      </div>
+    </div>
   </section>
 
   <section id="loading"><p class="center">Loading... please wait...</p></section>
@@ -139,10 +147,31 @@
 
     <div class="panel">
       <h2>&raquo; Credits &laquo;</h2>
-      <p class="small">Every button design and where its art came from. Big thanx to all the artists!! Each button's file carries its credit hidden inside, too.</p>
-      <ul id="credits" class="credits"></ul>
+      <p>Every button's art credits live on the <a href="#wall">Wall of Buttons</a>. Click any button there to see where its art came from. Big thanx to all the artists!!</p>
     </div>
   </section>
+
+  <!-- Wall of Buttons (open to everyone) -->
+  <section id="wall" hidden>
+    <div class="panel">
+      <h2 class="center">~*~ Wall of Buttons ~*~</h2>
+      <p class="center small">Every button in the cLuB. Click one for its info, credits and who owns it!</p>
+      <p class="center small wall-legend">
+        <span class="lg lg-common">common</span> <span class="lg lg-uncommon">uncommon</span> <span class="lg lg-rare">rare</span>
+        <span class="lg lg-ultra">ULTRA</span> <span class="lg lg-special">set reward</span>
+      </p>
+      <div id="wall-grid" class="wall-grid"></div>
+      <p class="center small" id="wall-count"></p>
+    </div>
+  </section>
+
+  <!-- button info window (opened from the Wall) -->
+  <div id="info-win" class="dialog-backdrop" hidden>
+    <div class="dialog-window info-window" role="dialog" aria-modal="true" aria-labelledby="info-title">
+      <div class="dialog-title"><span id="info-title">Button info</span><button type="button" class="win-x" id="info-close" aria-label="Close">x</button></div>
+      <div class="info-body" id="info-body"></div>
+    </div>
+  </div>
 
   <!-- button checker (open to everyone) -->
   <section id="check" hidden>
@@ -172,10 +201,10 @@
     <!-- a player's page: collection + guestbook -->
     <div id="view-page" class="view" hidden>
       <div class="panel">
-        <h2 class="center">~*~ Welcome 2 <span id="page-name"></span>'s Guestbook ~*~</h2>
+        <h2 class="center own-title">~*~ Welcome 2 <span class="page-name-2"></span>'s Page ~*~</h2>
         <p class="center small bot-note" id="page-seen" hidden></p>
         <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of the cLuB's friendly bots. Bots play once a day and can never win ultras.</p>
-        <p class="center homepage-link" id="page-home" hidden></p>
+        <p class="center homepage-link pub-last" id="page-home" hidden></p>
         <form id="home-form" class="home-form" hidden>
           My homepage: <input name="homepage" placeholder="https://yoursite.neocities.org" autocomplete="off" maxlength="200">
           <button>Save</button>
@@ -223,7 +252,8 @@
         </div>
       </div>
       <div class="panel" id="guestbook-panel">
-        <h2>&raquo; Sign &amp; Read My Guestbook &laquo;</h2>
+        <h2>&raquo; Guestbook &laquo;</h2>
+        <p class="center join-note" id="join-note" hidden><a href="#"><b>Join the cLuB</b></a> to sign this guestbook! It's FREE!!</p>
         <form id="sign-form" hidden>
           <label>Leave a message:<br><textarea name="message" maxlength="280" rows="3" required></textarea></label>
           <div id="gift-chosen" class="gift-chosen" hidden></div>
@@ -280,6 +310,7 @@
   <hr class="rainbow">
 
 
+  <div class="site-extra">
   <p class="center"><b>~ Recent Trades &amp; Gifts ~</b></p>
   <div class="ticker" id="ticker" aria-live="off">
     <b class="ticker-label">NEWS:</b><span id="ticker-text">loading the latest trades &amp; gifts...</span>
@@ -298,12 +329,15 @@
     <span class="small">You are visitor number</span><br>
     <span class="counter" id="counter">000000</span>
   </div>
+  </div>
 
   <p class="center small">
-    [ <a href="#" id="foot-sign">Sign my Guestbook</a> ] &nbsp; [ <a href="#" id="foot-view">View my Guestbook</a> ] &nbsp; [ <a href="#about">About</a> ] &nbsp; [ <a href="#check">Check a Button</a> ] &nbsp; [ Email Me ]
+    <span class="only-in">[ <a href="#" class="my-page-link">My Page</a> ] &nbsp; [ <a href="#pull">Daily Pull</a> ] &nbsp; [ <a href="#trades">Trades</a> ] &nbsp;</span>
+    [ <a href="#wall">Wall of Buttons</a> ] &nbsp; [ <a href="#about">About</a> ]
+    <span class="only-in">&nbsp; [ <a href="#" class="logout-link">Log Out</a> ]</span>
   </p>
 
-  <table class="webring">
+  <table class="webring site-extra">
     <tr>
       <td>&laquo; Prev</td>
       <td class="center"><b>The 88x31 Webring</b><br><span class="small">[ Random ] [ List Sites ] [ Join ]</span></td>
@@ -313,7 +347,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.14</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.15</span>
   </p>
 
 </main>

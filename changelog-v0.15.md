@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.14
+# 88x31 cLuB Changelog — v0.15
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.15 — "Wall of Fame"
+**Mon Oct 12, 2026 · 7:10 PM HST**
+
+- **Wall of Buttons:** every button in the cLuB in one place. Click one for its info, credits, ledger record, and who owns a copy.
+- Player pages are now public, so you can share yours with anyone. Visitors see a clean, simple version.
+- "My Guestbook" is now **My Page**; the guestbook is a panel on it.
+- The "Hi!" box got two columns and shows the actual buttons you last gave and got.
+- Simpler menus, top and bottom.
+- Fixed a stray "null" that sometimes showed up.
 
 ## v0.14 — "Gotta Link 'Em All"
 **Mon Oct 12, 2026 · 6:48 PM HST**

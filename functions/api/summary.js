@@ -17,14 +17,14 @@ export async function onRequestGet({ request, env }) {
       "SELECT COUNT(*) AS n FROM trades WHERE to_user = ? AND status = 'open' AND expires_at > ?"
     ).bind(me.id, Math.floor(Date.now() / 1000)).first(),
     db.prepare(
-      `SELECT h.created_at AS at, h.reason, f.name AS who, d.name AS design, i.edition, d.max_editions, i.id
+      `SELECT h.created_at AS at, h.reason, f.name AS who, d.name AS design, d.image_key, d.rarity, i.edition, d.max_editions, i.id
        FROM ownership_history h JOIN instances i ON i.id = h.instance_id JOIN designs d ON d.id = i.design_id
        LEFT JOIN users f ON f.id = h.from_user
        WHERE h.to_user = ? AND h.reason IN ('guestbook', 'pass_on', 'gift', 'trade')
        ORDER BY h.id DESC LIMIT 1`
     ).bind(me.id).first(),
     db.prepare(
-      `SELECT h.created_at AS at, h.reason, t.name AS who, d.name AS design, i.edition, d.max_editions, i.id
+      `SELECT h.created_at AS at, h.reason, t.name AS who, d.name AS design, d.image_key, d.rarity, i.edition, d.max_editions, i.id
        FROM ownership_history h JOIN instances i ON i.id = h.instance_id JOIN designs d ON d.id = i.design_id
        LEFT JOIN users t ON t.id = h.to_user
        WHERE h.from_user = ? AND h.reason IN ('guestbook', 'pass_on', 'gift', 'trade')
