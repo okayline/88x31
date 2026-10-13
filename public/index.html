@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.23.1">
+<link rel="stylesheet" href="style.css?v=0.24">
 </head>
 <body>
 <main>
@@ -78,13 +78,9 @@
   <section id="out" hidden>
     <table class="layout">
       <tr>
-        <td class="panel">
-          <h2>&raquo; New Here? &laquo; <img src="deco/new.gif" alt="new" width="32" height="14"></h2>
-          <p class="small">Join the club &amp; start collecting buttons!! It's FREE!!</p>
-          <form id="signup-form">
-            <label>Pick a name:<br><input name="name" maxlength="20" autocomplete="off" required></label>
-            <button>Sign Me Up!</button>
-          </form>
+        <td class="panel freepack-box">
+          <h2>&raquo; Free Pack! &laquo; <img src="deco/new.gif" alt="new" width="32" height="14"></h2>
+          <div id="fp-body"></div>
         </td>
         <td class="panel">
           <h2>&raquo; Coming Back? &laquo;</h2>
@@ -107,6 +103,7 @@
       <p class="center">
         <button id="copy-code">Copy</button>
         <button id="download-code">Download .txt</button>
+        <button id="print-code">Print it</button>
       </p>
       <p class="center"><button id="code-done">OK, I saved it!</button></p>
     </div>
@@ -388,7 +385,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.23.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.24</span>
   </p>
 
 </main>
@@ -404,6 +401,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.23.1"></script>
+<script src="app.js?v=0.24"></script>
 </body>
 </html>

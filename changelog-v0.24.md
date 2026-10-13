@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.23.1
+# 88x31 cLuB Changelog — v0.24
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.24 — "First One's On Us"
+**Tue Oct 13, 2026 · 3:45 AM HST**
+
+- New here? There's a **free pack** waiting on the front page. Open it, sign your card, and you're in the cLuB!
+- Your save code can be printed now, like a membership card.
 
 ## v0.23.1 — "Rip It Open"
 **Tue Oct 13, 2026 · 1:50 AM HST**

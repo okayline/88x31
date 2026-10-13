@@ -197,6 +197,27 @@ npx wrangler d1 execute 88x31-db --remote --file=017_requests_open_trades.sql
 - Bots fill requests (givers more often), accept open trades they like, and post their own.
 - Webmasters type "everyone" in the give-packs name box. "everyone", "nobody" and "webmaster" can't be signed up.
 
+## Updating to v0.24 (front-page free pack)
+
+Run once, **before** pushing the v0.24 code:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/018_free_packs.sql
+npx wrangler d1 execute 88x31-db --remote --file=018_free_packs.sql
+```
+
+Visitors open a one-card free pack on the front page (lib/freepack.js): a common or uncommon,
+finish up to tier 1, rolled by the server and held against an anonymous cookie for a day.
+Signing it with a name creates the account and mints the card (reason `free_pack`).
+
+**Turnstile** (Cloudflare's "are you human" check on the sign step) switches on once both are set.
+In the Cloudflare dashboard: Turnstile → Add widget → hostname 88x31.app. Then:
+
+```
+npx wrangler pages secret put TURNSTILE_SECRET --project-name 88x31
+npx wrangler pages secret put TURNSTILE_SITEKEY --project-name 88x31
+```
+
 ## Run locally (optional)
 
 ```

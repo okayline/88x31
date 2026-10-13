@@ -697,3 +697,21 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .pack-tile.used:hover { transform: none; }
 .pack-open:empty { display: none; }
 .pack-open { margin-top: 10px; }
+
+/* ---------- front-page free pack (v0.24) ---------- */
+.pack-tile.free { background: linear-gradient(160deg, #00cc99 0%, #0066ff 55%, #9900ff 100%); background-size: 200% 200%; }
+.pack-tile.glow { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 0 14px 3px rgba(120, 220, 255, 0.55); }
+.freepack-box .pull-row { margin: 6px 0; }
+.sig-form { text-align: center; margin: 8px 0 0; }
+.sig-line { display: inline-flex; align-items: baseline; gap: 6px; font-style: italic; }
+.sig-input { border: 0; border-bottom: 2px solid currentColor; background: transparent; color: inherit;
+  font: italic 20px "Comic Sans MS", "Brush Script MT", cursive; width: 11em; padding: 0 4px; outline: none; }
+.sig-check { border: 0; background: transparent; color: #66ff66; font-size: 22px; cursor: pointer; padding: 0 4px; }
+.fp-human { display: flex; justify-content: center; margin-top: 6px; }
+/* printing the save code: just the card */
+@media print {
+  body.printing-code > *:not(main), body.printing-code main > *:not(#code-card) { display: none !important; }
+  body.printing-code #code-card .center button { display: none; }
+}
+.sig-line { white-space: nowrap; max-width: 100%; }
+.sig-input { width: 9em; max-width: 55vw; }

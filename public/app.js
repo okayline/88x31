@@ -33,6 +33,7 @@ async function fillStrip() {
 function showFront() {
   showTop("out");
   $("wall").hidden = false;
+  renderFreePack();
 }
 const VIEWS = ["view-page", "view-banner", "view-codes", "view-trades", "view-pack"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
@@ -104,7 +105,7 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", request: "request filled", open_trade: "open trade",
+  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", free_pack: "free pack", request: "request filled", open_trade: "open trade",
 };
 
 // ---------- foils, patterns, effects ----------
@@ -1547,7 +1548,7 @@ function fuseBox(b) {
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
 const GOT_HOW = {
   welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
-  guestbook: "as a guestbook gift", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to the cLuB",
+  guestbook: "as a guestbook gift", free_pack: "in their free pack", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to the cLuB",
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
@@ -1689,16 +1690,70 @@ function showCode(code) {
   showTop("code-card");
 }
 
-$("signup-form").onsubmit = async (e) => {
-  e.preventDefault();
-  say("");
-  try {
-    const { user, code } = await api("/api/signup", { method: "POST", body: { name: e.target.name.value } });
-    me = user;
-    afterCode = "u/" + encodeURIComponent(user.name); // land on your new guestbook once the code is saved
-    showCode(code);
-  } catch (err) { say(err.message); }
-};
+// ---------- the front-page free pack ----------
+// A visitor opens one card with no account. Signing it (typing a name) makes their account and
+// the card theirs; then their save code is shown like any new sign-up.
+let fpToken = null, fpTurnstile = false;
+function loadTurnstile(sitekey, box) {
+  const draw = () => window.turnstile.render(box, { sitekey, callback: (t) => { fpToken = t; }, "expired-callback": () => { fpToken = null; } });
+  if (window.turnstile) return draw();
+  if (fpTurnstile) return;
+  fpTurnstile = true;
+  const sc = el("script", { src: "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit", async: "async" });
+  sc.onload = draw;
+  document.head.append(sc);
+}
+
+async function renderFreePack() {
+  const box = $("fp-body");
+  if (!box) return;
+  let st;
+  try { st = await api("/api/freepack"); } catch { return; }
+  box.textContent = "";
+  if (st.state === "member") return;
+  if (st.state === "claimed") {
+    box.append(el("p", {}, "You've got your free pack! ", el("b", {}, "Log in"), " to see it."));
+    return;
+  }
+  if (st.state === "none") {
+    const tile = el("a", { href: "#", class: "pack-tile free glow" },
+      el("span", { class: "pack-top" }, "88x31 cLuB"), el("span", { class: "pack-name" }, "FREE PACK"), el("span", { class: "pack-sub" }, "open me!"));
+    tile.onclick = async (e) => {
+      e.preventDefault();
+      try { await api("/api/freepack", { method: "POST", body: { action: "open" } }); renderFreePack(); }
+      catch (err) { say(err.message); }
+    };
+    box.append(el("p", { class: "small" }, "Collect tiny 88x31 buttons from the old web! Your first one's on us."),
+      el("p", { class: "center" }, tile));
+    return;
+  }
+  // waiting: the card, and the signature line
+  const name = el("input", { name: "name", maxlength: "20", autocomplete: "off", "aria-label": "Your name", class: "sig-input" });
+  const check = el("button", { type: "submit", class: "sig-check", title: "Sign it!", "aria-label": "Sign it" }, "✓");
+  check.hidden = true;
+  name.oninput = () => { check.hidden = !name.value.trim(); };
+  const human = el("div", { class: "fp-human" });
+  const form = el("form", { class: "sig-form" }, el("label", { class: "sig-line" }, "Your name: ", name, check), human);
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    if (!name.value.trim()) return;
+    say("");
+    try {
+      const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: name.value, turnstile: fpToken } });
+      me = r.user;
+      afterCode = "u/" + encodeURIComponent(r.user.name); // land on your new page once the code is saved
+      showCode(r.code);
+    } catch (err) {
+      say(err.message);
+      if (window.turnstile) { try { window.turnstile.reset(); } catch {} fpToken = null; }
+    }
+  };
+  box.append(el("div", { class: "pull-row" }, card(st.card, 0, { kept_index: null })),
+    el("p", { class: "center" }, "This one's yours to keep. Sign it to make it official!", el("br"),
+      el("span", { class: "small" }, "(This also creates your account)")),
+    form);
+  if (st.sitekey) loadTurnstile(st.sitekey, human);
+}
 
 $("login-form").onsubmit = async (e) => {
   e.preventDefault();
@@ -1709,6 +1764,8 @@ $("login-form").onsubmit = async (e) => {
     await refresh();
   } catch (err) { say(err.message); }
 };
+
+$("print-code").onclick = () => { document.body.classList.add("printing-code"); window.print(); setTimeout(() => document.body.classList.remove("printing-code"), 500); };
 
 $("copy-code").onclick = async () => {
   try { await navigator.clipboard.writeText($("code-text").textContent); say("Copied."); }

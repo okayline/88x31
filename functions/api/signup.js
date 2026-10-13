@@ -1,5 +1,6 @@
 // POST /api/signup  { name }  ->  { user, code }  (code is shown once, never stored)
-import { json, readJson, newSaveCode, hashCode, startSession, rateLimit, now } from "../../lib/auth.js";
+import { json, readJson, startSession, rateLimit } from "../../lib/auth.js";
+import { createAccount } from "../../lib/accounts.js";
 import { giveWelcomePack } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
 
@@ -8,34 +9,9 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Too many new accounts from here. Try again later." }, 429);
   }
   const { name } = await readJson(request);
-  const clean = String(name || "").trim();
-  if (!/^[A-Za-z0-9_-]{3,20}$/.test(clean)) {
-    return json({ error: "Name must be 3-20 letters, numbers, _ or -." }, 400);
-  }
-  if (/-bot$/i.test(clean)) return json({ error: "Names ending in -bot are saved for the bots!" }, 400);
-  // names the game uses for itself
-  if (["everyone", "nobody", "webmaster"].includes(clean.toLowerCase())) return json({ error: "That name is taken." }, 409);
-  const taken = await env.DB.prepare("SELECT 1 FROM users WHERE name = ?").bind(clean).first();
-  if (taken) return json({ error: "That name is taken." }, 409);
-
-  const t = now();
-  const code = newSaveCode();
-  const codeHash = await hashCode(code);
-
-  // One all-or-nothing batch: the account and its first code.
-  let user;
-  try {
-    const [res] = await env.DB.batch([
-      env.DB.prepare("INSERT INTO users (name, created_at) VALUES (?, ?) RETURNING id, name").bind(clean, t),
-      env.DB.prepare(
-        `INSERT INTO save_codes (user_id, code_hash, label, created_at)
-         SELECT id, ?, 'first code', ? FROM users WHERE name = ?`
-      ).bind(codeHash, t, clean),
-    ]);
-    user = res.results[0];
-  } catch {
-    return json({ error: "That name is taken." }, 409);
-  }
+  const made = await createAccount(env, name);
+  if (made.error) return json({ error: made.error }, made.status);
+  const { user, code } = made;
 
   // Welcome pack (skipped quietly if no banners are loaded yet).
   try { await giveWelcomePack(env, user.id); } catch (e) { console.log("welcome pack failed", e); }
