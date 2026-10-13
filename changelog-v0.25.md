@@ -9,6 +9,8 @@ Newest first. Times are Hawaii time (HST).
 
 - Fixed the button info window not opening on the Wall of Buttons.
 - The Wall's Show and Order switches are smaller and tucked into the top corner, and only for members.
+- Cool Links are gone for now. Webrings are coming soon!
+- The cLuB's public key moved up in the Ledger Status, right under the fingerprint.
 
 ## v0.25 — "Hack the Planet"
 **Tue Oct 13, 2026 · 4:45 AM HST**

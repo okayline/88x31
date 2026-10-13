@@ -389,7 +389,6 @@ async function showPage(name) {
   if (seq !== loadSeq) return;
   const owner = col.owner.name;
   applyTheme(col.owner.theme);
-  renderLinks(owner, gb, col);
   if (col.owner.is_bot) $("sets-panel").hidden = true;
   else api("/api/sets?user=" + encodeURIComponent(owner)).then((r) => { if (seq === loadSeq) renderSets(owner, r); }).catch(() => {});
   $("page-name").textContent = owner;
@@ -660,26 +659,25 @@ async function loadSeriesPanel() {
   try { r = await api("/api/series"); } catch (e) { seriesPanelLoaded = false; return; }
   const active = r.series.filter((x) => x.status === "active").length;
   $("series-note").textContent = `${active} of ${r.max_active} active. Packs split 60/25/15 between the newest active series.`;
-  const setStatus = async (x, status) => {
-    const verb = { active: "Release", retired: "Retire", upcoming: "Hide" }[status];
-    const what = { active: "It goes into packs right away and everyone can see it.", retired: "It leaves packs. Copies people own stay theirs.", upcoming: "It leaves packs and is hidden from players." }[status];
-    if (!(await ask(`${verb} Series ${x.name}? ${what}`, { ok: verb }))) return;
+  seriesOpen = null; $("series-detail").textContent = "";
+  // a new series starts hidden ("upcoming"); Release puts it into packs. (No retire/hide here.)
+  const release = async (x) => {
+    if (!(await ask(`Release Series ${x.name}? It goes into packs right away and everyone can see it.`, { ok: "Release" }))) return;
     try {
-      const res = await api("/api/series", { method: "POST", body: { action: "status", id: x.id, status } });
-      sSay(res.warning || `Series ${x.name} is now ${status}.`);
+      const res = await api("/api/series", { method: "POST", body: { action: "status", id: x.id, status: "active" } });
+      sSay(res.warning || `Series ${x.name} is out!`);
       seriesPanelLoaded = false; wallLoaded = false; loadSeriesPanel();
     } catch (e) { sSay(e.message); }
   };
   const rows = $("series-rows");
   rows.textContent = "";
   for (const x of r.series) {
-    const btns = ["active", "retired", "upcoming"].filter((st) => st !== x.status).map((st) =>
-      el("button", { type: "button", class: "mini", onclick: () => setStatus(x, st) }, { active: "Release", retired: "Retire", upcoming: "Hide" }[st]));
     rows.append(el("tr", {},
       el("td", {}, el("b", {}, `Series ${x.name}`)),
       el("td", {}, el("span", { class: "series-status st-" + x.status }, x.status)),
       el("td", {}, `${x.buttons} button${x.buttons === 1 ? "" : "s"}`),
-      el("td", {}, el("button", { type: "button", class: "mini", onclick: () => showSeriesDetail(x) }, "Look"), " ", ...btns)));
+      el("td", {}, el("button", { type: "button", class: "mini series-look", "data-id": x.id, onclick: () => showSeriesDetail(x) }, "Look"),
+        x.status === "upcoming" ? [" ", el("button", { type: "button", class: "mini", onclick: () => release(x) }, "Release")] : null)));
   }
   // cLuB originals that aren't in a series yet
   const loose = $("series-loose");
@@ -704,14 +702,18 @@ async function loadSeriesPanel() {
     catch (err) { sSay(err.message); }
   };
 }
+let seriesOpen = null;   // which series' buttons are showing; clicking Look again closes it
 async function showSeriesDetail(x) {
   const box = $("series-detail");
+  const looks = () => document.querySelectorAll(".series-look").forEach((b) => b.classList.toggle("on", Number(b.dataset.id) === seriesOpen));
+  if (seriesOpen === x.id) { seriesOpen = null; box.textContent = ""; looks(); return; }
+  seriesOpen = x.id; looks();
   box.textContent = "Loading...";
   try {
     const { designs } = await api("/api/series?id=" + x.id);
+    if (seriesOpen !== x.id) return;
     box.textContent = "";
-    box.append(el("p", { class: "small center" }, el("b", {}, `Series ${x.name}`), ` · ${designs.length} buttons · `,
-      el("a", { href: "#", onclick: (e) => { e.preventDefault(); box.textContent = ""; } }, "close")),
+    box.append(el("p", { class: "small center" }, el("b", {}, `Series ${x.name}`), ` · ${designs.length} buttons`),
       el("div", { class: "wall-grid" }, designs.map((d) => el("a", { href: "#wall/" + d.id, class: "wall-tile", title: `${d.name} (${d.rarity}${d.max_editions ? ", " + d.max_editions + " copies" : ""})` }, bannerImg(d)))));
   } catch (e) { box.textContent = e.message; }
 }
@@ -864,79 +866,8 @@ function renderSets(owner, r) {
     r.secrets_left === 1 ? "...psst. There's a secret set out there. Can you find it?" : `...psst. There are ${r.secrets_left} secret sets out there.`));
 }
 
-// ---------- Cool Links (link exchange) ----------
 
-function cardImg(c, href, title) {
-  return el("a", { href, title, ...(href.startsWith("http") ? { target: "_blank", rel: "noopener nofollow ugc" } : {}) },
-    c ? bannerImg(c) : el("span", { class: "no-card" }, "88x31"));
-}
 
-function renderLinks(owner, gb, col) {
-  const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
-  const go = (name) => async (action) => {
-    try { await api("/api/links", { method: "POST", body: { to: name, action } }); await showPage(owner); loadSummary(); }
-    catch (e) { say(e.message); }
-  };
-
-  // your calling card
-  const meBox = $("links-me");
-  meBox.hidden = !mine;
-  meBox.textContent = "";
-  if (mine) {
-    meBox.append(el("span", { class: "small" }, "My Button: "),
-      gb.my_card ? bannerImg(gb.my_card) : el("span", { class: "small" }, "(none yet)"),
-      " ", el("button", { type: "button", class: "mini", onclick: () => {
-        const grid = $("card-grid");
-        grid.textContent = "";
-        for (const b of col.banners) {
-          grid.append(el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}`, onclick: async () => {
-            try { await api("/api/profile", { method: "POST", body: { my_button: b.id } }); say("My Button updated!"); await showPage(me.name); }
-            catch (e) { say(e.message); }
-          } }, bannerImg(b), el("span", { class: "small" }, edition(b))));
-        }
-        $("card-picker").hidden = !$("card-picker").hidden;
-      } }, "Change"),
-      el("span", { class: "small" }, " This is what shows up in your friends' Cool Links."));
-  }
-  $("card-picker").hidden = true;
-
-  // requests waiting (only on your own page)
-  const req = $("links-requests");
-  req.textContent = "";
-  for (const q of mine ? gb.link_requests || [] : []) {
-    req.append(el("p", { class: "link-req" }, el("a", { href: "#u/" + encodeURIComponent(q.name) }, el("b", {}, q.name)),
-      " wants to swap links! ",
-      el("button", { type: "button", class: "mini", onclick: () => go(q.name)("accept") }, "Swap!"), " ",
-      el("button", { type: "button", class: "mini", onclick: () => go(q.name)("decline") }, "No thanks")));
-  }
-
-  // the links themselves
-  const body = $("links-body");
-  body.textContent = "";
-  const list = gb.links || [];
-  if (!list.length) body.append(el("p", { class: "small" }, mine ? "No links yet. Visit a guestbook and hit \"Swap links!\"" : "No links yet."));
-  for (const l of list) {
-    const href = "#u/" + encodeURIComponent(l.name);
-    body.append(el("span", { class: "tile link-tile" }, cardImg(l.card, href, `${l.name}'s page`),
-      el("a", { class: "small", href: "#u/" + encodeURIComponent(l.name) }, l.name),
-      mine ? el("button", { type: "button", class: "mini unlink", title: "Unlink", onclick: async () => {
-        if (await ask(`Unlink from ${l.name}? You'll both drop out of each other's Cool Links.`, { ok: "Unlink", cancel: "Keep" })) go(l.name)("remove");
-      } }, "x") : null));
-  }
-
-  // the swap button for visitors
-  const swap = $("links-swap");
-  swap.textContent = "";
-  if (!me) swap.append(el("span", { class: "small" }, el("a", { href: "#" }, "Join ~*~ tHe cLuB ~*~"), " to swap links!"));
-  else if (!mine) {
-    const st = gb.link_state;
-    if (st === "linked") swap.append(el("span", { class: "small" }, "You and ", el("b", {}, owner), " are linked ✓ "),
-      el("button", { type: "button", class: "mini", onclick: () => go(owner)("remove") }, "unlink"));
-    else if (st === "sent") swap.append(el("span", { class: "small" }, "Link swap request sent! Waiting for them to say yes."));
-    else if (st === "received") swap.append(el("button", { type: "button", onclick: () => go(owner)("accept") }, `${owner} asked to swap links. Swap!`));
-    else swap.append(el("button", { type: "button", onclick: () => go(owner)("request") }, "Swap links!"));
-  }
-}
 
 // ---------- "Hi, space!" dashboard ----------
 
@@ -964,8 +895,6 @@ async function loadSummary() {
     el("a", { href: "#banner/" + s.last_given.id }, label(s.last_given)), " to ", who(s.last_given.who), `, ${ago(s.last_given.at)}`);
   if (s.sets_ready) li(el("b", { class: "hot" }, `★ ${s.sets_ready} set${s.sets_ready === 1 ? "" : "s"} complete!`), " Claim your reward on ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "your guestbook »"));
-  if (s.link_requests) li(el("b", {}, `${s.link_requests} link swap request${s.link_requests === 1 ? "" : "s"}`), " waiting. ",
-    el("a", { href: "#u/" + encodeURIComponent(me.name) }, "See »"));
   li(`You have ${s.buttons} button${s.buttons === 1 ? "" : "s"} in your collection.`);
 }
 

@@ -33,10 +33,8 @@ export async function onRequestGet({ request, env }) {
     db.prepare("SELECT COUNT(*) AS n FROM guestbook_entries WHERE page_user = ? AND day LIKE ?").bind(me.id, d + "%").first(),
     db.prepare("SELECT COUNT(*) AS n FROM instances WHERE owner_id = ? AND consumed = 0").bind(me.id).first(),
   ]);
-  const linkReq = await db.prepare("SELECT COUNT(*) AS n FROM link_exchanges WHERE to_user = ? AND status = 'pending'").bind(me.id).first();
   return json({
     sets_ready: await readyCount(env, me.id),
-    link_requests: linkReq ? linkReq.n : 0,
     packs_left: Math.max(0, PULLS_PER_DAY - (packs ? packs.n : 0)),
     pulls_per_day: PULLS_PER_DAY,
     trades_waiting: trades ? trades.n : 0,
