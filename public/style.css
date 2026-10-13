@@ -115,6 +115,16 @@ a { color: var(--link); }
 a:visited { color: #ff99ff; }
 
 .nav { text-align: center; }
+.top-bar { text-align: center; white-space: nowrap; overflow-x: auto; padding: 4px 6px; margin: 0 0 10px;
+  font: bold 14px Arial, Helvetica, sans-serif; color: #fff; background: #000033; border: 2px ridge var(--edge); }
+.dash h2 { margin-bottom: 6px; }
+.dash-list { margin: 0 0 8px; padding-left: 22px; }
+.dash-list li { margin-bottom: 3px; }
+.dash-menu { margin: 6px 0; }
+.top-ticker { margin: 0 0 14px; }
+.ticker-label { position: relative; z-index: 1; float: left; padding: 0 6px; margin-right: 4px; color: #000; background: #ffff00; }
+.collection-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.collection-head h2 { margin: 0; }
 .visit { margin-top: 8px; }
 .visit input { display: inline-block; width: 140px; }
 
@@ -215,7 +225,7 @@ h3 { margin: 10px 0 6px; font-size: 15px; color: var(--link); }
 .homepage-link { font-weight: bold; color: var(--ink); }
 .home-form { text-align: center; margin: 4px 0 10px; font-size: 14px; }
 .home-form input { display: inline-block; width: 240px; max-width: 60%; }
-.arrange-bar { margin: 0 0 8px; }
+.arrange-bar { margin: 10px 0 0; text-align: right; }
 .grid.arranging .tile { cursor: grab; border: 2px dashed #ffff00; padding: 2px; touch-action: none; user-select: none; }
 .grid.arranging .tile.dragging { opacity: 0.5; cursor: grabbing; }
 .use-box { margin: 10px 0; padding: 8px; border: 2px dashed var(--edge); }
@@ -225,6 +235,36 @@ h3 { margin: 10px 0 6px; font-size: 15px; color: var(--link); }
 .drop.over { border-color: #ffff00; background: #000066; }
 .drop input { display: none; }
 img.check-pic { display: inline-block; width: 176px; height: 62px; }
+
+/* ---------- guestbook color themes (on the guestbook page's panels) ---------- */
+#view-page .panel { background: var(--gb-panel, var(--panel)); color: var(--gb-text, var(--text)); border-color: var(--gb-edge, var(--edge)); }
+#view-page h2, #view-page h3 { color: var(--gb-ink, var(--ink)); }
+#view-page a { color: var(--gb-link, var(--link)); }
+.gb-starry { }
+.gb-geo { --gb-panel: #c0c0c0; --gb-text: #000000; --gb-ink: #000080; --gb-link: #0000ee; --gb-edge: #808080; }
+.gb-geo .panel { font-family: "Times New Roman", Times, serif; }
+.gb-hacker { --gb-panel: #000000; --gb-text: #33ff33; --gb-ink: #00ff00; --gb-link: #00ffaa; --gb-edge: #008800; }
+.gb-hacker .panel { font-family: "Courier New", Courier, monospace; }
+.gb-bubblegum { --gb-panel: #ff99cc; --gb-text: #4b0033; --gb-ink: #ffffff; --gb-link: #990066; --gb-edge: #ff66b3; }
+.gb-ocean { --gb-panel: #006680; --gb-text: #ffffff; --gb-ink: #aaffff; --gb-link: #ffff99; --gb-edge: #66ccff; }
+.gb-goth { --gb-panel: #1a0010; --gb-text: #ddccdd; --gb-ink: #ff3355; --gb-link: #b388ff; --gb-edge: #550022; }
+.gb-construction { --gb-panel: #ffcc00; --gb-text: #000000; --gb-ink: #000000; --gb-link: #003399; --gb-edge: #000000; }
+.gb-construction .panel { border-style: dashed; }
+.gb-vapor { --gb-panel: #2d1b4e; --gb-text: #fffb96; --gb-ink: #ff71ce; --gb-link: #01cdfe; --gb-edge: #b967ff; }
+.theme-picker { margin-top: 10px; text-align: right; }
+.swatch { margin: 2px; font-size: 12px; padding: 2px 6px; border: 2px outset #fff; cursor: pointer; }
+.swatch.on { border-style: inset; outline: 2px solid #ffff00; }
+.sw-starry { background: #000080; color: #ffff00; }
+.sw-geo { background: #c0c0c0; color: #000080; }
+.sw-hacker { background: #000; color: #00ff00; }
+.sw-bubblegum { background: #ff99cc; color: #4b0033; }
+.sw-ocean { background: #006680; color: #aaffff; }
+.sw-goth { background: #1a0010; color: #ff3355; }
+.sw-construction { background: #ffcc00; color: #000; }
+.sw-vapor { background: #2d1b4e; color: #ff71ce; }
+/* readable inputs/notes on light themes */
+.gb-geo .bot-note, .gb-bubblegum .bot-note, .gb-construction .bot-note { color: #006600; }
+.gb-geo .homepage-link, .gb-bubblegum .homepage-link, .gb-construction .homepage-link { color: inherit; }
 
 /* ---------- in-game dialog window ---------- */
 .dialog-backdrop {

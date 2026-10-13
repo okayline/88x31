@@ -8,6 +8,15 @@
 </head>
 <body>
 <main>
+  <nav class="top-bar" id="top-nav" hidden>
+    [ <a href="#">Home</a> ] -
+    [ <a href="#" id="nav-mine">My Guestbook</a> ] -
+    [ <a href="#trades" id="nav-trades">Trades</a> ] -
+    [ <a href="#about">About</a> ] -
+    [ <a href="#" id="logout">Log Out</a> ]
+  </nav>
+
+
 
   <header class="banner-head">
     <p class="small">You have found...</p>
@@ -25,6 +34,21 @@
   <p class="center small">This page is always being worked on. Check back soon for more cool stuff!</p>
 
   <hr class="rainbow">
+
+  <!-- "Hi, space!" dashboard (logged in) -->
+  <section class="panel dash" id="dash" hidden>
+    <h2 class="center">Hi, <span id="who"></span>!</h2>
+    <ul class="dash-list" id="dash-list"><li>Loading your news...</li></ul>
+    <p class="center dash-menu">
+      [ <a href="#pull">Daily Pull</a> ]
+      [ <a href="#codes">Save Codes</a> ]
+      [ <a href="#check">Check a Button</a> ]
+    </p>
+    <form id="visit-form" class="visit center">
+      Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off" list="player-names"> <button>Go!</button>
+    </form>
+    <datalist id="player-names"></datalist>
+  </section>
 
   <section id="loading"><p class="center">Loading... please wait...</p></section>
 
@@ -132,20 +156,6 @@
 
   <!-- logged in -->
   <section id="in" hidden>
-    <div class="panel nav">
-      <b>Hi, <span id="who"></span>!</b><br>
-      [ <a href="#pull">Daily Pull</a> ]
-      [ <a href="#" id="nav-mine">My Guestbook</a> ]
-      [ <a href="#trades" id="nav-trades">Trades</a> ]
-      [ <a href="#codes">Save Codes</a> ]
-      [ <a href="#about">About</a> ]
-      [ <a href="#check">Check a Button</a> ]
-      [ <a href="#" id="logout">Log Out</a> ]
-      <form id="visit-form" class="visit">
-        Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off" list="player-names"> <button>Go!</button>
-      </form>
-      <datalist id="player-names"></datalist>
-    </div>
 
     <!-- daily pull -->
     <div id="view-pull" class="view panel" hidden>
@@ -167,14 +177,18 @@
           <button>Save</button>
         </form>
         <h2>&raquo; My Button Collection &laquo;</h2>
+        <div id="page-collection" class="grid"></div>
         <p class="arrange-bar" id="arrange-bar" hidden>
           <button type="button" id="arrange-btn">Arrange my wall</button>
           <span id="arrange-tools" hidden>
-            <span class="small">Drag buttons into any order.</span>
-            <button type="button" id="arrange-save">Save order</button> <button type="button" id="arrange-cancel">Cancel</button>
+            <span class="small">Drag into any order:</span>
+            <button type="button" id="arrange-save">Save</button> <button type="button" id="arrange-cancel">Cancel</button>
           </span>
         </p>
-        <div id="page-collection" class="grid"></div>
+        <div class="theme-picker" id="theme-picker" hidden>
+          <span class="small">My guestbook colors:</span>
+          <span id="theme-swatches"></span>
+        </div>
       </div>
       <div class="panel" id="trade-panel" hidden>
         <h2>&raquo; Trade with <span class="tb-name"></span> &laquo;</h2>
@@ -246,9 +260,10 @@
 
   <hr class="rainbow">
 
+
   <p class="center"><b>~ Recent Trades &amp; Gifts ~</b></p>
   <div class="ticker" id="ticker" aria-live="off">
-    <span id="ticker-text">loading the latest news...</span>
+    <b class="ticker-label">NEWS:</b><span id="ticker-text">loading the latest trades &amp; gifts...</span>
   </div>
 
   <p class="center"><b>~ Buttons you can collect ~</b></p>
@@ -279,7 +294,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.12.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.13</span>
   </p>
 
 </main>

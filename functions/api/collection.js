@@ -19,5 +19,5 @@ export async function onRequestGet({ request, env }) {
   ).bind(owner.id).all();
 
   return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0,
-    last_seen: owner.is_bot ? owner.last_seen : null, homepage: owner.homepage || null }, banners: results });
+    last_seen: owner.is_bot ? owner.last_seen : null, homepage: owner.homepage || null, theme: owner.theme || null }, banners: results });
 }

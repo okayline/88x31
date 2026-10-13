@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_bot      INTEGER NOT NULL DEFAULT 0,   -- bots play once a day (lib/bots.js); can't log in
   last_seen   INTEGER,                      -- bots: when they were last online
   homepage    TEXT,                         -- player's own website (http/https), shown on their guestbook
+  theme       TEXT,                         -- guestbook color theme (preset name)
   created_at  INTEGER NOT NULL
 );
 

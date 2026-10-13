@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.12.1
+# 88x31 cLuB Changelog — v0.13
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.13 — "Hi, Welcome Back!"
+**Mon Oct 12, 2026 · 6:26 PM HST**
+
+- New one-line menu bar at the top of the page.
+- A "Hi!" box with your daily news: packs left, trade offers, new guestbook messages, and your latest gifts.
+- Pick a color theme for your guestbook from 8 classic looks.
+- "Arrange my wall" now lives at the bottom of your collection.
+- Clearer gifting in packs: the button says exactly what will happen.
+- No more old pages flashing up when you click around.
 
 ## v0.12.1 — "Plug It Back In"
 **Mon Oct 12, 2026 · 6:02 PM HST**

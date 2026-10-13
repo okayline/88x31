@@ -1,4 +1,4 @@
-// POST /api/profile { homepage } -> { ok, homepage }   (empty string clears it)
+// POST /api/profile { homepage?, theme? } -> { ok }   (empty homepage clears it)
 import { json, readJson, currentUser } from "../../lib/auth.js";
 
 export function cleanHomepage(raw) {
@@ -12,11 +12,18 @@ export function cleanHomepage(raw) {
   return { value: u.toString() };
 }
 
+export const THEMES = ["starry", "hacker", "bubblegum", "ocean", "goth", "construction", "vapor", "geo"];
+
 export async function onRequestPost({ request, env }) {
   const me = await currentUser(env, request);
   if (!me) return json({ error: "Not logged in." }, 401);
-  const { homepage } = await readJson(request);
-  const c = cleanHomepage(homepage);
+  const body = await readJson(request);
+  if ("theme" in body) {
+    if (!THEMES.includes(body.theme)) return json({ error: "Unknown theme." }, 400);
+    await env.DB.prepare("UPDATE users SET theme = ? WHERE id = ?").bind(body.theme, me.id).run();
+    return json({ ok: true, theme: body.theme });
+  }
+  const c = cleanHomepage(body.homepage);
   if (c.error) return json({ error: c.error }, 400);
   await env.DB.prepare("UPDATE users SET homepage = ? WHERE id = ?").bind(c.value, me.id).run();
   return json({ ok: true, homepage: c.value });

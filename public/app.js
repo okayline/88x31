@@ -2,7 +2,12 @@
 const $ = (id) => document.getElementById(id);
 const say = (text) => ($("msg").textContent = text || "");
 const TOP = ["loading", "out", "in", "code-card", "about", "check"];
-const showTop = (id) => TOP.forEach((s) => ($(s).hidden = s !== id));
+const showTop = (id) => {
+  TOP.forEach((s) => ($(s).hidden = s !== id));
+  const on = !!me && id !== "code-card";
+  $("top-nav").hidden = !on;   // one-line menu at the very top
+  $("dash").hidden = !on;      // "Hi, space!" dashboard under the rainbow
+};
 const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
 
@@ -99,6 +104,7 @@ async function route() {
   if (hash === "check") { showTop("check"); return; }
   if (!me) return showTop("out");
   showTop("in");
+  if (!hash) loadSummary(); // refresh the dashboard when coming back Home
   try {
     if (hash.startsWith("u/")) return await showPage(hash.slice(2));
     if (hash.startsWith("banner/")) return await showBanner(hash.slice(7));
@@ -107,13 +113,14 @@ async function route() {
     return await showPull();
   } catch (e) { say(e.message); }
 }
-window.addEventListener("hashchange", route);
+window.addEventListener("hashchange", () => { window.scrollTo(0, 0); route(); });
 
 async function refresh() {
   const { user, trades_waiting } = await api("/api/me");
   me = user;
   if (!me) return route();
   setTradeCount(trades_waiting || 0);
+  loadSummary();
   $("who").textContent = me.name;
   $("nav-mine").href = "#u/" + encodeURIComponent(me.name);
   loadPlayers();
@@ -167,21 +174,27 @@ async function showPull() {
     cards.forEach((c, j) => c.classList.toggle("chosen", j === i));
     // Radio choices: skip, or gift one of the two you didn't keep.
     giftBox.textContent = "";
+    const keptName = d && !d.bonus ? d.name : "it";
+    // The button says exactly what will happen.
+    const updateBtn = () => {
+      const g = giftChoice();
+      keepBtn.textContent = g === "" ? `Keep ${keptName}!` : `Keep ${keptName} & send the gift!`;
+    };
     const radio = (value, ...label) => {
       const input = el("input", { type: "radio", name: "gift", value });
-      input.onchange = () => { toRow.hidden = giftChoice() === ""; };
+      input.onchange = () => { toRow.hidden = giftChoice() === ""; updateBtn(); };
       return el("label", { class: "radio" }, input, ...label);
     };
-    giftBox.append(radio("", "No thanks, let the other two go"));
     pull.options.forEach((d2, j) => {
       if (j !== i && d2 && !d2.bonus) giftBox.append(radio(String(j), "Gift ", bannerImg(d2), " ", el("b", {}, d2.name)));
     });
-    giftBox.querySelector("input").checked = true;
+    giftBox.append(radio("", "No thanks, let the other two go"));
+    giftBox.querySelector('input[value=""]').checked = true;
     toRow.hidden = true;
     // taking the bonus pack: no gifting, just open the new pack
     const isBonus = !!(pull.options[i] && pull.options[i].bonus);
     giftHead.hidden = giftBox.hidden = isBonus;
-    keepBtn.textContent = isBonus ? "Open the bonus pack!" : "Keep it!";
+    if (isBonus) keepBtn.textContent = "Open the bonus pack!"; else updateBtn();
     form.hidden = false;
   }));
   box.append(el("div", { class: "pull-row" }, cards));
@@ -200,6 +213,7 @@ async function showPull() {
       const takingBonus = !!(pull.options[keep] && pull.options[keep].bonus);
       const r = await api("/api/pull", { method: "POST", body: { keep, pass: takingBonus || pass === "" ? null : Number(pass), to: toInput.value } });
       if (r.bonus) { say("★ BONUS PACK! ★ Here's a fresh one!"); return await showPull(); }
+      loadSummary();
       say(pass !== "" && !r.passed ? "Kept! (The one you gifted sold out, sorry.)" : pass !== "" ? "Kept, and your gift is on its way!" : "Added to your collection!");
       await showPull();
     } catch (err) { say(err.message); }
@@ -226,13 +240,23 @@ function card(d, i, pull, onPick) {
 
 // ---------- player page ----------
 
+// Each page load gets a number; if you click somewhere else before it finishes,
+// the older load is thrown away instead of flashing up on screen.
+let loadSeq = 0;
+
 async function showPage(name) {
+  const seq = ++loadSeq;
   showView("view-page");
+  $("page-name").textContent = name;
+  $("page-collection").textContent = "Loading...";
+  $("page-guestbook").textContent = "";
   const [col, gb] = await Promise.all([
     api("/api/collection?user=" + encodeURIComponent(name)),
     api("/api/guestbook?user=" + encodeURIComponent(name)),
   ]);
+  if (seq !== loadSeq) return;
   const owner = col.owner.name;
+  applyTheme(col.owner.theme);
   $("page-name").textContent = owner;
   $("page-bot").hidden = !col.owner.is_bot;
   $("page-seen").hidden = !col.owner.last_seen;
@@ -250,6 +274,8 @@ async function showPage(name) {
 
   stopArranging(false);
   $("arrange-bar").hidden = !mine || col.banners.length < 2;
+  $("theme-picker").hidden = !mine;
+  if (mine) renderSwatches(col.owner.theme || "starry");
   const grid = $("page-collection");
   grid.textContent = "";
   if (!col.banners.length) grid.append(el("p", {}, "No buttons yet!"));
@@ -305,6 +331,32 @@ async function showPage(name) {
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity })),
         el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null));
   }
+}
+
+// ---------- "Hi, space!" dashboard ----------
+
+async function loadSummary() {
+  let s;
+  try { s = await api("/api/summary"); } catch { return; }
+  setTradeCount(s.trades_waiting);
+  const list = $("dash-list");
+  list.textContent = "";
+  const li = (...kids) => list.append(el("li", {}, ...kids));
+  const label = (g) => `${g.design} #${g.edition}${g.max_editions ? " of " + g.max_editions : ""}`;
+  const who = (n) => n ? el("a", { href: "#u/" + encodeURIComponent(n) }, n) : "a former player";
+  li(s.packs_left
+    ? el("span", {}, el("b", {}, `${s.packs_left} pack${s.packs_left === 1 ? "" : "s"}`), " left to open today! ", el("a", { href: "#pull" }, "Open them »"))
+    : "You've opened all your packs today. New ones tomorrow!");
+  li(s.trades_waiting
+    ? el("span", {}, el("b", {}, `${s.trades_waiting} trade offer${s.trades_waiting === 1 ? "" : "s"}`), " waiting for you. ", el("a", { href: "#trades" }, "Take a look »"))
+    : "No trade offers waiting.");
+  if (s.guestbook_today) li(el("b", {}, `${s.guestbook_today} new guestbook message${s.guestbook_today === 1 ? "" : "s"}`), " today. ",
+    el("a", { href: "#u/" + encodeURIComponent(me.name) }, "Read »"));
+  if (s.last_received) li("Last gift you got: ", el("a", { href: "#banner/" + s.last_received.id }, label(s.last_received)),
+    " from ", who(s.last_received.who), `, ${ago(s.last_received.at)}`);
+  if (s.last_given) li("Last thing you gave: ", el("a", { href: "#banner/" + s.last_given.id }, label(s.last_given)),
+    " to ", who(s.last_given.who), `, ${ago(s.last_given.at)}`);
+  li(`You have ${s.buttons} button${s.buttons === 1 ? "" : "s"} in your collection.`);
 }
 
 // ---------- trading ----------
@@ -402,6 +454,31 @@ async function showTrades() {
     const other = t.to_user === me.id ? t.from_name : t.to_name;
     past.append(el("p", { class: "small" }, `${fmtDate(t.resolved_at || t.created_at)}: with `,
       el("a", { href: "#u/" + encodeURIComponent(other) }, other), ` · ${t.status.toUpperCase()}`));
+  }
+}
+
+// ---------- guestbook color themes ----------
+
+const THEMES = [
+  ["starry", "Starry Night"], ["geo", "Classic Gray"], ["hacker", "Hacker Green"], ["bubblegum", "Bubblegum"],
+  ["ocean", "Deep Ocean"], ["goth", "Midnight Goth"], ["construction", "Under Construction"], ["vapor", "Vaporwave"],
+];
+function applyTheme(name) {
+  const v = $("view-page");
+  THEMES.forEach(([t]) => v.classList.remove("gb-" + t));
+  v.classList.add("gb-" + (THEMES.some(([t]) => t === name) ? name : "starry"));
+}
+function renderSwatches(current) {
+  const box = $("theme-swatches");
+  box.textContent = "";
+  for (const [t, label] of THEMES) {
+    const b = el("button", { type: "button", class: `swatch sw-${t}` + (t === current ? " on" : ""), title: label }, label);
+    b.onclick = async () => {
+      applyTheme(t); renderSwatches(t);
+      try { await api("/api/profile", { method: "POST", body: { theme: t } }); say(`Guestbook colors: ${label}!`); }
+      catch (e) { say(e.message); }
+    };
+    box.append(b);
   }
 }
 
@@ -649,8 +726,11 @@ $("foot-sign").onclick = (e) => {
 // ---------- banner detail ----------
 
 async function showBanner(id) {
+  const seq = ++loadSeq;
   showView("view-banner");
+  $("banner-body").textContent = "Loading...";
   const { banner: b, design_entry: de, history, chain } = await api("/api/banner?id=" + encodeURIComponent(id));
+  if (seq !== loadSeq) return;
   const box = $("banner-body");
   box.textContent = "";
   const fp = (hash, ledgerId) => hash
