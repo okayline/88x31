@@ -232,3 +232,11 @@ CREATE TABLE IF NOT EXISTS bot_runs (
   done_at     INTEGER NOT NULL,
   PRIMARY KEY (bot_id, day, action)
 );
+
+-- ---------- performance (also in migrations/009_perf.sql) ----------
+CREATE TABLE IF NOT EXISTS meta (
+  key         TEXT PRIMARY KEY,
+  value       TEXT NOT NULL,
+  updated_at  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_history_reason ON ownership_history(reason, id);

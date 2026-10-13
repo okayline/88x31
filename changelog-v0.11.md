@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.10
+# 88x31 cLuB Changelog — v0.11
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.11 — "Defrag"
+**Mon Oct 12, 2026 · 5:20 PM HST**
+
+- Behind-the-scenes tune-up so the site stays fast and free as the cLuB grows.
+- The ledger still gets a full check every day.
 
 ## v0.10 — "Breaking News"
 **Sun Oct 11, 2026 · 10:32 PM HST**
