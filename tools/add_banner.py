@@ -17,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "public", "banners")
 SEED = os.path.join(ROOT, "seed_new_banners.sql")
 TYPES = {"neon", "construction", "guestbook", "webring", "counter", "divider"}
-RARITIES = {"common", "uncommon", "rare", "ultra"}
+RARITIES = {"common", "uncommon", "rare", "ultra", "special"}
 
 def sq(v):
     return "NULL" if v is None else "'" + str(v).replace("'", "''") + "'"
@@ -31,6 +31,7 @@ def main():
     p.add_argument("--cap", type=int, default=None, help="max copies (default: 50 rare, 1 ultra, unlimited otherwise)")
     p.add_argument("--variant-of", help="name of the regular design this is a special version of")
     p.add_argument("--variant", help='variant label, e.g. "Holo", "Gold Leaf"')
+    p.add_argument("--status", default="active", choices=["active", "reward"], help="reward = only given by set rewards, never in packs")
     p.add_argument("--source-title")
     p.add_argument("--author", required=True)
     p.add_argument("--url")
@@ -72,7 +73,7 @@ def main():
         "INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, "
         "source_title, source_author, source_url, license) VALUES ("
         f"{sq(a.name)}, {sq('banners/' + slug + '.gif')}, {sq(h)}, {sq(a.type)}, {sq(a.rarity)}, {sq(json.dumps(stats))}, "
-        f"{cap if cap else 'NULL'}, 'active', strftime('%s','now'), "
+        f"{cap if cap else 'NULL'}, {sq(a.status)}, strftime('%s','now'), "
         f"{sq(a.source_title)}, {sq(a.author)}, {sq(a.url)}, {sq(a.license)});\n"
     )
     new_file = not os.path.exists(SEED)

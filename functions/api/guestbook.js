@@ -6,6 +6,7 @@
 import { json, readJson, currentUser, rateLimit, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { listTrades } from "../../lib/trades.js";
+import { coolLinks, incomingLinks, linkState, cardSql, withCards } from "../../lib/links.js";
 import { today, userByName, transferStatements, newLockToken, lockedBy } from "../../lib/game.js";
 
 export async function onRequestGet({ request, env }) {
@@ -25,7 +26,17 @@ export async function onRequestGet({ request, env }) {
 
   const trades = (await listTrades(env, owner.id, { status: "accepted", limit: 30 }))
     .map((t) => ({ id: t.id, at: t.resolved_at, from_name: t.from_name, to_name: t.to_name, give: t.give, want: t.want }));
-  return json({ owner, entries: results, trades });
+  const viewer = await currentUser(env, request);
+  const links = await coolLinks(env, owner.id);
+  const [card] = await withCards(env, [await env.DB.prepare(
+    `SELECT ${cardSql("o")} AS card_id FROM users o_u WHERE o_u.id = ?`).bind(owner.id).first() || {}]);
+  const mine = viewer && viewer.id === owner.id;
+  return json({
+    owner, entries: results, trades, links,
+    my_card: card && card.card ? card.card : null,
+    link_state: viewer && !mine ? await linkState(env, viewer.id, owner.id) : null,
+    link_requests: mine ? await incomingLinks(env, owner.id) : [],
+  });
 }
 
 export async function onRequestPost({ request, env }) {

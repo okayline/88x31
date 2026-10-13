@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   last_seen   INTEGER,                      -- bots: when they were last online
   homepage    TEXT,                         -- player's own website (http/https), shown on their guestbook
   theme       TEXT,                         -- guestbook color theme (preset name)
+  my_button   INTEGER,                      -- instance shown as their calling card in Cool Links
   created_at  INTEGER NOT NULL
 );
 
@@ -147,8 +148,13 @@ CREATE TABLE IF NOT EXISTS ring_members (
 CREATE TABLE IF NOT EXISTS sets (
   id          INTEGER PRIMARY KEY,
   name        TEXT NOT NULL,
-  description TEXT
+  description TEXT,
+  slug        TEXT,
+  secret      INTEGER NOT NULL DEFAULT 0,   -- hidden until finished
+  reward_design_id INTEGER REFERENCES designs(id),
+  sort        INTEGER NOT NULL DEFAULT 0
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sets_slug ON sets(slug);
 
 CREATE TABLE IF NOT EXISTS set_designs (
   set_id     INTEGER NOT NULL REFERENCES sets(id) ON DELETE CASCADE,
@@ -244,3 +250,20 @@ CREATE TABLE IF NOT EXISTS meta (
 CREATE INDEX IF NOT EXISTS idx_history_reason ON ownership_history(reason, id);
 
 CREATE INDEX IF NOT EXISTS idx_wall_instance ON wall_slots(instance_id);
+
+-- ---------- set rewards & link exchange (also in migrations/012_sets_links.sql) ----------
+CREATE TABLE IF NOT EXISTS set_claims (
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  set_id      INTEGER NOT NULL REFERENCES sets(id),
+  instance_id INTEGER REFERENCES instances(id),
+  claimed_at  INTEGER NOT NULL,
+  PRIMARY KEY (user_id, set_id)
+);
+CREATE TABLE IF NOT EXISTS link_exchanges (
+  from_user   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  to_user     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status      TEXT NOT NULL DEFAULT 'pending',
+  created_at  INTEGER NOT NULL,
+  PRIMARY KEY (from_user, to_user)
+);
+CREATE INDEX IF NOT EXISTS idx_links_to ON link_exchanges(to_user, status);

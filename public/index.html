@@ -4,12 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>~*~ 88x31 cLuB ~*~ Welcome 2 My Button Collection!!</title>
+<link rel="canonical" href="https://88x31.app/">
+<script>
+  // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
+  if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
+</script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main>
   <nav class="top-bar" id="top-nav" hidden>
-    [ <a href="#">Home</a> ] -
     [ <a href="#" id="nav-mine">My Guestbook</a> ] -
     [ <a href="#trades" id="nav-trades">Trades</a> ] -
     [ <a href="#about">About</a> ] -
@@ -190,6 +194,21 @@
           <span id="theme-swatches"></span>
         </div>
       </div>
+      <div class="panel" id="sets-panel" hidden>
+        <h2>&raquo; <span id="sets-title">Sets</span> &laquo;</h2>
+        <div id="sets-body"></div>
+      </div>
+      <div class="panel" id="links-panel">
+        <h2>&raquo; Cool Links &laquo;</h2>
+        <div id="links-me" class="links-me" hidden></div>
+        <div id="links-requests"></div>
+        <div id="links-body" class="grid"></div>
+        <p id="links-swap" class="center"></p>
+        <div id="card-picker" class="gift-picker panel" hidden>
+          <p class="small">Pick the button that shows up in your friends' Cool Links:</p>
+          <div id="card-grid" class="grid"></div>
+        </div>
+      </div>
       <div class="panel" id="trade-panel" hidden>
         <h2>&raquo; Trade with <span class="tb-name"></span> &laquo;</h2>
         <p class="center"><button type="button" id="trade-open">Propose a Trade!</button></p>
@@ -294,7 +313,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.13</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.14</span>
   </p>
 
 </main>

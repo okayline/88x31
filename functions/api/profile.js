@@ -18,6 +18,15 @@ export async function onRequestPost({ request, env }) {
   const me = await currentUser(env, request);
   if (!me) return json({ error: "Not logged in." }, 401);
   const body = await readJson(request);
+  if ("my_button" in body) {
+    const id = body.my_button ? Number(body.my_button) : null;
+    if (id) {
+      const own = await env.DB.prepare("SELECT 1 FROM instances WHERE id = ? AND owner_id = ? AND consumed = 0").bind(id, me.id).first();
+      if (!own) return json({ error: "That button isn't yours." }, 400);
+    }
+    await env.DB.prepare("UPDATE users SET my_button = ? WHERE id = ?").bind(id, me.id).run();
+    return json({ ok: true, my_button: id });
+  }
   if ("theme" in body) {
     if (!THEMES.includes(body.theme)) return json({ error: "Unknown theme." }, 400);
     await env.DB.prepare("UPDATE users SET theme = ? WHERE id = ?").bind(body.theme, me.id).run();

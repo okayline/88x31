@@ -266,6 +266,23 @@ img.check-pic { display: inline-block; width: 176px; height: 62px; }
 .gb-geo .bot-note, .gb-bubblegum .bot-note, .gb-construction .bot-note { color: #006600; }
 .gb-geo .homepage-link, .gb-bubblegum .homepage-link, .gb-construction .homepage-link { color: inherit; }
 
+/* ---------- sets & cool links ---------- */
+.set-row { padding: 2px 0; }
+.set-row summary { cursor: pointer; }
+.set-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px 16px; }
+.set-item img.banner { display: block; }
+.set-item.missing img { filter: grayscale(1) brightness(0.45); }
+.set-badge { color: #ffff00; font-weight: bold; }
+.claim-btn { background: #ffff00; }
+.secret-hint { font-style: italic; opacity: 0.8; margin: 6px 0 0; }
+.links-me { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.links-me img.banner { display: inline-block; }
+.link-req { padding: 4px 6px; border: 2px dashed #ffff00; }
+.link-tile { position: relative; }
+.link-tile .unlink { position: absolute; top: -6px; right: -6px; padding: 0 4px; font-size: 11px; line-height: 14px; }
+.no-card { display: inline-block; width: 88px; height: 31px; line-height: 31px; text-align: center; font-size: 11px; border: 1px dashed var(--edge); }
+.hot { color: #ffff00; }
+
 /* ---------- in-game dialog window ---------- */
 .dialog-backdrop {
   position: fixed; inset: 0; z-index: 50;

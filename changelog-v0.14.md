@@ -1,8 +1,16 @@
-# 88x31 cLuB Changelog — v0.13
+# 88x31 cLuB Changelog — v0.14
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.14 — "Gotta Link 'Em All"
+**Mon Oct 12, 2026 · 6:48 PM HST**
+
+- The cLuB lives at **88x31.app** now!
+- **Sets:** collect every button in a set to claim a special reward button (and keep your buttons). There might be a secret one...
+- **Cool Links:** pick your "My Button" and swap links with other players' guestbooks, just like the old days.
+- Your guestbook is now your home page.
 
 ## v0.13 — "Hi, Welcome Back!"
 **Mon Oct 12, 2026 · 6:26 PM HST**

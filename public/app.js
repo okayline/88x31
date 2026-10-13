@@ -78,7 +78,7 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin",
+  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward",
 };
 
 function bannerImg(design, scale = 1) {
@@ -104,13 +104,14 @@ async function route() {
   if (hash === "check") { showTop("check"); return; }
   if (!me) return showTop("out");
   showTop("in");
-  if (!hash) loadSummary(); // refresh the dashboard when coming back Home
+  if (!hash || hash === "u/" + me.name) loadSummary(); // refresh the dashboard when coming back home
   try {
     if (hash.startsWith("u/")) return await showPage(hash.slice(2));
     if (hash.startsWith("banner/")) return await showBanner(hash.slice(7));
     if (hash === "codes") return await showCodes();
     if (hash === "trades") return await showTrades();
-    return await showPull();
+    if (hash === "pull") return await showPull();
+    return await showPage(me.name); // your guestbook is home
   } catch (e) { say(e.message); }
 }
 window.addEventListener("hashchange", () => { window.scrollTo(0, 0); route(); });
@@ -257,6 +258,9 @@ async function showPage(name) {
   if (seq !== loadSeq) return;
   const owner = col.owner.name;
   applyTheme(col.owner.theme);
+  renderLinks(owner, gb, col);
+  if (col.owner.is_bot) $("sets-panel").hidden = true;
+  else api("/api/sets?user=" + encodeURIComponent(owner)).then((r) => { if (seq === loadSeq) renderSets(owner, r); }).catch(() => {});
   $("page-name").textContent = owner;
   $("page-bot").hidden = !col.owner.is_bot;
   $("page-seen").hidden = !col.owner.last_seen;
@@ -333,6 +337,110 @@ async function showPage(name) {
   }
 }
 
+// ---------- sets ----------
+
+function renderSets(owner, r) {
+  const mine = owner.toLowerCase() === me.name.toLowerCase();
+  $("sets-panel").hidden = false;
+  $("sets-title").textContent = mine ? "My Sets" : `${owner}'s Sets`;
+  const body = $("sets-body");
+  body.textContent = "";
+  // Simple for now: one line per set; click a set to see its buttons.
+  for (const st of r.sets) {
+    const status = st.claimed ? el("span", { class: "set-badge" }, " ★ done!")
+      : st.complete && mine ? el("button", { type: "button", class: "mini claim-btn", onclick: async (e) => {
+          e.preventDefault();
+          try {
+            await api("/api/sets/claim", { method: "POST", body: { set_id: st.id } });
+            say(`★ SET COMPLETE! ★ ${st.reward ? st.reward.name : "Reward"} is yours!`);
+            await showPage(me.name); loadSummary();
+          } catch (err) { say(err.message); }
+        } }, "Claim reward!")
+      : st.complete ? el("span", { class: "set-badge" }, " complete!") : null;
+    const row = el("details", { class: "set-row" },
+      el("summary", {}, el("b", {}, (st.secret ? "★ " : "") + st.name), ` ${st.have}/${st.total} `, status),
+      el("div", { class: "set-grid" }, st.designs.map((d) => el("span", { class: "set-item" + (d.owned ? "" : " missing"), title: d.name }, bannerImg(d)))),
+      st.reward ? el("p", { class: "small" }, "Reward: ", st.claimed && st.claimed_instance
+        ? el("a", { href: "#banner/" + st.claimed_instance }, st.reward.name) : st.reward.name) : null);
+    body.append(row);
+  }
+  if (r.secrets_left) body.append(el("p", { class: "small center secret-hint" },
+    r.secrets_left === 1 ? "...psst. There's a secret set out there. Can you find it?" : `...psst. There are ${r.secrets_left} secret sets out there.`));
+}
+
+// ---------- Cool Links (link exchange) ----------
+
+function cardImg(c, href, title) {
+  return el("a", { href, title, ...(href.startsWith("http") ? { target: "_blank", rel: "noopener nofollow ugc" } : {}) },
+    c ? bannerImg(c) : el("span", { class: "no-card" }, "88x31"));
+}
+
+function renderLinks(owner, gb, col) {
+  const mine = owner.toLowerCase() === me.name.toLowerCase();
+  const go = (name) => async (action) => {
+    try { await api("/api/links", { method: "POST", body: { to: name, action } }); await showPage(owner); loadSummary(); }
+    catch (e) { say(e.message); }
+  };
+
+  // your calling card
+  const meBox = $("links-me");
+  meBox.hidden = !mine;
+  meBox.textContent = "";
+  if (mine) {
+    meBox.append(el("span", { class: "small" }, "My Button: "),
+      gb.my_card ? bannerImg(gb.my_card) : el("span", { class: "small" }, "(none yet)"),
+      " ", el("button", { type: "button", class: "mini", onclick: () => {
+        const grid = $("card-grid");
+        grid.textContent = "";
+        for (const b of col.banners) {
+          grid.append(el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}`, onclick: async () => {
+            try { await api("/api/profile", { method: "POST", body: { my_button: b.id } }); say("My Button updated!"); await showPage(me.name); }
+            catch (e) { say(e.message); }
+          } }, bannerImg(b), el("span", { class: "small" }, edition(b))));
+        }
+        $("card-picker").hidden = !$("card-picker").hidden;
+      } }, "Change"),
+      el("span", { class: "small" }, " This is what shows up in your friends' Cool Links."));
+  }
+  $("card-picker").hidden = true;
+
+  // requests waiting (only on your own page)
+  const req = $("links-requests");
+  req.textContent = "";
+  for (const q of gb.link_requests || []) {
+    req.append(el("p", { class: "link-req" }, el("a", { href: "#u/" + encodeURIComponent(q.name) }, el("b", {}, q.name)),
+      " wants to swap links! ",
+      el("button", { type: "button", class: "mini", onclick: () => go(q.name)("accept") }, "Swap!"), " ",
+      el("button", { type: "button", class: "mini", onclick: () => go(q.name)("decline") }, "No thanks")));
+  }
+
+  // the links themselves
+  const body = $("links-body");
+  body.textContent = "";
+  const list = gb.links || [];
+  if (!list.length) body.append(el("p", { class: "small" }, mine ? "No links yet. Visit a guestbook and hit \"Swap links!\"" : "No links yet."));
+  for (const l of list) {
+    const href = l.homepage || "#u/" + encodeURIComponent(l.name);
+    body.append(el("span", { class: "tile link-tile" }, cardImg(l.card, href, l.homepage ? `${l.name}'s homepage` : `${l.name}'s guestbook`),
+      el("a", { class: "small", href: "#u/" + encodeURIComponent(l.name) }, l.name),
+      mine ? el("button", { type: "button", class: "mini unlink", title: "Unlink", onclick: async () => {
+        if (await ask(`Unlink from ${l.name}? You'll both drop out of each other's Cool Links.`, { ok: "Unlink", cancel: "Keep" })) go(l.name)("remove");
+      } }, "x") : null));
+  }
+
+  // the swap button for visitors
+  const swap = $("links-swap");
+  swap.textContent = "";
+  if (!mine) {
+    const st = gb.link_state;
+    if (st === "linked") swap.append(el("span", { class: "small" }, "You and ", el("b", {}, owner), " are linked ✓ "),
+      el("button", { type: "button", class: "mini", onclick: () => go(owner)("remove") }, "unlink"));
+    else if (st === "sent") swap.append(el("span", { class: "small" }, "Link swap request sent! Waiting for them to say yes."));
+    else if (st === "received") swap.append(el("button", { type: "button", onclick: () => go(owner)("accept") }, `${owner} asked to swap links. Swap!`));
+    else swap.append(el("button", { type: "button", onclick: () => go(owner)("request") }, "Swap links!"));
+  }
+}
+
 // ---------- "Hi, space!" dashboard ----------
 
 async function loadSummary() {
@@ -356,6 +464,10 @@ async function loadSummary() {
     " from ", who(s.last_received.who), `, ${ago(s.last_received.at)}`);
   if (s.last_given) li("Last thing you gave: ", el("a", { href: "#banner/" + s.last_given.id }, label(s.last_given)),
     " to ", who(s.last_given.who), `, ${ago(s.last_given.at)}`);
+  if (s.sets_ready) li(el("b", { class: "hot" }, `★ ${s.sets_ready} set${s.sets_ready === 1 ? "" : "s"} complete!`), " Claim your reward on ",
+    el("a", { href: "#u/" + encodeURIComponent(me.name) }, "your guestbook »"));
+  if (s.link_requests) li(el("b", {}, `${s.link_requests} link swap request${s.link_requests === 1 ? "" : "s"}`), " waiting. ",
+    el("a", { href: "#u/" + encodeURIComponent(me.name) }, "See »"));
   li(`You have ${s.buttons} button${s.buttons === 1 ? "" : "s"} in your collection.`);
 }
 
@@ -770,7 +882,7 @@ async function showBanner(id) {
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
 const GOT_HOW = {
   welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
-  guestbook: "as a guestbook gift", trade: "in a trade", gift: "as a gift", fusion: "from a fusion",
+  guestbook: "as a guestbook gift", trade: "in a trade", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set",
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
