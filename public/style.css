@@ -670,22 +670,6 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .packs-shelf { margin: 0 0 14px; }
 .packs-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .pack-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 120px; text-align: center; }
-.pack-tile {
-  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  width: 92px; height: 120px; padding: 6px; box-sizing: border-box; text-decoration: none;
-  border: 2px solid #c0c0c0; border-radius: 4px 4px 10px 10px;
-  background: linear-gradient(160deg, #ff00cc 0%, #6600ff 45%, #00ccff 100%);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 3px 3px 0 #000;
-  color: #fff; font: bold 11px Arial, sans-serif; text-shadow: 1px 1px 0 #000;
-  background-size: 200% 200%; animation: pack-shine 4s ease-in-out infinite alternate;
-}
-.pack-tile:hover { transform: translateY(-3px) rotate(-1deg); }
-.pack-tile.revealed { filter: saturate(0.5); }
-.pack-top { font-size: 9px; letter-spacing: 1px; opacity: 0.9; }
-.pack-name { font-size: 13px; color: #ffff00; text-align: center; }
-.pack-sub { font-size: 9px; font-style: italic; }
-@keyframes pack-shine { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
-@media (prefers-reduced-motion: reduce) { .pack-tile { animation: none; } }
 .card.small-card { min-width: 0; }
 .pack-give input { width: 140px; }
 .series-tag { color: #0066cc; }
@@ -710,16 +694,10 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .wanted-line { color: #ffcc66; }
 
 /* Packs section (v0.23.1): daily packs look different from sealed ones; used ones go grey */
-.pack-tile.daily { background: linear-gradient(160deg, #ffcc00 0%, #ff6600 50%, #ff0066 100%); background-size: 200% 200%; }
-.pack-tile.daily .pack-name { color: #ffffff; }
-.pack-tile.used { filter: grayscale(1) brightness(0.6); animation: none; cursor: default; }
-.pack-tile.used:hover { transform: none; }
 .pack-open:empty { display: none; }
 .pack-open { margin-top: 10px; }
 
 /* ---------- front-page free pack (v0.24) ---------- */
-.pack-tile.free { background: linear-gradient(160deg, #00cc99 0%, #0066ff 55%, #9900ff 100%); background-size: 200% 200%; }
-.pack-tile.glow { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 0 14px 3px rgba(120, 220, 255, 0.55); }
 .freepack-box .pull-row { margin: 6px 0; }
 .sig-form { text-align: center; margin: 8px 0 0; }
 .sig-line { display: inline-flex; align-items: baseline; gap: 6px; font-style: italic; }
@@ -734,7 +712,6 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 }
 .sig-line { white-space: nowrap; max-width: 100%; }
 .sig-input { width: 9em; max-width: 55vw; }
-.pack-tile.welcome { background: linear-gradient(160deg, #ff99cc 0%, #ff3399 50%, #9933ff 100%); background-size: 200% 200%; }
 .fp-note { margin-top: 2px; }
 
 /* Wall of Buttons: show / order choices */
@@ -751,14 +728,6 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .sig-oops:empty { display: none; }
 .sig-check:disabled { opacity: .45; cursor: wait; filter: grayscale(1); }
 
-/* special packs: a shimmering silver-and-rainbow wrapper */
-.pack-tile.special {
-  background: linear-gradient(135deg, #c0c0c0 0%, #ffffff 18%, #ff66cc 34%, #66ccff 50%, #ffff66 66%, #ffffff 82%, #a0a0a0 100%);
-  background-size: 300% 300%;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 12px 2px rgba(255, 200, 255, 0.6);
-}
-.pack-tile.special .pack-name { color: #000080; text-shadow: 0 0 3px #ffffff; }
-.pack-tile.special .pack-top, .pack-tile.special .pack-sub { color: #330066; text-shadow: 0 0 2px #ffffff; }
 .card-finish { color: #ff99ff; font-weight: bold; }
 
 /* webmaster series panel */
@@ -774,7 +743,6 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 #series-new input, .loose-item select { width: auto; display: inline-block; }
 #series-new input { width: 140px; }
 .series-look.on { background: #ffff00; color: #000080; font-weight: bold; }
-.pack-tile .pack-name.long { font-size: 9px; line-height: 1.1; text-align: center; }
 .st-oop { background: #cc0000; color: #fff; }
 .run-cell { white-space: nowrap; font-size: 11px; }
 .run-bar { display: inline-block; width: 60px; height: 7px; border: 1px solid #c0c0c0; background: #000040; vertical-align: middle; }
@@ -786,3 +754,191 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 #passkeys li { margin: 3px 0; }
 .series-table td.nw { white-space: nowrap; }
 #view-codes h2 { margin-top: 18px; }
+
+/* ---------- pack art (v0.27) ----------
+   Series packs are crimped foil pouches, each series with its own look and its own shine
+   (Alpha twinkles, Beta has a CRT refresh line). Everything else (daily, welcome, free, mixed)
+   keeps the rounded outline with a little picture and a soft gleam.
+   .pack-tile is the outer link (shadow, hover); .pack-art is the wrapper itself. */
+.pack-tile { display: inline-block; position: relative; width: 100px; height: 136px; text-decoration: none; vertical-align: top; transition: transform .15s; }
+.pack-tile:hover { transform: translateY(-3px) rotate(-1deg); }
+.pack-tile .pack-art { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px;
+  padding: 8px 6px 10px; box-sizing: border-box; color: #fff; font: bold 11px Arial, sans-serif; text-shadow: 1px 1px 0 #000; }
+.pack-art > span { display: block; }
+.pack-top { font-size: 7.5px; letter-spacing: 0; opacity: .9; white-space: nowrap; position: relative; z-index: 3; }
+.pack-name { font-size: 13px; color: #ffff00; text-align: center; line-height: 1.05; position: relative; z-index: 3; }
+.pack-sub { font-size: 9px; font-style: italic; position: relative; z-index: 3; }
+.pack-name.long { font-size: 9px; line-height: 1.1; }
+.pack-tile.revealed .pack-art { filter: saturate(0.5); }
+
+/* the rounded outline (shelf packs) */
+.pack-tile.flat .pack-art { border: 2px solid #c0c0c0; border-radius: 4px 4px 10px 10px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .35), 3px 3px 0 #000; background-size: 200% 200%; animation: pack-shine 4s ease-in-out infinite alternate; }
+.pack-tile.flat.glow .pack-art { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .35), 0 0 14px 3px rgba(120, 220, 255, .55); }
+@keyframes pack-shine { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+.pack-art .gleam { position: absolute; top: -20%; left: 0; width: 26px; height: 140%; z-index: 5; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .45), transparent); animation: pack-gleam 3.6s ease-in-out infinite; }
+@keyframes pack-gleam { from { transform: translateX(-140%) rotate(20deg); } to { transform: translateX(260%) rotate(20deg); } }
+
+/* the crimped pouch (series packs) */
+.pack-tile.pouch { filter: drop-shadow(3px 3px 0 #000); }
+.pack-tile.pouch.glow-gold { filter: drop-shadow(0 0 7px rgba(255, 215, 90, .75)) drop-shadow(3px 3px 0 #000); }
+.pack-tile.pouch.glow-holo { filter: drop-shadow(0 0 7px rgba(255, 190, 255, .8)) drop-shadow(3px 3px 0 #000); }
+.pack-tile.pouch .pack-art { padding: 14px 6px 12px;
+  clip-path: polygon(0 4px,4% 0,8% 4px,12% 0,16% 4px,20% 0,24% 4px,28% 0,32% 4px,36% 0,40% 4px,44% 0,48% 4px,52% 0,56% 4px,60% 0,64% 4px,68% 0,72% 4px,76% 0,80% 4px,84% 0,88% 4px,92% 0,96% 4px,100% 0,
+    100% calc(100% - 4px),96% 100%,92% calc(100% - 4px),88% 100%,84% calc(100% - 4px),80% 100%,76% calc(100% - 4px),72% 100%,68% calc(100% - 4px),64% 100%,60% calc(100% - 4px),56% 100%,52% calc(100% - 4px),48% 100%,44% calc(100% - 4px),40% 100%,36% calc(100% - 4px),32% 100%,28% calc(100% - 4px),24% 100%,20% calc(100% - 4px),16% 100%,12% calc(100% - 4px),8% 100%,4% calc(100% - 4px),0 100%); }
+.pack-art .crimp { position: absolute; left: 0; right: 0; height: 10px; z-index: 4; background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .3) 0 2px, rgba(0, 0, 0, .12) 2px 4px); }
+.pack-art .crimp.t { top: 0; } .pack-art .crimp.b { bottom: 0; }
+
+/* Alpha: homepage night sky, twinkling */
+.th-alpha .pack-art { background:
+    radial-gradient(1px 1px at 12px 24px, #fff 99%, transparent), radial-gradient(1px 1px at 70px 40px, #fff 99%, transparent),
+    radial-gradient(1px 1px at 30px 80px, #ffff99 99%, transparent), radial-gradient(1px 1px at 82px 96px, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 50px 18px, #fff 99%, transparent), radial-gradient(1px 1px at 20px 104px, #fff 99%, transparent),
+    linear-gradient(180deg, #000033 0%, #1a0066 60%, #330066 100%); }
+.th-alpha .rainbow { position: absolute; left: 0; right: 0; top: 30px; height: 6px; background: linear-gradient(90deg, #f00, #f90, #ff0, #0c0, #09f, #60f, #c0f); }
+.th-alpha .pack-name { margin-top: 26px; font: bold 18px "Comic Sans MS", "Chalkboard SE", cursive; text-shadow: 2px 2px 0 #000; }
+.th-alpha .hazard { position: absolute; left: 0; right: 0; bottom: 9px; height: 12px; z-index: 3; background: repeating-linear-gradient(-45deg, #000 0 6px, #ffcc00 6px 12px); }
+.pack-art .spark { position: absolute; width: 11px; height: 11px; z-index: 6; pointer-events: none; background: #fff; opacity: 0;
+  clip-path: polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%); animation: pack-twinkle 2.6s ease-in-out infinite; }
+.pack-art .spark.s { width: 7px; height: 7px; }
+@keyframes pack-twinkle { 0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); } 45% { opacity: 1; transform: scale(1) rotate(45deg); } 60% { opacity: 0; transform: scale(.3) rotate(60deg); } }
+
+/* Alpha special (Cool Site of the Day): holo with an award rosette */
+.th-alpha-sp .pack-art, .th-special .pack-art { background: linear-gradient(135deg, #c0c0c0 0%, #fff 18%, #ff66cc 34%, #66ccff 50%, #ffff66 66%, #fff 82%, #a0a0a0 100%);
+  background-size: 300% 300%; animation: pack-shine 3s ease-in-out infinite alternate; color: #000080; text-shadow: 0 0 3px #fff; }
+.th-alpha-sp .pack-top, .th-alpha-sp .pack-sub, .th-special .pack-top, .th-special .pack-sub { color: #330066; text-shadow: 0 0 2px #fff; }
+.th-alpha-sp .pack-name, .th-special .pack-name { font-size: 10px; color: #000080; text-shadow: 0 0 3px #fff; }
+.th-special .pack-name { font-size: 13px; margin-top: 20px; }
+.pack-art .rosette { position: relative; width: 46px; height: 46px; border-radius: 50%; z-index: 2; margin: 3px 0 9px; box-sizing: border-box; padding: 0 6px;
+  background: radial-gradient(circle, #fff6a0 0 40%, #ffcc00 41% 62%, #cc8800 63% 66%, #ffdd33 67%);
+  box-shadow: 0 0 0 2px #996600, 0 2px 4px rgba(0, 0, 0, .5); display: flex !important; align-items: center; justify-content: center;
+  font: bold 7px Arial, sans-serif; color: #663300; text-shadow: none; line-height: 1; text-align: center; }
+.pack-art .rosette::before, .pack-art .rosette::after { content: ""; position: absolute; bottom: -12px; width: 10px; height: 16px; background: #cc0000; z-index: -1;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+.pack-art .rosette::before { left: 10px; transform: rotate(12deg); } .pack-art .rosette::after { right: 10px; transform: rotate(-12deg); }
+
+/* Beta: green terminal, matrix rain, a CRT refresh line */
+.th-beta .pack-art { background: linear-gradient(180deg, #002200, #004d1a 60%, #001a00); }
+.th-beta .crimp, .th-beta-sp .crimp { background: repeating-linear-gradient(90deg, rgba(51, 255, 102, .45) 0 2px, rgba(0, 0, 0, .25) 2px 4px); }
+.th-beta-sp .crimp { background: repeating-linear-gradient(90deg, rgba(255, 215, 0, .6) 0 2px, rgba(0, 0, 0, .3) 2px 4px); }
+.th-beta .pack-top { color: #66ff99; }
+.pack-art .scan { position: absolute; inset: 0; z-index: 2; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .3) 0 1px, transparent 1px 3px); }
+.pack-art .rain { position: absolute; top: -90px; z-index: 1; font: bold 8px/9px "Courier New", monospace; color: #66ff99; opacity: .55; letter-spacing: -1px;
+  writing-mode: vertical-rl; text-orientation: upright; text-shadow: 0 0 4px #33ff66; animation: pack-rain linear infinite; }
+@keyframes pack-rain { from { top: -90px; } to { top: 140px; } }
+.pack-art .win { position: relative; z-index: 3; width: 88px; height: 31px; margin-top: 3px; line-height: 0; background: #000; border: 2px solid #33ff66;
+  box-shadow: 0 0 0 1px #000, 0 0 8px rgba(51, 255, 102, .6); }
+.pack-art .win img { width: 88px; height: 31px; image-rendering: pixelated; }
+.th-beta .pack-name { margin-top: 4px; color: #33ff66; font: bold 14px "Courier New", monospace; letter-spacing: 2px; text-shadow: 0 0 6px #33ff66; }
+.th-beta .prompt { position: relative; z-index: 3; font: bold 9px "Courier New", monospace; color: #33ff66; text-shadow: 0 0 4px #33ff66; }
+.th-beta .pack-sub { color: #ccffdd; }
+.pack-art .cur { animation: pack-blink 1s steps(1) infinite; }
+@keyframes pack-blink { 50% { opacity: 0; } }
+.pack-art .refresh { position: absolute; left: 0; right: 0; height: 16px; z-index: 5; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(140, 255, 170, .4) 50%, transparent); animation: pack-refresh 2.6s linear infinite; }
+.pack-art .refresh.gold { background: linear-gradient(180deg, transparent, rgba(255, 230, 140, .45) 50%, transparent); }
+@keyframes pack-refresh { from { top: -16px; } to { top: 136px; } }
+
+/* Beta special (Gold Master): a gold disc on a circuit board */
+.th-beta-sp .pack-art { background: #07120a url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='136'><g stroke='%23b8902a' stroke-width='1.2' fill='none' opacity='.8'><path d='M0 30h8l6 6v16'/><path d='M100 26h-8l-6 6v12'/><path d='M0 118h10l4-4v-14'/><path d='M100 114h-8l-4 4v8'/><path d='M0 70h6'/><path d='M100 78h-6'/></g><g fill='%23ffd34d'><circle cx='14' cy='53' r='2'/><circle cx='86' cy='45' r='2'/><circle cx='14' cy='99' r='2'/><circle cx='88' cy='127' r='1.6'/><circle cx='7' cy='70' r='1.6'/><circle cx='93' cy='78' r='1.6'/></g></svg>") center / 100% 100%; }
+.th-beta-sp .pack-top { color: #ffd966; }
+.pack-art .disc { position: relative; z-index: 2; width: 50px; height: 50px; border-radius: 50%; margin: 4px 0 3px;
+  background: conic-gradient(from 0deg, #b8860b, #ffe680, #d4a017, #fff4b0, #b8860b, #ffd34d, #ff99cc, #99ddff, #ffe680, #b8860b);
+  box-shadow: 0 0 0 1px #6b4f00, 0 0 10px rgba(255, 210, 80, .6); animation: pack-spin 6s linear infinite; }
+.pack-art .disc::after { content: ""; position: absolute; inset: 18px; border-radius: 50%; background: #2a2a2a; box-shadow: 0 0 0 4px rgba(255, 255, 255, .55); }
+@keyframes pack-spin { to { transform: rotate(360deg); } }
+.th-beta-sp .pack-name { color: #ffd700; font: bold 10px "Courier New", monospace; letter-spacing: 1px; text-shadow: 0 0 5px #000, 0 0 2px #000; }
+.th-beta-sp .bar { position: relative; z-index: 3; font: bold 7px "Courier New", monospace; color: #33ff66; text-shadow: 0 0 3px #33ff66; }
+.th-beta-sp .ser2 { position: relative; z-index: 3; font: bold 8px Arial, sans-serif; color: #fff; letter-spacing: 1px; }
+.th-beta-sp .pack-sub { color: #ffe9a8; }
+
+/* a series without its own look yet */
+.th-series .pack-art { background: linear-gradient(160deg, #ff00cc 0%, #6600ff 45%, #00ccff 100%); background-size: 200% 200%; animation: pack-shine 4s ease-in-out infinite alternate; }
+.th-series .pack-name { margin-top: 26px; }
+
+/* the shelf: daily (sunrise), welcome (cursive), free (a gift), mixed (a grab bag) */
+.th-daily .pack-art { background-image: linear-gradient(160deg, #ffcc00 0%, #ff6600 50%, #ff0066 100%); }
+.th-daily .pack-name { color: #fff; }
+.pack-art .rays { position: absolute; left: 50%; top: 30px; width: 84px; height: 84px; margin-left: -42px; border-radius: 50%; z-index: 1;
+  background: repeating-conic-gradient(rgba(255, 255, 200, .35) 0 10deg, transparent 10deg 20deg); animation: pack-spin 30s linear infinite; }
+.pack-art .sun { position: relative; z-index: 2; width: 44px; height: 22px; margin-top: 8px; border-radius: 44px 44px 0 0; background: #ffee66; box-shadow: 0 0 10px 3px rgba(255, 240, 120, .8); }
+.pack-art .horizon { position: relative; z-index: 2; width: 100%; height: 3px; background: rgba(255, 255, 255, .2); margin-bottom: 6px; }
+.th-welcome .pack-art { background-image: linear-gradient(160deg, #ff99cc 0%, #ff3399 50%, #9933ff 100%); }
+.pack-art .confetti { position: absolute; inset: 0; z-index: 1;
+  background: radial-gradient(2px 2px at 14px 26px, #ffff66 99%, transparent), radial-gradient(2px 2px at 80px 34px, #66ffff 99%, transparent),
+  radial-gradient(2px 2px at 26px 112px, #fff 99%, transparent), radial-gradient(2px 2px at 74px 104px, #ffff66 99%, transparent),
+  radial-gradient(2px 3px at 52px 20px, #66ffcc 99%, transparent), radial-gradient(3px 2px at 88px 72px, #fff 99%, transparent),
+  radial-gradient(2px 2px at 10px 80px, #66ffff 99%, transparent); }
+.pack-art .script { position: relative; z-index: 2; margin: 26px 0 10px; color: #fff; transform: rotate(-6deg);
+  font: bold 21px "Snell Roundhand", "Segoe Script", "Brush Script MT", "Lucida Handwriting", "Apple Chancery", cursive;
+  text-shadow: 2px 2px 0 #990066, 0 0 8px rgba(255, 255, 255, .6); }
+.th-free .pack-art { background-image: linear-gradient(160deg, #00cc99 0%, #0066ff 55%, #9900ff 100%); }
+.pack-art .ribbon-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 12px; margin-left: -6px; z-index: 1; background: #ff3366; box-shadow: inset 3px 0 0 #ff6699, inset -3px 0 0 #cc0033; }
+.pack-art .ribbon-h { position: absolute; left: 0; right: 0; top: 60px; height: 12px; z-index: 1; background: #ff3366; box-shadow: inset 0 3px 0 #ff6699, inset 0 -3px 0 #cc0033; }
+.pack-art .bow { position: absolute; top: 46px; left: 50%; width: 44px; height: 24px; margin-left: -22px; z-index: 2; }
+.pack-art .bow::before, .pack-art .bow::after { content: ""; position: absolute; top: 2px; width: 20px; height: 16px; background: #ff3366; border: 2px solid #cc0033; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+.pack-art .bow::before { left: 0; transform: rotate(-18deg); } .pack-art .bow::after { right: 0; transform: rotate(18deg); }
+.pack-art .nmwrap { position: absolute; bottom: 22px; left: 0; right: 0; z-index: 3; display: flex !important; flex-direction: column; align-items: center; }
+.th-mixed .pack-art { background-image: linear-gradient(160deg, #ff00cc 0%, #6600ff 45%, #00ccff 100%); }
+.pack-art .minis { position: relative; z-index: 2; display: grid !important; grid-template-columns: repeat(3, 22px); gap: 3px; margin: 10px 0 8px; }
+.pack-art .minis i { width: 22px; height: 8px; border: 1px solid #fff; box-shadow: 1px 1px 0 #000; }
+.pack-art .minis i:nth-child(1) { background: #ff0; } .pack-art .minis i:nth-child(2) { background: #0cf; } .pack-art .minis i:nth-child(3) { background: #f0c; }
+.pack-art .minis i:nth-child(4) { background: #0c0; } .pack-art .minis i:nth-child(5) { background: linear-gradient(90deg, #f00, #ff0, #0c0, #09f); } .pack-art .minis i:nth-child(6) { background: #f60; }
+.pack-art .minis i:nth-child(7) { background: #909; } .pack-art .minis i:nth-child(8) { background: #fff; } .pack-art .minis i:nth-child(9) { background: #000; }
+
+/* opened for today: grey and completely still */
+.pack-tile.used { cursor: default; }
+.pack-tile.used:hover { transform: none; }
+.pack-tile.used .pack-art { filter: grayscale(1) brightness(.6); }
+.pack-tile.used, .pack-tile.used * { animation: none !important; }
+.pack-tile.used .gleam { display: none; }
+
+/* ---------- opening a pack (v0.27) ----------
+   Alpha (and new series): the top rips off, then the cards are dealt face down and flip.
+   Beta: the pack switches off like an old TV, and each card powers on.
+   Shelf packs: the pack glows and fades, then deal & flip. Rares and ultras flip last. */
+.open-stage { position: relative; min-height: 150px; }
+.open-stage.animating { pointer-events: none; }
+.open-stage .packbox { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; pointer-events: none; }
+.open-stage .packbox .pack-tile:hover { transform: none; }
+.open-stage .packbody { position: relative; }
+.open-stage .flipcard, .open-stage .tv-card { opacity: 0; }
+.open-stage.go .packbox { animation: pack-gone 0s forwards; animation-delay: 2s; }
+@keyframes pack-gone { to { visibility: hidden; } }
+/* rip */
+.op-rip .tearpiece { position: absolute; left: 0; top: 0; width: 100%; height: 20px; overflow: hidden; visibility: hidden; }
+.op-rip.go .tearpiece { visibility: visible; animation: op-tear .55s ease-in forwards; }
+.op-rip.go .packbody { clip-path: inset(20px -12px -12px -12px); animation: op-sink .45s .35s ease-in forwards; }
+@keyframes op-tear { 30% { transform: translate(6px, -8px) rotate(6deg); } to { transform: translate(70px, -90px) rotate(35deg); opacity: 0; } }
+@keyframes op-sink { to { transform: translateY(50px) scale(.9); opacity: 0; } }
+/* reveal */
+.op-reveal.go .packbody { animation: op-glowfade .7s ease-out forwards; }
+@keyframes op-glowfade { 40% { filter: brightness(1.6) drop-shadow(0 0 14px #fff); transform: scale(1.04); } to { filter: brightness(2) drop-shadow(0 0 20px #fff); transform: scale(1.08); opacity: 0; } }
+/* deal & flip */
+.flipcard { position: relative; perspective: 800px; }
+.flip-inner { position: relative; transform-style: preserve-3d; transform: rotateY(180deg); }
+.flip-inner > .card:first-child { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-inner > .flip-back { position: absolute; inset: 0; width: auto; height: auto; margin: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: rotateY(180deg); }
+.open-stage.go .flipcard { animation: op-deal .55s ease-out forwards; animation-delay: calc(var(--d0) + var(--i) * .22s); }
+@keyframes op-deal { from { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(-10deg) scale(.8); } to { opacity: 1; transform: none; } }
+.open-stage.go .flip-inner { animation: op-flip .8s ease-in-out forwards; animation-delay: calc(var(--f0) + var(--k) * .85s); }
+@keyframes op-flip { to { transform: rotateY(0deg); } }
+.open-stage.go .flipcard.is-rare::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  animation: op-rare 1.2s forwards; animation-delay: calc(var(--f0) + var(--k) * .85s + .8s); }
+@keyframes op-rare { 0% { opacity: 0; box-shadow: none; } 30% { opacity: 1; box-shadow: 0 0 0 3px #ff0, 0 0 40px 16px #ff0; } 100% { opacity: 1; box-shadow: 0 0 0 2px #ff0, 0 0 12px 3px #ff0; } }
+/* CRT off / on */
+.op-tv.go .packbody { animation: op-tvoff .6s ease-in forwards; }
+@keyframes op-tvoff { 55% { transform: scale(1.06, .02); filter: brightness(4); opacity: 1; } 85% { transform: scale(.04, .02); filter: brightness(6); opacity: 1; } to { transform: scale(0, .02); opacity: 0; } }
+.open-stage .tv-card { position: relative; }
+.op-tv.go .tv-card { animation: op-tvon .55s ease-out forwards; animation-delay: calc(var(--d0) + var(--i) * .2s); }
+@keyframes op-tvon { 0% { opacity: 1; transform: scale(.05, .02); filter: brightness(5); } 45% { transform: scale(1, .02); filter: brightness(4); } 100% { opacity: 1; transform: none; filter: none; } }
+.op-tv .tv-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .45) 0 1px, transparent 1px 3px), linear-gradient(rgba(51, 255, 102, .15), rgba(51, 255, 102, .15)); }
+.op-tv.go .tv-card::after { animation: op-scanfade 1.1s ease-out forwards; animation-delay: calc(var(--d0) + .15s + var(--i) * .2s); }
+@keyframes op-scanfade { from { opacity: 1; } to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-tile, .pack-tile * { animation: none !important; }
+  .pack-art .gleam, .pack-art .refresh, .pack-art .rain, .pack-art .spark { display: none; }
+}

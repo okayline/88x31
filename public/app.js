@@ -325,8 +325,10 @@ async function showPull() {
     if (isBonus) keepBtn.textContent = "Open the bonus pack!"; else updateBtn();
     form.hidden = false;
   }));
-  box.append(el("div", { class: "pull-row" }, cards));
+  const stage = openingStage(dailyTile(false, pull.bonus_pack ? "bonus pack!" : `pack ${pull.pull_number} of ${pull.pulls_per_day}`), cards, "reveal");
+  box.append(stage.node);
   box.append(el("p", { class: "center small" }, "Click the one you want to keep."));
+  stage.play();
 
   const giftHead = el("p", {}, el("b", {}, "Gift one of the other two to a friend?"));
   const keepBtn = el("button", {}, "Keep it!");
@@ -1421,16 +1423,117 @@ const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome"
 const limitedName = (p) => `${p.series} ${p.special_name || "Special"} Pack`;
 const packTitle = (p) => (p.special_no ? `${limitedName(p)} #${p.special_no} of ${p.special_limit || 25}` : `${packLabel(p)} #${p.id}`);
 
-// Special packs: better odds, foils guaranteed, and a shinier wrapper (with their series' own name).
+// ---------- pack art (v0.27) ----------
+// Series packs are crimped pouches with their series' own look (Alpha: night sky that twinkles,
+// Beta: green terminal with a CRT refresh line; their limited packs: Cool Site of the Day rosette
+// and the Gold Master disc). Shelf packs (daily, welcome, free, mixed) keep the rounded outline with a picture.
+const PACK_TOP = "~*~ 88x31 cLuB ~*~";
+const PACK_THEMES = new Set(["alpha", "beta"]);   // series with their own pack art
+const spanC = (cls, ...kids) => el("span", { class: cls }, ...kids);
+const packSparks = () => [[14, 22, 0, ""], [74, 40, .9, "s"], [30, 70, 1.7, ""], [80, 92, .4, "s"], [16, 110, 1.3, "s"], [60, 16, 2.1, "s"]]
+  .map(([x, y, d, c]) => el("span", { class: "spark " + c, style: `left:${x}px;top:${y}px;animation-delay:${(d + Math.random() * .6).toFixed(2)}s` }));
+const packRain = () => ["01ｱｲｳ10ｴｵ1", "ｶ0ｷ1ｸｹ0ｺ1", "1ｻｼ0ｽ1ｾｿ0", "0ﾀ1ﾁﾂ0ﾃ1ﾄ", "ﾅ1ﾆ0ﾇﾈ1ﾉ0", "1ﾊ0ﾋﾌ1ﾍ0ﾎ"]
+  .map((t, i) => el("span", { class: "rain", style: `left:${4 + i * 16}px;animation-duration:${(3.2 + (i % 3) * 1.1).toFixed(1)}s;animation-delay:-${(i * .7).toFixed(1)}s` }, t));
+
+function packArt({ shape, theme, parts, title = "", cls = "", href = "#" }) {
+  return el("a", { href, class: `pack-tile ${shape} th-${theme}${cls ? " " + cls : ""}`, title },
+    el("span", { class: "pack-art" }, shape === "pouch" ? spanC("crimp t") : null, ...parts, shape === "pouch" ? spanC("crimp b") : null));
+}
+
 function packTile(p, href) {
-  const cls = "pack-tile" + (p.source === "welcome" ? " welcome" : "") + (p.special ? " special" : "") + (p.revealed ? " revealed" : "");
-  const name = p.special_no ? (p.special_name || "Special").toUpperCase()
-    : p.special ? "SPECIAL" : p.source === "welcome" ? "WELCOME" : p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED";
-  return el("a", { href, class: cls, title: p.special_no ? packTitle(p) : p.note || PACK_FROM[p.source] || "" },
-    el("span", { class: "pack-top" }, p.special_no ? `88x31 cLuB · ${p.series}` : "88x31 cLuB"),
-    el("span", { class: "pack-name" + (name.length > 11 ? " long" : "") }, name),
-    el("span", { class: "pack-sub" }, p.revealed ? "opened!" : p.special_no ? `#${p.special_no} of ${p.special_limit || 25}`
-      : p.special ? (p.series ? `★ series ${p.series.toLowerCase()} ★` : "★ foils inside! ★") : "sealed pack"));
+  const s = (p.series || "").toLowerCase(), themed = PACK_THEMES.has(s);
+  const sub = p.revealed ? "opened!" : p.special_no ? `#${p.special_no} of ${p.special_limit || 25}`
+    : p.special ? (p.series ? `★ series ${s} ★` : "★ foils inside! ★") : "sealed pack";
+  const title = p.special_no ? packTitle(p) : p.note || PACK_FROM[p.source] || "";
+  const top = (t = PACK_TOP) => spanC("pack-top", t);
+  const name = (t) => spanC("pack-name" + (t.length > 11 ? " long" : ""), t);
+  const special = p.special_no ? (p.special_name || "Special").toUpperCase() : "SPECIAL";
+  let shape = "flat", theme, cls = "", parts;
+  if (p.series) {
+    shape = "pouch";
+    const sTop = `~*~ cLuB ~*~ · ${p.series}`;
+    if (p.special && s === "alpha") {
+      theme = "alpha-sp"; cls = "glow-holo";
+      parts = [...packSparks(), top(sTop), spanC("rosette", (p.special_name || "Special").toUpperCase()), spanC("pack-name", "SERIES ALPHA"), spanC("pack-sub", sub)];
+    } else if (p.special && s === "beta") {
+      theme = "beta-sp"; cls = "glow-gold";
+      parts = [spanC("refresh gold"), top(sTop), spanC("disc"), spanC("pack-name", special), spanC("bar", "[███████] 100%"), spanC("ser2", "SERIES BETA"), spanC("pack-sub", sub)];
+    } else if (p.special) {
+      theme = "special"; cls = "glow-holo";
+      parts = [spanC("gleam"), top(sTop), name(special), spanC("pack-sub", sub)];
+    } else if (s === "alpha") {
+      theme = "alpha";
+      parts = [...packSparks(), top(), spanC("rainbow"), spanC("pack-name", "ALPHA"), spanC("pack-sub", p.revealed ? sub : "series alpha"), spanC("hazard")];
+    } else if (s === "beta") {
+      theme = "beta";
+      parts = [...packRain(), spanC("scan"), spanC("refresh"), top(), spanC("win", el("img", { src: "banners/beta/beta-dos-prompt.gif", alt: "", width: "88", height: "31" })),
+        spanC("pack-name", "BETA"), spanC("prompt", "C:\\>", spanC("cur", "█")), spanC("pack-sub", sub)];
+    } else {
+      theme = "series";
+      parts = [spanC("gleam"), top(), name(`SERIES ${p.series.toUpperCase()}`), spanC("pack-sub", sub)];
+    }
+  } else if (p.special) {
+    theme = "special";
+    parts = [spanC("gleam"), top(), name("SPECIAL"), spanC("pack-sub", sub)];
+  } else if (p.source === "welcome") {
+    theme = "welcome";
+    parts = [spanC("confetti"), spanC("gleam"), top(), spanC("script", "Welcome"), spanC("pack-sub", sub)];
+  } else {
+    theme = "mixed";
+    parts = [spanC("gleam"), top(), spanC("minis", Array.from({ length: 9 }, () => el("i"))), spanC("pack-name", "MIXED"), spanC("pack-sub", sub)];
+  }
+  return packArt({ shape, theme, parts, title, href, cls: cls + (p.revealed ? " revealed" : "") });
+}
+function dailyTile(done, label) {
+  return packArt({ shape: "flat", theme: "daily", cls: done ? "used" : "", title: done ? "Opened! New ones tomorrow." : "Today's daily pack",
+    parts: [spanC("rays"), spanC("gleam"), spanC("pack-top", PACK_TOP), spanC("sun"), spanC("horizon"), spanC("pack-name", "DAILY"), spanC("pack-sub", done ? "back tomorrow!" : label)] });
+}
+function freeTile() {
+  return packArt({ shape: "flat", theme: "free", cls: "glow",
+    parts: [spanC("ribbon-v"), spanC("ribbon-h"), spanC("bow"), spanC("gleam"), spanC("pack-top", PACK_TOP), spanC("nmwrap", spanC("pack-name", "FREE PACK"), spanC("pack-sub", "open me!"))] });
+}
+
+// ---------- opening a pack (v0.27) ----------
+// Series packs open (Alpha and new series: rip, then deal & flip; Beta: CRT power off/on).
+// Shelf packs reveal (glow, then deal & flip). Rares and ultras flip last.
+// openingStage(art, cards, kind) -> { node, play() }; append node, then call play().
+const RANK_OF = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
+const openKind = (p) => (!p.series ? "reveal" : p.series.toLowerCase() === "beta" ? "tv" : "rip");
+function openingStage(art, cards, kind) {
+  const row = el("div", { class: "pull-row" });
+  const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!art || still) { row.append(...cards); return { node: row, play() {} }; }
+  const rank = (c) => RANK_OF[(/rarity-(\w+)/.exec(c.className) || [])[1]] ?? 0;
+  const order = cards.map((c, i) => ({ i, r: rank(c) })).sort((a, b) => a.r - b.r || a.i - b.i);
+  const turn = []; order.forEach((o, k) => (turn[o.i] = k));
+  const flip = kind !== "tv";
+  const items = cards.map((c, i) => {
+    if (!flip) { c.classList.add("tv-card"); c.style.setProperty("--i", i); return c; }
+    return el("div", { class: "flipcard" + (rank(c) >= 2 ? " is-rare" : ""), style: `--i:${i};--k:${turn[i]}` },
+      el("div", { class: "flip-inner" }, c, el("div", { class: "card back flip-back", "aria-hidden": "true" }, "?")));
+  });
+  row.append(...items);
+  art.removeAttribute("href"); art.tabIndex = -1;
+  const box = el("div", { class: "packbox", "aria-hidden": "true" }, el("div", { class: "packbody" }, art));
+  if (kind === "rip") box.append(el("div", { class: "tearpiece" }, art.cloneNode(true)));
+  const stage = el("div", { class: `open-stage op-${kind} animating` }, row, box);
+  const T = { rip: [.85, 2.1], reveal: [.65, 1.9], tv: [.75, 0] }[kind];
+  stage.style.setProperty("--d0", T[0] + "s"); stage.style.setProperty("--f0", T[1] + "s");
+  const n = items.length, rare = items.some((x) => x.classList.contains("is-rare"));
+  const end = flip ? T[1] + (n - 1) * .85 + .8 + (rare ? 1.2 : 0) : T[0] + (n - 1) * .2 + .7;
+  return { node: stage, play() {
+    requestAnimationFrame(() => {
+      // deal each card out from the middle, where the pack is
+      const sr = stage.getBoundingClientRect(), cx = sr.left + sr.width / 2, cy = sr.top + sr.height / 2;
+      for (const it of items) {
+        const r = it.getBoundingClientRect();
+        it.style.setProperty("--dx", Math.round(cx - (r.left + r.width / 2)) + "px");
+        it.style.setProperty("--dy", Math.round(cy - (r.top + r.height / 2)) + "px");
+      }
+      stage.classList.add("go");
+      setTimeout(() => stage.classList.remove("animating"), end * 1000);
+    });
+  } };
 }
 
 // The Packs section on your own page: today's daily packs and your sealed packs, side by side.
@@ -1446,9 +1549,7 @@ async function loadPacksPanel(mine) {
     const used = sum.pulls_per_day - sum.packs_left;
     for (let i = 1; i <= sum.pulls_per_day; i++) {
       const done = i <= used;
-      const t = el("a", { href: "#", class: "pack-tile daily" + (done ? " used" : ""), title: done ? "Opened! New ones tomorrow." : "Today's daily pack" },
-        el("span", { class: "pack-top" }, "88x31 cLuB"), el("span", { class: "pack-name" }, "DAILY"),
-        el("span", { class: "pack-sub" }, done ? "back tomorrow!" : `pack ${i} of ${sum.pulls_per_day}`));
+      const t = dailyTile(done, `pack ${i} of ${sum.pulls_per_day}`);
       t.onclick = (e) => { e.preventDefault(); if (!done) showPull().catch((err) => say(err.message)); };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
     }
@@ -1534,7 +1635,9 @@ async function openPackCards(p, box, onDone = null) {
     if (all) c.classList.add("chosen");
     return c;
   });
-  box.append(el("div", { class: "pull-row" }, cards), el("p", { class: "center" }, go));
+  const stage = openingStage(packTile(p, "#"), cards, openKind(p));
+  box.append(stage.node, el("p", { class: "center" }, go));
+  stage.play();
   go.onclick = async () => {
     go.disabled = true;
     try {
@@ -1905,6 +2008,7 @@ function loadTurnstile(sitekey, box) {
   document.head.append(sc);
 }
 
+let fpJustOpened = false;   // set when the free pack was opened just now (plays the reveal)
 async function renderFreePack() {
   const box = $("fp-body");
   if (!box) return;
@@ -1918,11 +2022,10 @@ async function renderFreePack() {
   }
   if (st.state === "none") {
     const fpOops = el("p", { class: "center sig-oops", role: "alert" });
-    const tile = el("a", { href: "#", class: "pack-tile free glow" },
-      el("span", { class: "pack-top" }, "88x31 cLuB"), el("span", { class: "pack-name" }, "FREE PACK"), el("span", { class: "pack-sub" }, "open me!"));
+    const tile = freeTile();
     tile.onclick = async (e) => {
       e.preventDefault();
-      try { await api("/api/freepack", { method: "POST", body: { action: "open" } }); renderFreePack(); }
+      try { await api("/api/freepack", { method: "POST", body: { action: "open" } }); fpJustOpened = true; renderFreePack(); }
       catch (err) { fpOops.textContent = err.message; }
     };
     box.append(el("p", { class: "small" }, "Collect tiny 88x31 buttons from the old web! Your first one's on us."),
@@ -1957,10 +2060,14 @@ async function renderFreePack() {
       if (window.turnstile) { try { window.turnstile.reset(); } catch {} fpToken = null; }
     }
   };
-  box.append(el("div", { class: "pull-row" }, card(st.card, 0, { kept_index: null })),
+  // just opened: the free pack glows away and the card is dealt and flips over
+  const stage = openingStage(fpJustOpened ? freeTile() : null, [card(st.card, 0, { kept_index: null })], "reveal");
+  fpJustOpened = false;
+  box.append(stage.node,
     el("p", { class: "center" }, "This one's yours to keep. Sign it to make it official!"),
     form,
     el("p", { class: "center small fp-note" }, "(This also creates your account)"));
+  stage.play();
   if (st.sitekey) loadTurnstile(st.sitekey, human);
 }
 

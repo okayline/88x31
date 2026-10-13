@@ -1,8 +1,34 @@
-# 88x31 cLuB Changelog — v0.26
+# 88x31 cLuB Changelog — v0.27
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.27 — "Fresh Packs"
+**Tue Oct 13, 2026 · 6:33 AM HST**
+
+- **All-new pack art!** Series packs are crimped foil pouches now, each series with its own look:
+  - **Series Alpha**: a homepage night sky with a rainbow stripe, and it twinkles.
+  - **Alpha Cool Site of the Day Packs**: holo foil with a gold award rosette.
+  - **Series Beta**: a green terminal with matrix rain and a CRT refresh line rolling down.
+  - **Beta Gold Master Packs**: a spinning gold disc on a circuit board.
+- Daily, welcome, free and mixed packs got little pictures too: a sunrise, a cursive Welcome, a gift with a bow, and a grab bag of tiny buttons.
+- **Opening packs is a show now!** Alpha packs rip open, and Beta packs switch off like an old TV. Then the cards are dealt face down and flip over one by one... and if there's a rare in there, it flips last.
+- Daily, welcome and free packs don't rip, they glow and reveal their cards.
+- Every pack says ~*~ 88x31 cLuB ~*~ on top.
+- Prefer things to stay still? With "reduce motion" on, the packs hold still and the cards just appear.
+
+## v0.26.1 — "Now Scrolling"
+**Tue Oct 13, 2026 · 5:56 AM HST**
+
+- New here? After you sign your free pack, the cLuB says hi! You'll see **"Hi, (your name), welcome to ~*~ the cLuB ~*~"** with your save code and a passkey option right there.
+- The save code screen is a little friendlier now.
+- The scrolling bar up top has **news**! The latest drop, how much of each series is left in print, wishes waiting on the Request Board, and a little 90s flavor. A fresh mix every visit.
+- Both scrolling bars have a little more breathing room around the ***.
+- The Wall of Buttons shows the cLuB's own buttons first, then the ones found on the web, all in one big wall.
+- Reloading the Wall doesn't jump you down to the info box anymore.
+- The Free Pack has a flashing NEW on both sides now.
+- A little more room around "Log in with a passkey."
 
 ## v0.26 — "Limited Edition"
 **Tue Oct 13, 2026 · 5:45 AM HST**
