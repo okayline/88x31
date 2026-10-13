@@ -466,16 +466,24 @@ function closeInfo() {
 closeInfo();
 // ---------- Found a Button? (add one to the cLuB) ----------
 {
+  const status = (text, bad = false) => { const e = $("add-status"); e.textContent = text || ""; e.className = "center add-status" + (bad ? " bad-text" : ""); };
   const pickFile = (file) => {
     const prev = $("add-preview"); prev.textContent = "";
     if (!file) return;
     const pic = el("img", { src: URL.createObjectURL(file), class: "banner", alt: "your button", width: 88, height: 31 });
-    pic.onload = () => { if (pic.naturalWidth !== 88 || pic.naturalHeight !== 31) say(`That one is ${pic.naturalWidth}x${pic.naturalHeight}. It has to be 88x31!`); else say(""); };
+    status("Loading the picture...");
+    pic.onload = () => {
+      if (pic.naturalWidth !== 88 || pic.naturalHeight !== 31) status(`That one is ${pic.naturalWidth}x${pic.naturalHeight}. It has to be exactly 88x31!`, true);
+      else status("Looks good! Name it, then hit the button below to add it.");
+    };
+    pic.onerror = () => status("Couldn't read that file. Is it a GIF?", true);
     prev.append(pic);
     $("add-pick").textContent = file.name;
-    if (!$("add-name").value) $("add-name").value = file.name.replace(/\.gif$/i, "").replace(/[-_]+/g, " ").slice(0, 40);
+    const nm = $("add-name");
+    if (!nm.value || nm.dataset.auto === "1") { nm.value = file.name.replace(/\.gif$/i, "").replace(/[-_]+/g, " ").slice(0, 40); nm.dataset.auto = "1"; }
   };
-  $("add-file").onchange = (e) => pickFile(e.target.files[0]);
+  $("add-name").addEventListener("input", () => { $("add-name").dataset.auto = ""; });
+  $("add-file").addEventListener("change", (e) => pickFile(e.target.files[0]));
   const addDrop = $("add-drop");
   addDrop.addEventListener("dragover", (e) => { e.preventDefault(); addDrop.classList.add("over"); });
   addDrop.addEventListener("dragleave", () => addDrop.classList.remove("over"));
@@ -487,20 +495,22 @@ closeInfo();
   $("add-form").onsubmit = async (e) => {
     e.preventDefault();
     const file = $("add-file").files[0];
-    if (!file) return say("Pick a GIF first.");
+    if (!file) return status("Pick a GIF first.", true);
     const fd = new FormData();
     fd.append("file", file); fd.append("name", $("add-name").value); fd.append("type", $("add-type").value);
     fd.append("author", $("add-author").value); fd.append("url", $("add-url").value);
     $("add-go").disabled = true;
+    status("Adding...");
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
       const r = await res.json().catch(() => ({}));
-      if (!res.ok) { say(r.error || "Something went wrong."); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
+      if (!res.ok) { status(r.error || "Something went wrong.", true); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
       $("add-form").reset(); $("add-preview").textContent = ""; $("add-pick").textContent = "Click to pick a GIF, or drop one here";
+      status("");
       say("Added! It's in the cLuB now, and copy #1 is yours.");
       wallLoaded = false;
       location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
-    } catch { say("Couldn't upload that. Try again?"); }
+    } catch { status("Couldn't upload that. Try again?", true); }
     finally { $("add-go").disabled = false; }
   };
 }

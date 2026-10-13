@@ -425,3 +425,9 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .admin-box p { margin: 0 0 6px; }
 .add-button { border: 2px ridge #c0c0c0; padding: 8px 10px; margin: 14px 0; }
 .add-button input[type="text"], .add-button input[type="url"] { width: 100%; max-width: 280px; box-sizing: border-box; }
+
+/* v0.18.1: the info window keeps one height so the page doesn't jump when you click a button */
+#info-win .info-body { height: 360px; overflow-y: auto; }
+@media (max-width: 560px) { #info-win .info-body { height: 300px; } }
+.add-status { min-height: 1.3em; font-weight: bold; }
+#add-preview img.banner { margin: 0 auto; }

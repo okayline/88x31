@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.18
+# 88x31 cLuB Changelog — v0.18.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.18.1 — "Hold Still"
+**Mon Oct 12, 2026 · 11:00 PM HST**
+
+- The button info window stays the same size when you click around the Wall.
+- "Found a Button?" moved below the info window, and now tells you right there if your GIF is the wrong size or something went wrong.
 
 ## v0.18 — "Shiny Happy Buttons"
 **Mon Oct 12, 2026 · 10:47 PM HST**
