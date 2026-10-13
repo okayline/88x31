@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.16
+# 88x31 cLuB Changelog — v0.17
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.17 — "56K of Pure Fun"
+**Mon Oct 12, 2026 · 7:27 PM HST**
+
+- 20 new buttons! Cyber Cafe, New Mail!, 56K Modem, HTML 4 Life, Virtual Pet, CD-ROM, Lava Lamp, Have a Nice Day, MIDI On, Cool Site!, and more.
+- New rare versions to hunt for.
+- Two new one-of-a-kind ultras are hiding somewhere...
 
 ## v0.16 — "???"
 **Mon Oct 12, 2026 · 7:23 PM HST**
