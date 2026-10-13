@@ -1,7 +1,7 @@
 // 88x31 front page: accounts, daily pull, player pages, guestbooks, save codes.
 const $ = (id) => document.getElementById(id);
 const say = (text) => ($("msg").textContent = text || "");
-const TOP = ["loading", "out", "in", "code-card", "about"];
+const TOP = ["loading", "out", "in", "code-card", "about", "check"];
 const showTop = (id) => TOP.forEach((s) => ($(s).hidden = s !== id));
 const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
@@ -96,6 +96,7 @@ async function route() {
     showTop("about");
     return showAbout().catch((e) => say(e.message));
   }
+  if (hash === "check") { showTop("check"); return; }
   if (!me) return showTop("out");
   showTop("in");
   try {
@@ -237,11 +238,23 @@ async function showPage(name) {
   $("page-seen").hidden = !col.owner.last_seen;
   if (col.owner.last_seen) $("page-seen").textContent = `${owner} was last online ${ago(col.owner.last_seen)}`;
 
+  // homepage link (everyone sees it) and the editor (only on your own page)
+  const mine = owner.toLowerCase() === me.name.toLowerCase();
+  const home = $("page-home");
+  home.textContent = "";
+  home.hidden = !col.owner.homepage;
+  if (col.owner.homepage) home.append("★ Visit my homepage: ",
+    el("a", { href: col.owner.homepage, target: "_blank", rel: "noopener nofollow ugc" }, col.owner.homepage.replace(/^https?:\/\//, "").replace(/\/$/, "")), " ★");
+  $("home-form").hidden = !mine;
+  if (mine) $("home-form").homepage.value = col.owner.homepage || "";
+
+  stopArranging(false);
+  $("arrange-bar").hidden = !mine || col.banners.length < 2;
   const grid = $("page-collection");
   grid.textContent = "";
   if (!col.banners.length) grid.append(el("p", {}, "No buttons yet!"));
   for (const b of col.banners) {
-    grid.append(el("a", { href: "#banner/" + b.id, class: "tile", title: `${b.name} ${edition(b)}` },
+    grid.append(el("a", { href: "#banner/" + b.id, class: "tile", title: `${b.name} ${edition(b)}`, "data-id": b.id },
       bannerImg(b), el("span", { class: "small" }, edition(b))));
   }
 
@@ -392,6 +405,174 @@ async function showTrades() {
   }
 }
 
+// ---------- homepage ----------
+
+$("home-form").onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await api("/api/profile", { method: "POST", body: { homepage: e.target.homepage.value } });
+    say("Homepage saved!");
+    await showPage(me.name);
+  } catch (err) { say(err.message); }
+};
+
+// ---------- arrange my wall (drag to reorder; mouse and touch) ----------
+
+let arranging = false, arrangeBefore = null, dragging = null;
+function stopArranging(restore) {
+  const grid = $("page-collection");
+  if (restore && arrangeBefore) arrangeBefore.forEach((t) => grid.append(t));
+  arranging = false; arrangeBefore = null; dragging = null;
+  grid.classList.remove("arranging");
+  $("arrange-btn").hidden = false;
+  $("arrange-tools").hidden = true;
+}
+$("arrange-btn").onclick = () => {
+  arranging = true;
+  arrangeBefore = [...$("page-collection").children];
+  $("page-collection").classList.add("arranging");
+  $("arrange-btn").hidden = true;
+  $("arrange-tools").hidden = false;
+};
+$("arrange-cancel").onclick = () => stopArranging(true);
+$("arrange-save").onclick = async () => {
+  const order = [...$("page-collection").querySelectorAll(".tile")].map((t) => Number(t.dataset.id));
+  try {
+    await api("/api/wall", { method: "POST", body: { order } });
+    stopArranging(false);
+    say("Wall saved! Looking good.");
+  } catch (e) { say(e.message); }
+};
+const grid0 = $("page-collection");
+grid0.addEventListener("click", (e) => { if (arranging) e.preventDefault(); }, true);
+grid0.addEventListener("dragstart", (e) => { if (arranging) e.preventDefault(); });
+grid0.addEventListener("pointerdown", (e) => {
+  if (!arranging) return;
+  const tile = e.target.closest(".tile");
+  if (!tile) return;
+  e.preventDefault();
+  dragging = tile;
+  tile.classList.add("dragging");
+  grid0.setPointerCapture(e.pointerId);
+});
+grid0.addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  const over = document.elementFromPoint(e.clientX, e.clientY);
+  const target = over && over.closest(".tile");
+  if (!target || target === dragging || target.parentNode !== grid0) return;
+  const r = target.getBoundingClientRect();
+  const after = e.clientX > r.left + r.width / 2;
+  grid0.insertBefore(dragging, after ? target.nextSibling : target);
+});
+const endDrag = () => { if (dragging) { dragging.classList.remove("dragging"); dragging = null; } };
+grid0.addEventListener("pointerup", endDrag);
+grid0.addEventListener("pointercancel", endDrag);
+
+// ---------- "Use this button" box on button pages ----------
+
+function useBox(b) {
+  const origin = location.origin;
+  const mine = me && b.owner && b.owner.toLowerCase() === me.name.toLowerCase();
+  const file = b.image_key.split("/").pop();
+  const linkTo = (useHome) => (useHome && b.owner_homepage) ? b.owner_homepage : `${origin}/#banner/${b.id}`;
+  const snippet = (useHome) => `<a href="${linkTo(useHome)}"><img src="${mine ? file.replace(".gif", "-" + b.edition + ".gif") : origin + "/" + b.image_key}" width="88" height="31" alt="${b.name}"></a>`;
+  const code = el("textarea", { class: "snippet", rows: "3", readonly: "readonly" });
+  let useHome = !!(mine && b.owner_homepage);
+  const refresh = () => { code.value = snippet(useHome); };
+  refresh();
+  const box = el("div", { class: "use-box" },
+    el("h2", {}, "» Use this button «"),
+    el("p", { class: "small" }, "The art is CC0: free for anyone to use anywhere, no credit needed."),
+    el("p", { class: "sign-buttons" },
+      mine ? el("a", { class: "btn-link", href: `/api/download?id=${b.id}` }, "Download my copy (signed)") : null,
+      el("a", { class: "btn-link", href: "/" + b.image_key, download: file }, mine ? "Plain picture" : "Download the picture")),
+    mine ? el("p", { class: "small" }, "Your copy has a certificate hidden inside saying it's ",
+      el("b", {}, `${b.name} ${edition(b)}`), ", issued to you", b.owner_homepage ? " with your homepage" : "", ". Upload that file to your site next to your page.") : null);
+  if (mine && b.owner_homepage) {
+    const pick = (v, label) => {
+      const r = el("input", { type: "radio", name: "linkto", value: v });
+      r.checked = (v === "home") === useHome;
+      r.onchange = () => { useHome = v === "home"; refresh(); };
+      return el("label", { class: "radio" }, r, label);
+    };
+    box.append(el("div", { class: "gift-choices" }, el("span", { class: "small" }, "Clicking it goes to:"), pick("home", "my homepage"), pick("page", "this button's cLuB page")));
+  }
+  box.append(el("p", { class: "small" }, "Copy this into your page:"), code,
+    el("p", {}, el("button", { type: "button", onclick: async () => {
+      try { await navigator.clipboard.writeText(code.value); say("Copied!"); } catch { code.select(); say("Press Ctrl+C to copy."); }
+    } }, "Copy code")));
+  return box;
+}
+
+// ---------- Check a Button ----------
+
+// Read GIF comment blocks in the browser (the image never leaves this computer).
+function readGifComments(buf) {
+  const g = new Uint8Array(buf), out = [], dec = new TextDecoder();
+  if (g.length < 13 || String.fromCharCode(...g.slice(0, 3)) !== "GIF") return null;
+  let p = 13;
+  if (g[10] & 0x80) p += 3 * (1 << ((g[10] & 7) + 1));
+  const skip = () => { while (p < g.length && g[p] !== 0) p += g[p] + 1; p++; };
+  while (p < g.length) {
+    const b = g[p];
+    if (b === 0x3b) break;
+    if (b === 0x21) {
+      const label = g[p + 1]; p += 2;
+      if (label === 0xfe) {
+        const bytes = [];
+        while (p < g.length && g[p] !== 0) { for (let i = 1; i <= g[p]; i++) bytes.push(g[p + i]); p += g[p] + 1; }
+        p++; out.push(dec.decode(new Uint8Array(bytes)));
+      } else skip();
+    } else if (b === 0x2c) {
+      const packed = g[p + 9]; p += 10;
+      if (packed & 0x80) p += 3 * (1 << ((packed & 7) + 1));
+      p++; skip();
+    } else break;
+  }
+  return out;
+}
+
+async function checkFile(file) {
+  const box = $("check-result");
+  box.textContent = "";
+  if (!file) return;
+  const pic = el("img", { src: URL.createObjectURL(file), class: "banner check-pic", alt: "your button" });
+  box.append(el("p", { class: "center" }, pic));
+  const comments = readGifComments(await file.arrayBuffer());
+  if (comments === null) { box.append(el("p", { class: "bad-text" }, "That's not a GIF file.")); return; }
+  const stamp = comments.find((c) => c.startsWith("88x31 cLuB certificate"));
+  if (!stamp) {
+    const credit = comments.find((c) => c.startsWith("88x31 game"));
+    box.append(el("p", {}, el("b", {}, "No certificate in this file.")),
+      el("p", { class: "small" }, "It might be a plain download, a screenshot, or re-saved by an app that strips hidden data. Totally fine to use (the art is CC0), it just doesn't prove whose copy it is."),
+      credit ? el("p", { class: "small" }, "It does carry the art credit: ", credit) : null);
+    return;
+  }
+  try {
+    const r = await api("/api/verify", { method: "POST", body: { stamp } });
+    if (!r.genuine) {
+      box.append(el("p", { class: "bad-text" }, el("b", {}, "✗ NOT GENUINE. ")), el("p", {}, "This certificate's signature doesn't match. Something in it was changed, or it wasn't made by the cLuB."));
+      return;
+    }
+    const f = r.fields, n = r.now;
+    box.append(
+      el("p", { class: "ok-text" }, el("b", {}, "✓ GENUINE cLuB CERTIFICATE")),
+      el("p", {}, el("b", {}, f.button), ` · copy #${f.copy}`),
+      el("p", {}, "Issued to ", el("b", {}, f.issued_to), ` on ${new Date(f.issued_at).toLocaleString()}`),
+      f.homepage && f.homepage !== "-" ? el("p", { class: "small" }, "Their homepage then: ", f.homepage) : null,
+      el("p", {}, "Owned right now by: ",
+        n && n.owner ? el("a", { href: "#u/" + encodeURIComponent(n.owner) }, el("b", {}, n.owner)) : el("b", {}, "nobody (retired)"),
+        n && n.owner && n.owner !== f.issued_to ? " (it's changed hands since!)" : ""),
+      el("p", { class: "small" }, r.ledger_ok ? "Its ledger entry checks out ✓" : r.ledger_ok === false ? "Hmm, its ledger entry doesn't match." : ""),
+      n ? el("p", {}, el("a", { href: "#banner/" + n.id }, "See its travel log »")) : null);
+  } catch (e) { say(e.message); }
+}
+$("check-file").onchange = (e) => checkFile(e.target.files[0]);
+const drop = $("check-drop");
+drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); checkFile(e.dataTransfer.files[0]); });
+
 // "show bot messages" toggle, remembered in this browser.
 function applyBotToggle() {
   $("page-guestbook").classList.toggle("hide-bots", !$("show-bots").checked);
@@ -485,6 +666,7 @@ async function showBanner(id) {
     ownedLine(b, history),
 
     el("h2", {}, "» Credits «"),
+    useBox(b),
     credit(b) || el("p", { class: "small" }, "No credit recorded."),
     b.source_url ? el("p", { class: "small" }, "Original: ", el("a", { href: b.source_url, target: "_blank", rel: "noopener" }, b.source_url)) : null,
     el("p", { class: "small" }, "The credit is also written inside the button's GIF file."),
@@ -568,6 +750,7 @@ async function showAbout() {
     list.append(el("li", { value: h.id }, meta, what));
   }
 
+  api("/api/pubkey").then((k) => { $("pubkey").textContent = k.key || "(not set up yet)"; }).catch(() => {});
   const { designs } = await api("/api/credits");
   const credits = $("credits");
   credits.textContent = "";

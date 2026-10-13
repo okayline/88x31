@@ -69,28 +69,30 @@
   <!-- about (open to everyone) -->
   <section id="about" hidden>
     <div class="panel">
-      <h2 class="center">~*~ About 88x31 ~*~</h2>
-      <p>88x31 is a club for collecting, gifting and trading those tiny 88&times;31 buttons from the early web. Pull new buttons every day, keep your favorites, pass extras on to friends, and stamp gifts into each other's guestbooks.</p>
+      <h2 class="center">~*~ About the 88x31 cLuB ~*~</h2>
+      <p>Welcome, web surfer!! You've found the 88x31 cLuB, a place for collecting, gifting and trading those tiny 88&times;31 buttons that used to be on every homepage on the Information Superhighway.</p>
+      <p>Here's the deal: open your packs every day, keep your faves, pass the extras on to your buddies, and stamp gifts into each other's guestbooks. Trade with friends to finish your collection. Hunt for holos. And if you're REALLY lucky... an ultra!! (There's only one of each. Ever.)</p>
       <p><a href="#">&laquo; Back to the homepage</a></p>
     </div>
 
     <div class="panel">
       <h2>&raquo; The Ledger &laquo;</h2>
-      <p>Every button copy has a number (like <i>Neon Nite #12 of 50</i>), and every time one changes hands, it gets written down: who it came from, who it went to, when, and why (a daily pull, a gift, a guestbook stamp, a trade...).</p>
-      <p>New button designs go in the ledger too, the moment they're added: a fingerprint of the artwork, its rarity, how many copies can ever exist, and where the art came from (its source, author and license). So nobody can quietly swap a button's picture, change its credits, or print extra copies later.</p>
-      <p>All of these entries are chained together like a blockchain, but without the crypto. Each entry gets a <b>fingerprint</b>, a hash made from that entry <i>plus the fingerprint of the entry before it</i>. So every fingerprint depends on the whole history behind it.</p>
-      <p>That means nobody can quietly rewrite the past, not even us. If one old entry were changed, its fingerprint would stop matching, and so would every fingerprint after it. The site re-checks the whole chain every time this page loads.</p>
-      <p>Anyone can save the latest fingerprint below and check back later. If the history is honest, today's chain will still lead to the fingerprint you saved.</p>
-      <p>Good to know:</p>
+      <p>Every button copy has its own number (like <i>Neon Nite #12 of 50</i>), and every time one changes hands, the cLuB writes it down: who it came from, who it went to, when, and why (a daily pull, a gift, a guestbook stamp, a trade...).</p>
+      <p>New button designs go in too, the second they're added: a fingerprint of the artwork, its rarity, how many copies can EVER exist, and where the art came from. So nobody can sneakily swap a button's picture, mess with its credits, or print extra copies later. No funny business!!</p>
+      <p>All the entries are chained together, kinda like a blockchain but without the crypto. Each entry gets a <b>fingerprint</b> (a hash) made from that entry <i>plus the fingerprint of the entry before it</i>. So every fingerprint depends on the whole history behind it. Pretty kewl, huh?</p>
+      <p>That means nobody can quietly rewrite the past. Not even the webmaster! Change one old entry and its fingerprint stops matching, and so does every fingerprint after it. The site checks new entries as they come in, and double-checks the whole chain from the very first entry every day.</p>
+      <p>Wanna be extra sure? Write down the latest fingerprint below and check back later. If the history is honest, the chain will still lead right to it.</p>
+      <p><b>Good 2 know:</b></p>
       <ul>
-        <li>The ledger tracks who owns which copy. It doesn't stop anyone saving a picture of a button, but only the ledger says whose copy is the real #12.</li>
-        <li>Buttons are just for fun. They can't be bought or sold for real money.</li>
-        <li>If a player deletes their account, their name disappears from the ledger (it shows as "a former player"), and the chain still checks out.</li>
+        <li>The ledger tracks who owns which copy. Anyone can save a picture of a button, but only the ledger says whose copy is the real #12.</li>
+        <li>Buttons are just for fun. They can't be bought or sold for real money. Ever.</li>
+        <li>If someone deletes their account, their name disappears from the ledger (it says "a former player"), and the chain still checks out A-OK.</li>
       </ul>
     </div>
 
     <div class="panel">
       <h2>&raquo; Ledger Status &laquo;</h2>
+      <p class="small">Live from the cLuB's servers!!</p>
       <p>Chain check: <b id="ledger-ok">checking...</b></p>
       <p>Entries recorded: <b id="ledger-count">...</b></p>
       <p>Latest fingerprint:<br><span class="hash" id="ledger-head">...</span></p>
@@ -100,9 +102,31 @@
     </div>
 
     <div class="panel">
+      <h2>&raquo; Take Buttons Home &laquo;</h2>
+      <p>All the cLuB's button art is <b>CC0</b>, which means it's free for anyone to use for anything. No credit needed! Slap 'em on your homepage, your blog, your Neocities. That's what 88x31s are for!!</p>
+      <p>If you <i>own</i> a button, you can also download <b>your copy</b>: the same picture with a secret signed certificate tucked inside the file. It says which copy it is, who it was issued to, their homepage, and its ledger entry. It's signed with the cLuB's secret key, so nobody can fake one or change even one letter.</p>
+      <p>Copy the file all you want, it'll still be a genuine certificate. But it only ever says who it was <i>issued to</i>. Who owns a button <i>right now</i>? That's always the ledger's call. Got a button file lying around? <a href="#check">Check it here!</a></p>
+      <p class="small">cLuB public key (Ed25519): <span class="hash" id="pubkey">...</span></p>
+    </div>
+
+    <div class="panel">
       <h2>&raquo; Credits &laquo;</h2>
-      <p class="small">Every button design and where its art came from. Each button's file also carries its credit inside it.</p>
+      <p class="small">Every button design and where its art came from. Big thanx to all the artists!! Each button's file carries its credit hidden inside, too.</p>
       <ul id="credits" class="credits"></ul>
+    </div>
+  </section>
+
+  <!-- button checker (open to everyone) -->
+  <section id="check" hidden>
+    <div class="panel">
+      <h2 class="center">~*~ Check a Button ~*~</h2>
+      <p>Drop in a button file to see if it carries a genuine cLuB certificate, who it was issued to, and who owns it now. Your file stays on your computer: only the hidden certificate text is checked.</p>
+      <label class="drop" id="check-drop">
+        <input type="file" id="check-file" accept="image/gif">
+        <span>Click to pick a GIF, or drop one here</span>
+      </label>
+      <div id="check-result"></div>
+      <p><a href="#">&laquo; Back to the homepage</a></p>
     </div>
   </section>
 
@@ -115,6 +139,7 @@
       [ <a href="#trades" id="nav-trades">Trades</a> ]
       [ <a href="#codes">Save Codes</a> ]
       [ <a href="#about">About</a> ]
+      [ <a href="#check">Check a Button</a> ]
       [ <a href="#" id="logout">Log Out</a> ]
       <form id="visit-form" class="visit">
         Visit a guestbook: <input name="name" placeholder="player name" autocomplete="off" list="player-names"> <button>Go!</button>
@@ -125,7 +150,7 @@
     <!-- daily pull -->
     <div id="view-pull" class="view panel" hidden>
       <h2>&raquo; Today's Pull &laquo;</h2>
-      <p class="small">3 buttons a day. Keep 1, and you can pass one of the others to a friend.</p>
+      <p class="small">Each pack has 3 buttons. Keep 1, and you can pass one of the others to a friend.</p>
       <div id="pull-body"></div>
       <p class="small" id="pull-odds"></p>
     </div>
@@ -136,7 +161,19 @@
         <h2 class="center">~*~ Welcome 2 <span id="page-name"></span>'s Guestbook ~*~</h2>
         <p class="center small bot-note" id="page-seen" hidden></p>
         <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of the cLuB's friendly bots. Bots play once a day and can never win ultras.</p>
+        <p class="center homepage-link" id="page-home" hidden></p>
+        <form id="home-form" class="home-form" hidden>
+          My homepage: <input name="homepage" placeholder="https://yoursite.neocities.org" autocomplete="off" maxlength="200">
+          <button>Save</button>
+        </form>
         <h2>&raquo; My Button Collection &laquo;</h2>
+        <p class="arrange-bar" id="arrange-bar" hidden>
+          <button type="button" id="arrange-btn">Arrange my wall</button>
+          <span id="arrange-tools" hidden>
+            <span class="small">Drag buttons into any order.</span>
+            <button type="button" id="arrange-save">Save order</button> <button type="button" id="arrange-cancel">Cancel</button>
+          </span>
+        </p>
         <div id="page-collection" class="grid"></div>
       </div>
       <div class="panel" id="trade-panel" hidden>
@@ -229,7 +266,7 @@
   </div>
 
   <p class="center small">
-    [ <a href="#" id="foot-sign">Sign my Guestbook</a> ] &nbsp; [ <a href="#" id="foot-view">View my Guestbook</a> ] &nbsp; [ <a href="#about">About</a> ] &nbsp; [ Email Me ]
+    [ <a href="#" id="foot-sign">Sign my Guestbook</a> ] &nbsp; [ <a href="#" id="foot-view">View my Guestbook</a> ] &nbsp; [ <a href="#about">About</a> ] &nbsp; [ <a href="#check">Check a Button</a> ] &nbsp; [ Email Me ]
   </p>
 
   <table class="webring">
@@ -242,7 +279,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.11</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.12</span>
   </p>
 
 </main>

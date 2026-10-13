@@ -13,9 +13,11 @@ export async function onRequestGet({ request, env }) {
             (SELECT h.created_at FROM ownership_history h WHERE h.instance_id = i.id ORDER BY h.id DESC LIMIT 1) AS got_at,
             (SELECT h.reason FROM ownership_history h WHERE h.instance_id = i.id ORDER BY h.id DESC LIMIT 1) AS got_how
      FROM instances i JOIN designs d ON d.id = i.design_id
+     LEFT JOIN wall_slots w ON w.instance_id = i.id AND w.user_id = i.owner_id
      WHERE i.owner_id = ? AND i.consumed = 0
-     ORDER BY got_at DESC, i.id DESC`
+     ORDER BY w.slot IS NULL, w.slot, got_at DESC, i.id DESC`
   ).bind(owner.id).all();
 
-  return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0, last_seen: owner.is_bot ? owner.last_seen : null }, banners: results });
+  return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0,
+    last_seen: owner.is_bot ? owner.last_seen : null, homepage: owner.homepage || null }, banners: results });
 }

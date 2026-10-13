@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_admin    INTEGER NOT NULL DEFAULT 0,
   is_bot      INTEGER NOT NULL DEFAULT 0,   -- bots play once a day (lib/bots.js); can't log in
   last_seen   INTEGER,                      -- bots: when they were last online
+  homepage    TEXT,                         -- player's own website (http/https), shown on their guestbook
   created_at  INTEGER NOT NULL
 );
 
@@ -240,3 +241,5 @@ CREATE TABLE IF NOT EXISTS meta (
   updated_at  INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_history_reason ON ownership_history(reason, id);
+
+CREATE INDEX IF NOT EXISTS idx_wall_instance ON wall_slots(instance_id);

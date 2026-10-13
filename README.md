@@ -100,3 +100,19 @@ python3 tools/add_banner.py made/globe.gif --name "Spinning Globe" --type webrin
 This bakes the credit into the GIF file, saves it to `public/banners/`, and adds a line to
 `seed_new_banners.sql`. Run that file on the database to add the new designs; each one is
 sealed into the ledger with its art fingerprint and credits.
+
+## Signed button certificates (one-time setup)
+
+Owners can download their copy of a button with a signed certificate inside the GIF.
+The cLuB signs with a secret Ed25519 key kept in Cloudflare (never in this repo). Make it once
+and pipe it straight into Cloudflare, from the folder where you run wrangler:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/tools/make_key.mjs
+node make_key.mjs | npx wrangler pages secret put SIGNING_KEY --project-name 88x31
+```
+
+Making a new key later would make every older certificate stop checking out, so keep this one.
+The public half is shown on the About page and at `/api/pubkey`.
+
+The art itself is CC0 (public domain): anyone can use it anywhere.

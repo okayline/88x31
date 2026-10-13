@@ -1,8 +1,19 @@
-# 88x31 cLuB Changelog — v0.11
+# 88x31 cLuB Changelog — v0.12
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.12 — "Take Me Home"
+**Mon Oct 12, 2026 · 5:50 PM HST**
+
+- All button art is now CC0: free to use anywhere, no credit needed.
+- Add your own homepage link to your guestbook.
+- Every button page has a "Use this button" box with downloads and copy-paste code for your site.
+- Owners can download their copy with a signed certificate hidden inside.
+- New "Check a Button" page: see if a button file is genuine and who owns it now.
+- Arrange the buttons on your guestbook wall in any order.
+- The About page got a fresh coat of 90s paint.
 
 ## v0.11 — "Defrag"
 **Mon Oct 12, 2026 · 5:20 PM HST**

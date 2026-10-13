@@ -8,7 +8,7 @@ export async function onRequestGet({ request, env }) {
   await sealSafe(env); // make sure the latest steps have fingerprints
 
   const banner = await env.DB.prepare(
-    `SELECT i.id, i.edition, i.design_id, u.name AS owner, d.name, d.type, d.rarity, d.image_key, d.max_editions,
+    `SELECT i.id, i.edition, i.design_id, u.name AS owner, u.homepage AS owner_homepage, d.name, d.type, d.rarity, d.image_key, d.max_editions,
             d.image_hash, d.stats, d.source_title, d.source_author, d.source_url, d.license,
             (SELECT COUNT(*) FROM instances WHERE design_id = d.id) AS minted
      FROM instances i JOIN designs d ON d.id = i.design_id LEFT JOIN users u ON u.id = i.owner_id
