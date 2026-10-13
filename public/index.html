@@ -31,7 +31,7 @@
   </header>
 
   <div class="marquee site-extra" aria-hidden="true">
-    <span>*** WELCOME 2 MY HOMEPAGE *** COLLECT THEM ALL *** TRADE WITH FRIENDS *** SIGN MY GUESTBOOK *** THANX 4 VISITING ***</span>
+    <span id="marquee-text">***&nbsp;&nbsp;&nbsp;LATEST DROP:&nbsp;&nbsp;BETA SERIES&nbsp;&nbsp;&nbsp;***&nbsp;&nbsp;&nbsp;WELCOME 2 MY HOMEPAGE&nbsp;&nbsp;&nbsp;***&nbsp;&nbsp;&nbsp;COLLECT THEM ALL&nbsp;&nbsp;&nbsp;***&nbsp;&nbsp;&nbsp;TRADE WITH FRIENDS&nbsp;&nbsp;&nbsp;***&nbsp;&nbsp;&nbsp;SIGN MY GUESTBOOK&nbsp;&nbsp;&nbsp;***&nbsp;&nbsp;&nbsp;THANX 4 VISITING&nbsp;&nbsp;&nbsp;***</span>
   </div>
 
   <hr class="rainbow">
@@ -82,7 +82,7 @@
     <table class="layout">
       <tr>
         <td class="panel freepack-box">
-          <h2>&raquo; Free Pack! &laquo; <img src="deco/new.gif" alt="new" width="32" height="14"></h2>
+          <h2><img src="deco/new.gif" alt="new" width="32" height="14"> &raquo; Free Pack! &laquo; <img src="deco/new.gif" alt="" width="32" height="14"></h2>
           <div id="fp-body"></div>
         </td>
         <td class="panel">
@@ -92,7 +92,7 @@
             <label>Your save code:<br><input name="code" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" required></label>
             <button>Enter!</button>
           </form>
-          <p class="center small pk-or" id="pk-login-row" hidden>&mdash; or &mdash;<br><button type="button" id="pk-login">&#128273; Log in with a passkey</button></p>
+          <p class="center small pk-or" id="pk-login-row" hidden>&mdash; or &mdash;<br><br><button type="button" id="pk-login">&#128273; Log in with a passkey</button></p>
           <p class="center sig-oops" id="login-oops" role="alert"></p>
         </td>
       </tr>
@@ -103,8 +103,8 @@
   <section id="code-card" hidden>
     <div class="panel save">
       <h2 class="center" id="code-welcome" hidden>Hi, <span id="code-welcome-name"></span>, welcome to ~*~ the cLuB ~*~</h2>
-      <h2 id="code-title">!!! YOUR SAVE CODE !!!</h2>
-      <p id="code-intro"><b>This is your ONLY way back in.</b> Write it down, print it, hide it under your keyboard. It won't be shown again!</p>
+      <h2 id="code-title">~ Your Save Code ~</h2>
+      <p id="code-intro">This code is how you get back in, so <b>keep it somewhere safe</b>: write it down, print it, or hide it under your keyboard. It won't be shown again!</p>
       <p class="code" id="code-text"></p>
       <p class="center">
         <button id="copy-code">Copy</button>

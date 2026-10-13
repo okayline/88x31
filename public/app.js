@@ -243,7 +243,7 @@ window.addEventListener("hashchange", (e) => {
   const was = decodeURIComponent(new URL(e.oldURL).hash.slice(1)), now = decodeURIComponent(location.hash.slice(1));
   // (logged out, the Wall is on the front page, so clicks there count as "on the Wall" too)
   const onWall = /^wall(\/|$)/.test(was) || (!me && !/^(about|check|u\/|banner\/)/.test(was));
-  if (onWall && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5)).catch((err) => say(err.message)); return; }
+  if (onWall && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5), true).catch((err) => say(err.message)); return; }
   if (onWall && now === "wall" && wallLoaded) { closeInfo(); return; }
   window.scrollTo(0, 0); route();
 });
@@ -475,18 +475,29 @@ let wallDesigns = [];
 const wallPref = (k, def) => { try { return localStorage.getItem("wall-" + k) || def; } catch { return def; } };
 const setWallPref = (k, v) => { try { localStorage.setItem("wall-" + k, v); } catch {} };
 function renderWallGrid() {
-  const show = me ? wallPref("show", "all") : "all", order = me ? wallPref("order", "shuffle") : "shuffle";
+  // the Show/Order switches are webmaster-only; everyone else sees cLuB buttons first, then found ones
+  const admin = !!(me && me.is_admin);
+  const show = admin ? wallPref("show", "all") : "all", order = admin ? wallPref("order", "shuffle") : "shuffle";
   const RANK = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
-  let list = wallDesigns.filter((d) => show === "all" || (show === "found" ? d.tier === "archive" : d.tier !== "archive"));
-  const known = list.filter((d) => !d.hidden), mystery = list.filter((d) => d.hidden);
-  if (order === "rarity") known.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || a._r - b._r);
-  else known.sort((a, b) => a._r - b._r);
+  const list = wallDesigns.filter((d) => show === "all" || (show === "found" ? d.tier === "archive" : d.tier !== "archive"));
+  const shuffled = (arr) => arr.slice().sort((a, b) => a._r - b._r);
+  let tiles;
+  if (admin) {
+    const known = list.filter((d) => !d.hidden), mystery = list.filter((d) => d.hidden);
+    if (order === "rarity") known.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || a._r - b._r);
+    else known.sort((a, b) => a._r - b._r);
+    tiles = [...known, ...mystery];
+  } else {
+    // each group shuffled, with its mystery tiles at the end of that group
+    const group = (arr) => [...shuffled(arr.filter((d) => !d.hidden)), ...shuffled(arr.filter((d) => d.hidden))];
+    tiles = [...group(list.filter((d) => d.tier !== "archive")), ...group(list.filter((d) => d.tier === "archive"))];
+  }
   const grid = $("wall-grid");
   grid.textContent = "";
   // logged out: just the pictures, nothing to click
   const tile = (d, inner) => (me ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.hidden ? "???" : d.name }, inner)
     : el("span", { class: "wall-tile still", title: d.hidden ? "???" : d.name }, inner));
-  for (const d of [...known, ...mystery]) grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
+  for (const d of tiles) grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
   $("wall-count").textContent = `${list.length} buttons${show === "all" ? " and counting!" : ""}`;
   document.querySelectorAll("#wall-controls button").forEach((b) => b.classList.toggle("on", wallPref(b.dataset.k, b.dataset.k === "show" ? "all" : "shuffle") === b.dataset.v));
 }
@@ -502,7 +513,7 @@ async function showWall(openId) {
   // logged out, the Wall is pictures only: no info box, no "click one" line
   $("info-win").hidden = !me;
   document.querySelectorAll(".wall-intro").forEach((x) => (x.hidden = !me));
-  $("wall-controls").hidden = !me;   // sorting is for members; logged out it's just pictures
+  $("wall-controls").hidden = !(me && me.is_admin);   // sorting switches are webmaster-only
   if (!me) openId = null;
   if (!wallLoaded) {
     const { designs } = await api("/api/designs");
@@ -518,17 +529,18 @@ async function showWall(openId) {
 const OWNERS_SHOWN = () => (window.matchMedia("(min-width: 700px)").matches ? 12 : 6);
 
 // "#wall/7" = design 7's info; "#wall/7/c/42" = copy 42 of it, shown in the same info box.
-function openWallHash(rest) {
+// scroll: bring the info box into view (only when a button was clicked, never on page load or reload)
+function openWallHash(rest, scroll = false) {
   const m = /^(\d+)(?:\/c\/(\d+))?$/.exec(rest || "");
   if (!m) return closeInfo();
-  return m[2] ? openCopyInfo(Number(m[1]), Number(m[2])) : openInfo(Number(m[1]));
+  return m[2] ? openCopyInfo(Number(m[1]), Number(m[2]), scroll) : openInfo(Number(m[1]), scroll);
 }
 
 // One specific copy, inside the Wall's info box, with a way back to the button's info.
-async function openCopyInfo(designId, copyId) {
+async function openCopyInfo(designId, copyId, scroll = false) {
   const body = $("info-body");
   body.textContent = "Loading...";
-  $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  if (scroll) $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" });
   const { banner: b, foil_entry: fe, history } = await api("/api/banner?id=" + copyId);
   $("info-title").textContent = `${b.name} ${edition(b)}`;
   const LOG = 8;
@@ -758,12 +770,12 @@ const MYSTERY_LINES = [
   "Shhh. It's a secret.",
 ];
 
-async function openInfo(id) {
+async function openInfo(id, scroll = false) {
   const body = $("info-body");
   body.textContent = "Loading...";
   $("info-title").textContent = "Button info";
   document.querySelectorAll(".wall-tile").forEach((t) => t.classList.toggle("on", t.getAttribute("href") === "#wall/" + id));
-  $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" }); // bring the info box into view
+  if (scroll) $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" }); // bring the info box into view
   const info = await api("/api/designs?id=" + id);
   if (info.hidden) {
     $("info-title").textContent = "???";
@@ -1870,10 +1882,10 @@ function showCode(code, name) {
   $("code-text").textContent = code;
   $("code-welcome").hidden = !name;
   $("code-welcome-name").textContent = name || "";
-  $("code-title").textContent = name ? "Here's your save code:" : "!!! YOUR SAVE CODE !!!";
+  $("code-title").textContent = name ? "Here's your save code:" : "~ Your Save Code ~";
   $("code-intro").innerHTML = name
     ? "It's your key to get back in, so <b>keep it somewhere safe</b>: write it down, print it, hide it under your keyboard. It won't be shown again!"
-    : "<b>This is your ONLY way back in.</b> Write it down, print it, hide it under your keyboard. It won't be shown again!";
+    : "This code is how you get back in, so <b>keep it somewhere safe</b>: write it down, print it, or hide it under your keyboard. It won't be shown again!";
   $("pk-card-row").hidden = !pkSupported();
   $("pk-card-add").disabled = false; $("pk-card-add").textContent = "🔑 Also add a passkey on this device";
   showTop("code-card");
@@ -1997,13 +2009,16 @@ const doLogout = async (e) => {
 };
 document.querySelectorAll(".logout-link").forEach((a) => (a.onclick = doLogout));
 
+// "***" with a little room on each side (non-breaking spaces, so they don't squish into one)
+const TICK_SEP = "\u00a0\u00a0\u00a0***\u00a0\u00a0\u00a0";
+
 // Front-page ticker of recent trades, gifts and ultra finds (refreshes every few minutes).
 async function loadTicker() {
   try {
     const { items } = await api("/api/feed");
     const t = $("ticker-text");
     t.textContent = items.length
-      ? items.map((i) => i.text).join("  ***  ")
+      ? items.map((i) => i.text).join(TICK_SEP)
       : "No trades or gifts yet... be the first!";
     // keep the scroll speed steady no matter how long the text is
     t.style.animationDuration = Math.max(20, Math.round(t.textContent.length / 6)) + "s";
@@ -2011,6 +2026,29 @@ async function loadTicker() {
 }
 loadTicker();
 setInterval(loadTicker, 3 * 60 * 1000);
+
+// Top marquee: the webmaster's news, live print runs and Request Board nudges (from /api/news),
+// with some 90s flavor sprinkled in between.
+const MARQUEE_NEWS = ["LATEST DROP:\u00a0\u00a0BETA SERIES"];
+const MARQUEE_HOME = ["WELCOME 2 MY HOMEPAGE", "COLLECT THEM ALL", "TRADE WITH FRIENDS", "SIGN MY GUESTBOOK", "THANX 4 VISITING"];
+const MARQUEE_90S = ["BEST VIEWED IN NETSCAPE 4.0 AT 800x600", "NO FRAMES WERE HARMED IN THE MAKING OF THIS SITE",
+  "DON'T 4GET 2 SIGN MY GUESTBOOK", "THIS PAGE IS Y2K COMPLIANT", "PLZ DON'T PICK UP THE PHONE, I'M ONLINE"];
+const MARQUEE_SIZE = 5;   // how many things scroll by
+async function loadMarquee() {
+  let live = [];
+  try { live = (await api("/api/news")).items || []; } catch {}
+  // a short mix each page load: the news, one live line (if any), then a few random picks
+  const pick = (arr) => arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
+  const liveLeft = live.slice(), pool = [...MARQUEE_HOME, ...MARQUEE_90S];
+  const lines = [...MARQUEE_NEWS];
+  if (liveLeft.length) lines.push(pick(liveLeft));
+  pool.push(...liveLeft);   // any other live lines can still turn up as random picks
+  while (lines.length < MARQUEE_SIZE && pool.length) lines.push(pick(pool));
+  const t = $("marquee-text");
+  t.textContent = "***" + TICK_SEP + lines.join(TICK_SEP) + TICK_SEP + "***";
+  t.style.animationDuration = Math.max(18, Math.round(t.textContent.length / 6)) + "s";
+}
+loadMarquee();   // once per page load, so it stays put while you read it
 
 // Visitor counter: counted once per browser visit, so refreshing doesn't bump it.
 (async () => {
