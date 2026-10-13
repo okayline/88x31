@@ -304,7 +304,15 @@ img.check-pic { display: inline-block; width: 176px; height: 62px; }
 .lg-ultra { border-color: #ff00ff; }
 .lg-special { border-color: #ff9900; }
 img.rarity-special { border-color: #ff9900; }
-.info-window { max-width: 460px; max-height: calc(100vh - 32px); display: flex; flex-direction: column; }
+.wall-cols { display: grid; grid-template-columns: 1fr; gap: 12px; }
+#info-win.info-window { width: 100%; max-width: none; display: flex; flex-direction: column; min-width: 0; box-sizing: border-box; }
+.info-empty { color: #333; font-style: italic; padding: 20px 4px; }
+.wall-tile.on img.banner { outline: 3px solid #ffff00; }
+.info-window .owners { columns: 3; }
+.info-body .hash, .info-body a { overflow-wrap: anywhere; }
+.wall-cols > * { min-width: 0; }
+.info-body img.banner { max-width: 100%; height: auto; }
+@media (max-width: 560px) { .info-window .owners { columns: 2; } }
 .info-window .dialog-title { display: flex; justify-content: space-between; align-items: center; }
 .win-x { padding: 0 6px; font-size: 12px; line-height: 14px; }
 .info-body { overflow-y: auto; padding: 10px 12px; font: 14px/1.4 Arial, Helvetica, sans-serif; }

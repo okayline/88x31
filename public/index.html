@@ -160,18 +160,19 @@
         <span class="lg lg-common">common</span> <span class="lg lg-uncommon">uncommon</span> <span class="lg lg-rare">rare</span>
         <span class="lg lg-ultra">ULTRA</span> <span class="lg lg-special">set reward</span>
       </p>
-      <div id="wall-grid" class="wall-grid"></div>
-      <p class="center small" id="wall-count"></p>
+      <div class="wall-cols">
+        <div>
+          <div id="wall-grid" class="wall-grid"></div>
+          <p class="center small" id="wall-count"></p>
+        </div>
+        <!-- button info window: always on the page, fills in when you click a button -->
+        <aside class="dialog-window info-window" id="info-win" aria-live="polite">
+          <div class="dialog-title"><span id="info-title">Button info</span><button type="button" class="win-x" id="info-close" aria-label="Clear">x</button></div>
+          <div class="info-body" id="info-body"></div>
+        </aside>
+      </div>
     </div>
   </section>
-
-  <!-- button info window (opened from the Wall) -->
-  <div id="info-win" class="dialog-backdrop" hidden>
-    <div class="dialog-window info-window" role="dialog" aria-modal="true" aria-labelledby="info-title">
-      <div class="dialog-title"><span id="info-title">Button info</span><button type="button" class="win-x" id="info-close" aria-label="Close">x</button></div>
-      <div class="info-body" id="info-body"></div>
-    </div>
-  </div>
 
   <!-- button checker (open to everyone) -->
   <section id="check" hidden>
@@ -347,7 +348,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.15</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.15.1</span>
   </p>
 
 </main>

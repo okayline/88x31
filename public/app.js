@@ -113,7 +113,6 @@ async function route() {
     showTop("wall");
     return showWall(hash.slice(5)).catch((e) => say(e.message));
   }
-  closeInfo();
   // Player pages and button pages are public: anyone can look, members can interact.
   if (!me && (hash.startsWith("u/") || hash.startsWith("banner/"))) {
     showTop("in");
@@ -387,23 +386,30 @@ async function showWall(openId) {
     $("wall-count").textContent = `${designs.length} buttons and counting!`;
     wallLoaded = true;
   }
-  if (openId) await openInfo(Number(openId)); else closeInfo();
+  if (openId) await openInfo(Number(openId));
 }
 
-function closeInfo() { $("info-win").hidden = true; }
+// The info window is part of the Wall page; "closing" just resets it to its welcome message.
+function closeInfo() {
+  $("info-title").textContent = "Button info";
+  const body = $("info-body");
+  body.textContent = "";
+  body.append(el("p", { class: "center info-empty" }, "↑ Click any button above to see its info, credits, and who owns one!"));
+  document.querySelectorAll(".wall-tile.on").forEach((t) => t.classList.remove("on"));
+}
+closeInfo();
 $("info-close").onclick = () => { closeInfo(); history.replaceState(null, "", "#wall"); };
-$("info-win").addEventListener("click", (e) => { if (e.target === $("info-win")) $("info-close").onclick(); });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("info-win").hidden) $("info-close").onclick(); });
 
 async function openInfo(id) {
   const body = $("info-body");
   body.textContent = "Loading...";
   $("info-title").textContent = "Button info";
-  $("info-win").hidden = false;
+  document.querySelectorAll(".wall-tile").forEach((t) => t.classList.toggle("on", t.getAttribute("href") === "#wall/" + id));
+  $("info-win").scrollIntoView({ behavior: "smooth", block: "nearest" }); // bring the info box into view
   const { design: d, ledger, sets, copies } = await api("/api/designs?id=" + id);
   $("info-title").textContent = d.name;
   let st = {}; try { st = JSON.parse(d.stats || "{}"); } catch {}
-  const who = (c) => c.owner ? el("a", { href: "#u/" + encodeURIComponent(c.owner), onclick: closeInfo }, c.owner) : "nobody";
+  const who = (c) => c.owner ? el("a", { href: "#u/" + encodeURIComponent(c.owner) }, c.owner) : "nobody";
   body.textContent = "";
   body.append(...[
     el("p", { class: "center" }, bannerImg(d, 3)),
@@ -427,7 +433,7 @@ async function openInfo(id) {
     el("h3", {}, "Who has one"),
     copies.length
       ? el("ul", { class: "owners" }, copies.map((c) => el("li", {},
-          el("a", { href: "#banner/" + c.id, onclick: closeInfo }, `#${c.edition}`), " · ", who(c), c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null)))
+          el("a", { href: "#banner/" + c.id }, `#${c.edition}`), " · ", who(c), c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null)))
       : el("p", { class: "small" }, "Nobody yet! Could be you..."),
     copies.length >= 60 ? el("p", { class: "small" }, "...and more!") : null].filter(Boolean));
 }

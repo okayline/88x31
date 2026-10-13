@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.15
+# 88x31 cLuB Changelog — v0.15.1
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.15.1 — "Window Shopping"
+**Mon Oct 12, 2026 · 7:18 PM HST**
+
+- On the Wall of Buttons, button info now shows in a big window right below the wall instead of a popup.
 
 ## v0.15 — "Wall of Fame"
 **Mon Oct 12, 2026 · 7:10 PM HST**
