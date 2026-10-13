@@ -1865,8 +1865,15 @@ $("delete-account").onclick = async () => {
 
 // ---------- signup / login / save code card ----------
 
-function showCode(code) {
+// name is passed only for a brand-new member (signing the free pack), who gets a welcome on top
+function showCode(code, name) {
   $("code-text").textContent = code;
+  $("code-welcome").hidden = !name;
+  $("code-welcome-name").textContent = name || "";
+  $("code-title").textContent = name ? "Here's your save code:" : "!!! YOUR SAVE CODE !!!";
+  $("code-intro").innerHTML = name
+    ? "It's your key to get back in, so <b>keep it somewhere safe</b>: write it down, print it, hide it under your keyboard. It won't be shown again!"
+    : "<b>This is your ONLY way back in.</b> Write it down, print it, hide it under your keyboard. It won't be shown again!";
   $("pk-card-row").hidden = !pkSupported();
   $("pk-card-add").disabled = false; $("pk-card-add").textContent = "🔑 Also add a passkey on this device";
   showTop("code-card");
@@ -1930,7 +1937,7 @@ async function renderFreePack() {
       const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: name.value, turnstile: fpToken } });
       me = r.user;
       afterCode = "u/" + encodeURIComponent(r.user.name); // land on your new page once the code is saved
-      showCode(r.code);
+      showCode(r.code, r.user.name);
     } catch (err) {
       oops.textContent = err.message;
       check.disabled = false;
