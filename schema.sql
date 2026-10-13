@@ -370,3 +370,6 @@ ALTER TABLE fusions ADD COLUMN pattern TEXT;
 ALTER TABLE fusions ADD COLUMN effect TEXT;
 ALTER TABLE fusions ADD COLUMN prev_foil TEXT;
 CREATE INDEX IF NOT EXISTS idx_instances_design ON instances(design_id, consumed);
+
+-- ---------- v0.20: set showcase (also in migrations/015_set_showcase.sql) ----------
+ALTER TABLE set_claims ADD COLUMN showcase INTEGER NOT NULL DEFAULT 0;

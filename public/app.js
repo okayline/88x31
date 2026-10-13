@@ -385,16 +385,8 @@ async function showPage(name) {
   $("page-seen").hidden = !col.owner.last_seen;
   if (col.owner.last_seen) $("page-seen").textContent = `${owner} was last online ${ago(col.owner.last_seen)}`;
 
-  // homepage link (everyone sees it) and the editor (only on your own page)
   const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
   $("dash").hidden = !mine;
-  const home = $("page-home");
-  home.textContent = "";
-  home.hidden = !col.owner.homepage;
-  if (col.owner.homepage) home.append("★ Visit my homepage: ",
-    el("a", { href: col.owner.homepage, target: "_blank", rel: "noopener nofollow ugc" }, col.owner.homepage.replace(/^https?:\/\//, "").replace(/\/$/, "")), " ★");
-  $("home-form").hidden = !mine;
-  if (mine) $("home-form").homepage.value = col.owner.homepage || "";
 
   stopArranging(false);
   $("arrange-bar").hidden = !mine || col.banners.length < 2;
@@ -644,31 +636,55 @@ async function openInfo(id) {
 // ---------- sets ----------
 
 function renderSets(owner, r) {
-  const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
-  $("sets-panel").hidden = false;
-  $("sets-title").textContent = mine ? "My Sets" : `${owner}'s Sets`;
+  const mine = !!r.mine;
   const body = $("sets-body");
   body.textContent = "";
-  // Simple for now: one line per set; click a set to see its buttons.
+  $("sets-title").textContent = mine ? "My Sets" : `${owner}'s Trophies`;
+  // visitors only see finished sets the owner chose to show off
+  $("sets-panel").hidden = !mine && !r.sets.length;
+  if (mine && !r.sets.length) body.append(el("p", { class: "small" }, "No sets started yet... keep collecting and see what turns up!"));
   for (const st of r.sets) {
+    if (!mine) {
+      body.append(el("div", { class: "set-row trophy" },
+        el("p", {}, el("b", {}, st.secret ? "★ a secret set" : "★ " + st.name), " ✓ ",
+          el("span", { class: "small" }, `finished ${fmtDate(st.claimed_at)}`)),
+        st.designs ? el("div", { class: "set-grid" }, st.designs.map((d) => el("span", { class: "set-item", title: d.name }, bannerImg(d)))) : null,
+        st.reward ? el("p", { class: "small" }, "Reward: ", st.claimed_instance
+          ? el("a", { href: "#banner/" + st.claimed_instance }, st.reward.name) : st.reward.name) : null));
+      continue;
+    }
     const status = st.claimed ? el("span", { class: "set-badge" }, " ★ done!")
-      : st.complete && mine ? el("button", { type: "button", class: "mini claim-btn", onclick: async (e) => {
+      : st.complete ? el("button", { type: "button", class: "mini claim-btn", onclick: async (e) => {
           e.preventDefault();
           try {
             await api("/api/sets/claim", { method: "POST", body: { set_id: st.id } });
-            say(`★ SET COMPLETE! ★ ${st.reward ? st.reward.name : "Reward"} is yours!`);
+            say("★ SET COMPLETE! ★ Your reward is waiting in your collection!");
             await showPage(me.name); loadSummary();
           } catch (err) { say(err.message); }
         } }, "Claim reward!")
-      : st.complete ? el("span", { class: "set-badge" }, " complete!") : null;
+      : null;
+    // show-off checkbox for finished sets
+    let show = null;
+    if (st.claimed) {
+      const box = el("input", { type: "checkbox" });
+      box.checked = !!st.showcase;
+      box.onchange = async () => {
+        try { await api("/api/sets", { method: "POST", body: { set_id: st.id, show: box.checked } }); say(box.checked ? "Showing it off on your page!" : "Hidden from visitors."); }
+        catch (err) { box.checked = !box.checked; say(err.message); }
+      };
+      show = el("label", { class: "small show-off" }, box, st.secret ? " Show on my page (as \"a secret set\")" : " Show on my page");
+    }
     const row = el("details", { class: "set-row" },
       el("summary", {}, el("b", {}, (st.secret ? "★ " : "") + st.name), ` ${st.have}/${st.total} `, status),
-      el("div", { class: "set-grid" }, st.designs.map((d) => el("span", { class: "set-item" + (d.owned ? "" : " missing"), title: d.name }, bannerImg(d)))),
-      st.reward ? el("p", { class: "small" }, "Reward: ", st.claimed && st.claimed_instance
-        ? el("a", { href: "#banner/" + st.claimed_instance }, st.reward.name) : st.reward.name) : null);
+      el("div", { class: "set-grid" }, st.designs.map((d) => d.hidden
+        ? el("span", { class: "set-item missing", title: "???" }, el("span", { class: "mystery-tile" }, "?"))
+        : el("span", { class: "set-item", title: d.name }, bannerImg(d)))),
+      st.reward ? el("p", { class: "small" }, "Reward: ", st.reward.hidden ? "???" : st.claimed_instance
+        ? el("a", { href: "#banner/" + st.claimed_instance }, st.reward.name) : st.reward.name) : null,
+      show);
     body.append(row);
   }
-  if (r.secrets_left) body.append(el("p", { class: "small center secret-hint" },
+  if (mine && r.secrets_left) body.append(el("p", { class: "small center secret-hint" },
     r.secrets_left === 1 ? "...psst. There's a secret set out there. Can you find it?" : `...psst. There are ${r.secrets_left} secret sets out there.`));
 }
 
@@ -899,17 +915,6 @@ function renderSwatches(current) {
     box.append(b);
   }
 }
-
-// ---------- homepage ----------
-
-$("home-form").onsubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await api("/api/profile", { method: "POST", body: { homepage: e.target.homepage.value } });
-    say("Homepage saved!");
-    await showPage(me.name);
-  } catch (err) { say(err.message); }
-};
 
 // ---------- arrange my wall (drag to reorder; mouse and touch) ----------
 

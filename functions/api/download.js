@@ -32,7 +32,6 @@ export async function onRequestGet({ request, env }) {
     ["copy", b.id],
     ["button", `${b.name} #${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`],
     ["issued_to", me.name],
-    ["homepage", me.homepage || "-"],
     ["ledger", entry ? `#${entry.id} ${entry.hash}` : "-"],
     ["issued_at", new Date().toISOString()],
     ["page", `${origin}/#banner/${b.id}`],

@@ -9,14 +9,13 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.19">
+<link rel="stylesheet" href="style.css?v=0.20">
 </head>
 <body>
 <main>
   <nav class="top-bar" id="top-nav">
     <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link">My Page</a> ] -
-    [ <a href="#pull">Daily Pull</a> ] -
-    [ <a href="#trades" id="nav-trades">Trades</a> ] -</span>
+    [ <a href="#pull">Daily Pull</a> ] -</span>
     <span class="only-out">[ <a href="#">Join the cLuB!</a> ] -</span>
     [ <a href="#wall">Wall of Buttons</a> ] -
     [ <a href="#about">About</a> ]
@@ -51,6 +50,7 @@
     <div class="dash-cols">
       <ul class="dash-list" id="dash-list"><li>Loading your news...</li></ul>
       <div class="dash-side">
+        <p>[ <a href="#trades" id="nav-trades">Trades</a> ]</p>
         <p>[ <a href="#codes">Save Codes</a> ]</p>
         <p>[ <a href="#check">Check a Button</a> ]</p>
         <form id="visit-form" class="visit">
@@ -168,10 +168,6 @@
     <div class="panel">
       <h2 class="center">~*~ Wall of Buttons ~*~</h2>
       <p class="center small">Every button in the cLuB. Click one for its info, credits and who owns it!</p>
-      <p class="center small wall-legend">
-        <span class="lg lg-common">common</span> <span class="lg lg-uncommon">uncommon</span> <span class="lg lg-rare">rare</span>
-        <span class="lg lg-ultra">ULTRA</span> <span class="lg lg-special">set reward</span>
-      </p>
       <div class="wall-cols">
         <div>
           <div id="wall-grid" class="wall-grid"></div>
@@ -227,11 +223,6 @@
         <h2 class="center own-title">~*~ Welcome 2 <span class="page-name-2"></span>'s Page ~*~</h2>
         <p class="center small bot-note" id="page-seen" hidden></p>
         <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of the cLuB's friendly bots. Bots play once a day and can never win ultras.</p>
-        <p class="center homepage-link pub-last" id="page-home" hidden></p>
-        <form id="home-form" class="home-form" hidden>
-          My homepage: <input name="homepage" placeholder="https://yoursite.neocities.org" autocomplete="off" maxlength="200">
-          <button>Save</button>
-        </form>
         <h2>&raquo; My Button Collection &laquo;</h2>
         <div id="page-collection" class="grid"></div>
         <p class="arrange-bar" id="arrange-bar" hidden>
@@ -370,7 +361,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.19</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.20</span>
   </p>
 
 </main>
@@ -386,6 +377,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.19"></script>
+<script src="app.js?v=0.20"></script>
 </body>
 </html>

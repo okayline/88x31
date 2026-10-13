@@ -2,16 +2,15 @@
 // GET /api/designs?id=N   -> { design, ledger, sets, copies } one design's info window
 import { json, currentUser } from "../../lib/auth.js";
 
-// Ultras and set rewards stay a mystery on the Wall until you've owned one yourself.
-// Logged-out visitors don't see rares either.
-const HIDDEN = new Set(["ultra", "special"]);
-const HIDDEN_OUT = new Set(["ultra", "special", "rare"]);
+// Rares, ultras and set rewards stay a mystery on the Wall until you've owned one yourself.
+const HIDDEN = new Set(["rare", "ultra", "special"]);
+const HIDDEN_OUT = HIDDEN;
 async function uncovered(env, viewer) {
   if (!viewer) return new Set();
   if (viewer.is_admin) return { has: () => true }; // admins (the webmaster) can see every button
   const { results } = await env.DB.prepare(
     `SELECT DISTINCT i.design_id FROM ownership_history h JOIN instances i ON i.id = h.instance_id
-     JOIN designs d ON d.id = i.design_id WHERE h.to_user = ? AND d.rarity IN ('ultra', 'special')`
+     JOIN designs d ON d.id = i.design_id WHERE h.to_user = ? AND d.rarity IN ('rare', 'ultra', 'special')`
   ).bind(viewer.id).all();
   return new Set(results.map((r) => r.design_id));
 }

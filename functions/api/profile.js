@@ -1,4 +1,4 @@
-// POST /api/profile { homepage?, theme? } -> { ok }   (empty homepage clears it)
+// POST /api/profile { theme? | my_button? } -> { ok }   (homepages were removed in v0.20)
 import { json, readJson, currentUser } from "../../lib/auth.js";
 
 export function cleanHomepage(raw) {
@@ -32,8 +32,5 @@ export async function onRequestPost({ request, env }) {
     await env.DB.prepare("UPDATE users SET theme = ? WHERE id = ?").bind(body.theme, me.id).run();
     return json({ ok: true, theme: body.theme });
   }
-  const c = cleanHomepage(body.homepage);
-  if (c.error) return json({ error: c.error }, 400);
-  await env.DB.prepare("UPDATE users SET homepage = ? WHERE id = ?").bind(c.value, me.id).run();
-  return json({ ok: true, homepage: c.value });
+  return json({ error: "Homepages aren't a thing anymore!" }, 400);
 }

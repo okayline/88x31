@@ -139,6 +139,19 @@ capped buttons get scarcer). The survivor gets the best foil going in plus one t
 gains a pattern, then an effect, then CRT+VHS. Patterns and effects carry over (random if they
 differ); with no effect going in there's a 10% surprise one. Ultras can't be fused.
 
+## Updating to v0.20 (set showcase)
+
+Run once, before pushing the v0.20 code:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/015_set_showcase.sql
+npx wrangler d1 execute 88x31-db --remote --file=015_set_showcase.sql
+```
+
+Sets are private now: players see only sets they've started (missing buttons and the reward stay
+"?"), and visitors only see finished sets the owner chose to show off (secret ones as "a secret set").
+Player homepages were removed (the `users.homepage` column stays, unused).
+
 ## Run locally (optional)
 
 ```

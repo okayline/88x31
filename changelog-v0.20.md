@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.19
+# 88x31 cLuB Changelog — v0.20
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.20 — "Trophy Case"
+**Tue Oct 13, 2026 · 12:25 AM HST**
+
+- Click a copy on the Wall of Buttons to see that exact copy right there in the info window, and see every copy's finish at a glance.
+- Rares are now a mystery on the Wall of Buttons until you find one.
+- Your sets are yours: you only see sets you've started, and the buttons you're still missing stay a mystery.
+- Finished a set? Show it off on your page!
+- Your button collection is front and center on your page.
+- Trades moved into your Hi! box. Bigger menu up top.
 
 ## v0.19 — "Totally Fused"
 **Mon Oct 12, 2026 · 11:58 PM HST**

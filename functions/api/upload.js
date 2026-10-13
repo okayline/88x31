@@ -33,7 +33,8 @@ export async function onRequestPost({ request, env }) {
   if (!me) return json({ error: "Log in to add a button." }, 401);
   const u = await env.DB.prepare("SELECT upload_blocked FROM users WHERE id = ?").bind(me.id).first();
   if (u && u.upload_blocked) return json({ error: "Adding buttons is switched off for your account." }, 403);
-  if (!(await rateLimit(env, request, "upload", 30, 86400))) return json({ error: "Slow down! Try again tomorrow." }, 429);
+  // webmasters have no upload limits
+  if (!me.is_admin && !(await rateLimit(env, request, "upload", 30, 86400))) return json({ error: "Slow down! Try again tomorrow." }, 429);
 
   let form;
   try { form = await request.formData(); } catch { return json({ error: "Couldn't read that upload." }, 400); }
@@ -48,7 +49,7 @@ export async function onRequestPost({ request, env }) {
   const today = (await env.DB.prepare(
     "SELECT COUNT(*) AS n FROM designs WHERE found_by = ? AND created_at > ?"
   ).bind(me.id, now() - 86400).first()).n;
-  if (today >= UPLOADS_PER_DAY) return json({ error: `You can add ${UPLOADS_PER_DAY} buttons a day. Come back tomorrow!` }, 429);
+  if (!me.is_admin && today >= UPLOADS_PER_DAY) return json({ error: `You can add ${UPLOADS_PER_DAY} buttons a day. Come back tomorrow!` }, 429);
 
   const hash = await sha256Bytes(bytes);
   const dupe = await env.DB.prepare("SELECT id, name, status FROM designs WHERE image_hash = ?").bind(hash).first();
