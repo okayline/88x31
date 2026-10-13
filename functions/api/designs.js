@@ -20,18 +20,27 @@ export async function onRequestGet({ request, env }) {
   const seen = await uncovered(env, await currentUser(env, request));
   if (!id) {
     const { results } = await db.prepare(
-      `SELECT d.id, d.name, d.type, d.rarity, d.status, d.image_key, d.max_editions, d.stats,
+      `SELECT d.id, d.name, d.type, d.rarity, d.status, d.image_key, d.max_editions, d.stats, d.tier,
               (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted
-       FROM designs d WHERE d.status IN ('active', 'reward') ORDER BY d.id`
+       FROM designs d WHERE d.status IN ('active', 'reward', 'frozen') ORDER BY d.id`
     ).all();
     return json({ designs: results.map((d) => (HIDDEN.has(d.rarity) && !seen.has(d.id)
       ? { id: d.id, hidden: true }   // a mystery: no name, picture or rarity
       : d)) });
   }
   const design = await db.prepare(
-    `SELECT d.*, (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted
-     FROM designs d WHERE d.id = ? AND d.status IN ('active', 'reward')`
+    `SELECT d.id, d.name, d.image_key, d.image_hash, d.type, d.rarity, d.stats, d.max_editions, d.status, d.created_at,
+            d.source_title, d.source_author, d.source_url, d.license, d.tier, f.name AS found_by,
+            (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted
+     FROM designs d LEFT JOIN users f ON f.id = d.found_by
+     WHERE d.id = ? AND d.status IN ('active', 'reward', 'frozen', 'removed')`
   ).bind(id).first();
+  if (design && design.status === "removed") {
+    // a tombstone: the record stays, the art and credits don't
+    const viewer = await currentUser(env, request);
+    return json({ removed: true, design: { id: design.id, name: viewer && viewer.is_admin ? design.name : "Removed by request",
+      image_key: design.image_key, rarity: design.rarity, status: "removed", minted: design.minted } });
+  }
   if (!design) return json({ error: "No such button." }, 404);
   if (HIDDEN.has(design.rarity) && !seen.has(design.id)) {
     return json({ hidden: true });
@@ -47,11 +56,16 @@ export async function onRequestGet({ request, env }) {
   ).bind(id, id).all();
   // who owns copies (first 60 by edition)
   const { results: copies } = await db.prepare(
-    `SELECT i.id, i.edition, u.name AS owner, u.is_bot FROM instances i LEFT JOIN users u ON u.id = i.owner_id
+    `SELECT i.id, i.edition, i.foil, u.name AS owner, u.is_bot FROM instances i LEFT JOIN users u ON u.id = i.owner_id
      WHERE i.design_id = ? AND i.consumed = 0 ORDER BY i.edition LIMIT 60`
   ).bind(id).all();
+  // copies made with each foil, and who to ask about credits or takedowns
+  const { results: foils } = await db.prepare(
+    "SELECT COALESCE(foil, 'first') AS foil, COUNT(*) AS n FROM instances WHERE design_id = ? GROUP BY foil"
+  ).bind(id).all();
+  const wm = await db.prepare("SELECT name FROM users WHERE is_admin = 1 AND is_bot = 0 ORDER BY id LIMIT 1").first();
   return json({
-    design, ledger,
+    design, ledger, foils, webmaster: wm ? wm.name : null,
     sets: sets.map((s) => (s.secret ? { name: "a secret set", role: s.role } : { name: s.name, role: s.role })),
     copies,
   });

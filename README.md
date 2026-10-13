@@ -81,6 +81,41 @@ Build command: none. Output directory: `public`. After that, every push to `main
 
 The D1 binding is read from `wrangler.toml` (`DB` → `88x31-db`).
 
+## Updating to v0.18 (foils, the archive, Found a Button, webmaster tools)
+
+Run once, **before** (or right after) the v0.18 push goes live. It only adds things; no existing
+copy or ledger entry changes. It freezes the four old baked-in holo designs (no new copies).
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/013_foils_uploads.sql
+npx wrangler d1 execute 88x31-db --remote --file=013_foils_uploads.sql
+```
+
+How it fits together:
+
+- **Designs vs. copies.** The art is a shared design nobody owns. Players own numbered copies.
+- **Foils.** Every new copy gets a foil, rolled from the `foils` table (weight out of 1000, optional
+  cap per design, optional signature foil locked to one design, optional rarity list). The site
+  draws each foil's `effect` as an overlay; effects it doesn't know yet show as clear. Copies made
+  before v0.18 have no foil and show as **First Print**. Each copy's foil is sealed into the ledger.
+- **Tiers.** `original` (the cLuB's own art), `permissioned`, `archive` (found in the wild, shown
+  as found, credited where known, not relicensed). Only originals can be downloaded.
+- **Found a Button.** Members add real 88x31 GIFs (100 KB max, 10 a day, no duplicates) from the
+  Wall of Buttons. They land as archive commons, never ultras; the finder gets copy #1 and a
+  "found by" credit on the ledger. Images are stored in D1 (`design_images`).
+- **Webmaster tools.** Admin accounts get a box on button pages: remove a design (it leaves packs
+  at once; every copy turns into "removed by request" but stays with its owner), restore it,
+  block or unblock whoever found it (optionally removing everything they added). Every action is
+  sealed into the ledger.
+
+Adding a foil kind (it shows as clear until the site knows its effect):
+
+```
+npx wrangler d1 execute 88x31-db --remote --command "INSERT INTO foils (id, name, effect, weight) VALUES ('gold', 'Gold', 'gold', 10)"
+```
+
+Weights are out of 1000 across all active foils; lower `clear` to make room.
+
 ## Run locally (optional)
 
 ```
@@ -115,4 +150,4 @@ node make_key.mjs | npx wrangler pages secret put SIGNING_KEY --project-name 88x
 Making a new key later would make every older certificate stop checking out, so keep this one.
 The public half is shown on the About page and at `/api/pubkey`.
 
-The art itself is CC0 (public domain): anyone can use it anywhere.
+Only the cLuB's own art (the "original" tier) can be downloaded. Archive buttons can't.

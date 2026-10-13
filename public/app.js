@@ -84,14 +84,77 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward",
+  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added",
 };
 
+// ---------- foils ----------
+// The foil is the owned layer around a copy. Kinds of foil come from /api/foils; the site
+// only draws the effects listed in FOIL_EFFECTS (anything else shows as clear for now).
+let FOILS = {};
+const FOIL_EFFECTS = new Set(["holo"]);
+async function loadFoils() {
+  try { const r = await api("/api/foils"); FOILS = Object.fromEntries(r.foils.map((f) => [f.id, f])); } catch {}
+}
+const foilName = (id) => (FOILS[id] && FOILS[id].name) || id;
+
 function bannerImg(design, scale = 1) {
-  return el("img", {
+  const f = design.foil && FOILS[design.foil];
+  const img = el("img", {
     src: design.image_key, alt: design.name, width: 88 * scale, height: 31 * scale,
-    class: "banner rarity-" + design.rarity, title: `${design.name} (${design.rarity})`,
+    class: "banner rarity-" + design.rarity,
+    title: `${design.name} (${design.rarity}${f && design.foil !== "clear" ? ", " + f.name + " foil" : ""})`,
   });
+  if (!f || !FOIL_EFFECTS.has(f.effect)) return img;
+  // each copy's foil shimmers a little differently, seeded from its own number
+  const seed = Number(design.foil_seed) || 0;
+  return el("span", { class: `foil-wrap foil-${f.effect}`,
+    style: `--foil-angle:${seed % 360}deg;--foil-delay:-${seed % 6000}ms` }, img);
+}
+
+// "First Print" = made before foils existed; otherwise the copy's foil.
+function foilLine(b, entry) {
+  if (b.foil === undefined) return null;
+  if (!b.foil) return el("p", { class: "first-print" }, "★ First Print ★ ", el("span", { class: "small" }, "made before foils existed"));
+  return el("p", {}, "Foil: ", el("b", {}, foilName(b.foil)),
+    entry ? el("span", { class: "hash small", title: entry.hash }, ` [ledger #${entry.id} · ${entry.hash.slice(0, 12)}…]`) : null);
+}
+
+// Where the art came from: the cLuB's own, or found in the wild and shown as found.
+function tierNote(d, webmaster) {
+  if (d.tier !== "archive") return null;
+  return el("div", { class: "archive-note small" },
+    el("p", {}, el("b", {}, "From the archive. "), "Found in the wild and shown here as found, credited where we know who made it. Not relicensed."),
+    d.found_by ? el("p", {}, "Found by ", el("a", { href: "#u/" + encodeURIComponent(d.found_by) }, d.found_by)) : null,
+    el("p", {}, "Is this yours? ", webmaster
+      ? el("a", { href: "#u/" + encodeURIComponent(webmaster) }, `Sign ${webmaster}'s guestbook`) : "Tell the webmaster",
+      " to get credited or have it taken down."));
+}
+
+// Webmaster-only box: remove/restore a design, block whoever found it.
+function adminBox(designId, name, status, finder, after) {
+  if (!me || !me.is_admin) return null;
+  const run = async (body, msg) => {
+    try { const r = await api("/api/admin", { method: "POST", body }); say(msg + (r.removed ? ` (${r.removed} removed)` : "")); wallLoaded = false; after(); }
+    catch (e) { say(e.message); }
+  };
+  const box = el("div", { class: "admin-box" }, el("p", { class: "small" }, el("b", {}, "☠ Webmaster")));
+  if (status === "removed") {
+    box.append(el("button", { type: "button", onclick: async () => {
+      if (await ask(`Bring back "${name}"? It goes back into play.`, { ok: "Restore" })) run({ action: "restore_design", design_id: designId }, "Restored.");
+    } }, "Restore button"));
+  } else {
+    box.append(el("button", { type: "button", onclick: async () => {
+      const note = await askText(`Remove "${name}"? It leaves packs now and every copy shows "removed by request". Owners keep their copies.\n\nReason (optional, goes on the ledger):`, "", { ok: "Remove it" });
+      if (note !== null) run({ action: "remove_design", design_id: designId, note }, "Removed.");
+    } }, "Remove button"));
+  }
+  if (finder) {
+    box.append(" ", el("button", { type: "button", onclick: async () => {
+      const note = await askText(`Block ${finder} from adding buttons? Type "all" to also remove everything they've added.`, "", { ok: "Block", cancel: "Cancel" });
+      if (note !== null) run({ action: "block_uploader", name: finder, remove_uploads: note.trim().toLowerCase() === "all", note: note.trim().toLowerCase() === "all" ? null : note }, `Blocked ${finder}.`);
+    } }, `Block ${finder}`), " ", el("button", { type: "button", onclick: () => run({ action: "unblock_uploader", name: finder }, `Unblocked ${finder}.`) }, "Unblock"));
+  }
+  return box;
 }
 
 const GIFTY = ["pass_on", "guestbook", "trade", "gift"]; // reasons that always have a giver
@@ -145,7 +208,7 @@ window.addEventListener("hashchange", setPageMode);
 
 async function refresh() {
   wallLoaded = false;
-  const { user, trades_waiting } = await api("/api/me");
+  const [{ user, trades_waiting }] = await Promise.all([api("/api/me"), loadFoils()]);
   me = user;
   if (!me) return route();
   setTradeCount(trades_waiting || 0);
@@ -364,7 +427,7 @@ async function showPage(name) {
         el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtDate(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
-        el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity })),
+        el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed })),
         el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null));
   }
 }
@@ -401,6 +464,47 @@ function closeInfo() {
   document.querySelectorAll(".wall-tile.on").forEach((t) => t.classList.remove("on"));
 }
 closeInfo();
+// ---------- Found a Button? (add one to the cLuB) ----------
+{
+  const pickFile = (file) => {
+    const prev = $("add-preview"); prev.textContent = "";
+    if (!file) return;
+    const pic = el("img", { src: URL.createObjectURL(file), class: "banner", alt: "your button", width: 88, height: 31 });
+    pic.onload = () => { if (pic.naturalWidth !== 88 || pic.naturalHeight !== 31) say(`That one is ${pic.naturalWidth}x${pic.naturalHeight}. It has to be 88x31!`); else say(""); };
+    prev.append(pic);
+    $("add-pick").textContent = file.name;
+    if (!$("add-name").value) $("add-name").value = file.name.replace(/\.gif$/i, "").replace(/[-_]+/g, " ").slice(0, 40);
+  };
+  $("add-file").onchange = (e) => pickFile(e.target.files[0]);
+  const addDrop = $("add-drop");
+  addDrop.addEventListener("dragover", (e) => { e.preventDefault(); addDrop.classList.add("over"); });
+  addDrop.addEventListener("dragleave", () => addDrop.classList.remove("over"));
+  addDrop.addEventListener("drop", (e) => {
+    e.preventDefault(); addDrop.classList.remove("over");
+    const f = e.dataTransfer.files[0]; if (!f) return;
+    const dt = new DataTransfer(); dt.items.add(f); $("add-file").files = dt.files; pickFile(f);
+  });
+  $("add-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const file = $("add-file").files[0];
+    if (!file) return say("Pick a GIF first.");
+    const fd = new FormData();
+    fd.append("file", file); fd.append("name", $("add-name").value); fd.append("type", $("add-type").value);
+    fd.append("author", $("add-author").value); fd.append("url", $("add-url").value);
+    $("add-go").disabled = true;
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
+      const r = await res.json().catch(() => ({}));
+      if (!res.ok) { say(r.error || "Something went wrong."); if (r.design_id) location.hash = "#wall/" + r.design_id; return; }
+      $("add-form").reset(); $("add-preview").textContent = ""; $("add-pick").textContent = "Click to pick a GIF, or drop one here";
+      say("Added! It's in the cLuB now, and copy #1 is yours.");
+      wallLoaded = false;
+      location.hash = r.instance_id ? "#banner/" + r.instance_id : "#wall/" + r.design_id;
+    } catch { say("Couldn't upload that. Try again?"); }
+    finally { $("add-go").disabled = false; }
+  };
+}
+
 $("info-close").onclick = () => { closeInfo(); history.replaceState(null, "", "#wall"); };
 
 const MYSTERY_LINES = [
@@ -429,8 +533,19 @@ async function openInfo(id) {
       el("p", { class: "center small" }, MYSTERY_LINES[Math.floor(Math.random() * MYSTERY_LINES.length)]));
     return;
   }
-  const { design: d, ledger, sets, copies } = info;
+  if (info.removed) {
+    const d = info.design;
+    $("info-title").textContent = d.name;
+    body.textContent = "";
+    body.append(...[el("p", { class: "center" }, bannerImg(d, 3)),
+      el("p", { class: "center" }, el("b", {}, "Removed by request.")),
+      el("p", { class: "center small" }, `Gone from packs. The ${d.minted} ${d.minted === 1 ? "copy" : "copies"} out there stay with their owners.`),
+      adminBox(d.id, d.name, "removed", null, () => openInfo(id))].filter(Boolean));
+    return;
+  }
+  const { design: d, ledger, sets, copies, foils = [], webmaster } = info;
   $("info-title").textContent = d.name;
+  const foilCounts = foils.filter((f) => f.foil !== "clear").map((f) => `${f.n} ${f.foil === "first" ? "First Print" : foilName(f.foil)}`);
   let st = {}; try { st = JSON.parse(d.stats || "{}"); } catch {}
   const who = (c) => c.owner ? el("a", { href: "#u/" + encodeURIComponent(c.owner) }, c.owner) : "nobody";
   body.textContent = "";
@@ -441,14 +556,16 @@ async function openInfo(id) {
     el("p", {}, d.max_editions ? `${d.minted} of ${d.max_editions} copies made` + (d.minted >= d.max_editions ? " (all gone!)" : "")
       : `${d.minted} copies so far (unlimited)`),
     d.status === "reward" ? el("p", { class: "small" }, "Only given as a set reward. Never found in packs.") : null,
+    d.status === "frozen" ? el("p", { class: "small" }, "❄ Frozen: an early special version. No new copies are being made.") : null,
+    foilCounts.length ? el("p", { class: "small" }, "Special copies: " + foilCounts.join(" · ")) : null,
     ...sets.map((s) => el("p", { class: "small" }, s.name === "a secret set"
       ? (s.role === "reward" ? "Reward for finishing a secret set..." : "Part of a secret set... 🤫")
       : (s.role === "reward" ? `Reward for finishing the ${s.name} set.` : `Part of the ${s.name} set.`))),
     el("h3", {}, "Credits"),
     credit(d) || el("p", { class: "small" }, "No credit recorded."),
     d.source_url ? el("p", { class: "small" }, "Original: ", el("a", { href: d.source_url, target: "_blank", rel: "noopener" }, d.source_url)) : null,
-    el("p", { class: "small" }, "Art is CC0: free to use anywhere. ",
-      el("a", { href: "/" + d.image_key, download: d.image_key.split("/").pop() }, "Download the picture")),
+    tierNote(d, webmaster),
+    adminBox(d.id, d.name, d.status, d.found_by, () => openInfo(id)),
     el("h3", {}, "On the Ledger"),
     el("p", { class: "small" }, ledger ? `Recorded ${fmtStamp(ledger.created_at)} as entry #${ledger.id}` : "Not sealed yet."),
     ledger ? el("p", { class: "small" }, "Fingerprint: ", el("span", { class: "hash" }, ledger.hash)) : null,
@@ -797,7 +914,6 @@ function useBox(b) {
   refresh();
   const box = el("div", { class: "use-box" },
     el("h2", {}, "» Use this button «"),
-    el("p", { class: "small" }, "The art is CC0: free for anyone to use anywhere, no credit needed."),
     el("p", { class: "sign-buttons" },
       mine ? el("a", { class: "btn-link", href: `/api/download?id=${b.id}` }, "Download my copy (signed)") : null,
       el("a", { class: "btn-link", href: "/" + b.image_key, download: file }, mine ? "Plain picture" : "Download the picture")),
@@ -859,7 +975,7 @@ async function checkFile(file) {
   if (!stamp) {
     const credit = comments.find((c) => c.startsWith("88x31 game"));
     box.append(el("p", {}, el("b", {}, "No certificate in this file.")),
-      el("p", { class: "small" }, "It might be a plain download, a screenshot, or re-saved by an app that strips hidden data. Totally fine to use (the art is CC0), it just doesn't prove whose copy it is."),
+      el("p", { class: "small" }, "It might be a plain download, a screenshot, or re-saved by an app that strips hidden data. It just doesn't prove whose copy it is."),
       credit ? el("p", { class: "small" }, "It does carry the art credit: ", credit) : null);
     return;
   }
@@ -953,7 +1069,7 @@ async function showBanner(id) {
   const seq = ++loadSeq;
   showView("view-banner");
   $("banner-body").textContent = "Loading...";
-  const { banner: b, design_entry: de, history, chain } = await api("/api/banner?id=" + encodeURIComponent(id));
+  const { banner: b, design_entry: de, foil_entry: fe, history, chain } = await api("/api/banner?id=" + encodeURIComponent(id));
   if (seq !== loadSeq) return;
   const box = $("banner-body");
   box.textContent = "";
@@ -965,15 +1081,19 @@ async function showBanner(id) {
     el("h2", {}, `» ${b.name} ${edition(b)} «`),
     el("p", { class: "center" }, bannerImg(b, 3)),
     variantLine(b),
+    foilLine(b, fe),
+    b.status === "removed" ? el("p", {}, el("b", {}, "Removed by request."), " This copy and its travel log stay, but the art is gone.") : null,
     el("p", {}, `Type: ${b.type} · Rarity: ${b.rarity === "ultra" ? "ULTRA RARE" : b.rarity}`,
       b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
     ownedLine(b, history),
 
     el("h2", {}, "» Credits «"),
-    useBox(b),
-    credit(b) || el("p", { class: "small" }, "No credit recorded."),
+    b.tier === "original" && b.status !== "removed" ? useBox(b) : null,
+    b.status === "removed" ? null : credit(b) || el("p", { class: "small" }, "No credit recorded."),
+    tierNote(b, b.webmaster),
+    adminBox(b.design_id, b.name, b.status, b.found_by, () => showBanner(id)),
     b.source_url ? el("p", { class: "small" }, "Original: ", el("a", { href: b.source_url, target: "_blank", rel: "noopener" }, b.source_url)) : null,
-    el("p", { class: "small" }, "The credit is also written inside the button's GIF file."),
+    b.tier === "original" ? el("p", { class: "small" }, "The credit is also written inside the button's GIF file.") : null,
 
     el("h2", {}, "» On the Ledger «"),
     el("p", {}, "Chain check: ", el("b", { class: chain.ok ? "ok-text" : "bad-text" }, chain.ok ? "ALL GOOD" : "BROKEN"),
@@ -994,7 +1114,7 @@ async function showBanner(id) {
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
 const GOT_HOW = {
   welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
-  guestbook: "as a guestbook gift", trade: "in a trade", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set",
+  guestbook: "as a guestbook gift", trade: "in a trade", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to the cLuB",
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
@@ -1020,7 +1140,8 @@ function variantLine(b) {
 function credit(d) {
   const bits = [];
   if (d.source_title) bits.push(d.source_url ? el("a", { href: d.source_url, target: "_blank", rel: "noopener" }, d.source_title) : d.source_title);
-  if (d.source_author) bits.push(bits.length ? ` by ${d.source_author}` : `by ${d.source_author}`);
+  if (d.source_author) bits.push(d.source_author.startsWith("Origin unknown") ? (bits.length ? ` · ${d.source_author}` : d.source_author)
+    : bits.length ? ` by ${d.source_author}` : `by ${d.source_author}`);
   if (d.license) bits.push(` · ${d.license === "Original" ? "original art" : d.license}`);
   return bits.length ? el("p", { class: "small credit" }, "Art: ", ...bits) : null;
 }

@@ -164,6 +164,24 @@
         <div>
           <div id="wall-grid" class="wall-grid"></div>
           <p class="center small" id="wall-count"></p>
+          <!-- add a button found in the wild (members only) -->
+          <form class="add-button only-in" id="add-form" hidden>
+            <h3 class="center">» Found a Button? «</h3>
+            <p class="small">Add an old 88x31 button to the cLuB! It has to be a real 88x31 GIF that isn't in here yet. You get copy #1 and a "found by" credit.</p>
+            <label class="drop" id="add-drop">
+              <input type="file" id="add-file" accept="image/gif" required>
+              <span id="add-pick">Click to pick a GIF, or drop one here</span>
+            </label>
+            <p class="center" id="add-preview"></p>
+            <p><label>Name it: <input type="text" id="add-name" maxlength="40" required></label></p>
+            <p><label>Kind: <select id="add-type">
+              <option value="neon">neon</option><option value="construction">construction</option><option value="guestbook">guestbook</option>
+              <option value="webring">webring</option><option value="counter">counter</option><option value="divider">divider</option>
+            </select></label></p>
+            <p><label>Who made it, if you know: <input type="text" id="add-author" maxlength="60" placeholder="leave blank if unknown"></label></p>
+            <p><label>Where it's from, if you know: <input type="url" id="add-url" maxlength="300" placeholder="https://..."></label></p>
+            <p class="center"><button type="submit" id="add-go">Add it to the cLuB!</button></p>
+          </form>
         </div>
         <!-- button info window: always on the page, fills in when you click a button -->
         <aside class="dialog-window info-window" id="info-win" aria-live="polite">
@@ -348,7 +366,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.17.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.18</span>
   </p>
 
 </main>

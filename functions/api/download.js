@@ -1,5 +1,5 @@
 // GET /api/download?id=N -> the owner's stamped, signed copy of a button as a GIF download.
-// Only the current owner can get it; everyone else uses the plain file (it's CC0).
+// Only the current owner can get it. Only the cLuB's own art can be downloaded; archive buttons can't.
 import { json, currentUser } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { makeStamp, addGifComment } from "../../lib/cert.js";
@@ -11,11 +11,12 @@ export async function onRequestGet({ request, env }) {
   const id = Number(new URL(request.url).searchParams.get("id"));
 
   const b = await env.DB.prepare(
-    `SELECT i.id, i.edition, i.owner_id, d.name, d.image_key, d.max_editions, d.source_title, d.source_author, d.license
+    `SELECT i.id, i.edition, i.owner_id, d.name, d.image_key, d.max_editions, d.source_title, d.source_author, d.license, d.tier, d.status
      FROM instances i JOIN designs d ON d.id = i.design_id WHERE i.id = ? AND i.consumed = 0`
   ).bind(id).first();
   if (!b) return json({ error: "No such button." }, 404);
   if (b.owner_id !== me.id) return json({ error: "Only the owner can download the stamped copy." }, 403);
+  if (b.tier !== "original" || b.status === "removed") return json({ error: "This button can't be downloaded." }, 403);
 
   // the ledger entry for how it reached its current owner
   await sealSafe(env);
@@ -36,7 +37,6 @@ export async function onRequestGet({ request, env }) {
     ["issued_at", new Date().toISOString()],
     ["page", `${origin}/#banner/${b.id}`],
     ["art", art],
-    ["license", "CC0 1.0 (free to use for anything)"],
   ]);
 
   const res = await env.ASSETS.fetch(new Request(`${origin}/${b.image_key}`));

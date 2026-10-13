@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.17.1
+# 88x31 cLuB Changelog — v0.18
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.18 — "Shiny Happy Buttons"
+**Mon Oct 12, 2026 · 10:47 PM HST**
+
+- **Foils!** Every new button you find now comes wrapped in a foil, and your copy's foil is yours alone. Most are clear. Some are... not. More kinds of foil are on the way.
+- Every button you already have is now a **First Print**, from before foils existed.
+- **Found a Button?** Add old 88x31 buttons from around the web to the cLuB, right from the Wall of Buttons. You get copy #1 and your name on it as the finder.
+- Buttons found in the wild are credited where we know who made them. Made one of them? Let the webmaster know.
+- The old holo buttons are frozen: no new copies, so the ones out there just got rarer.
+- Behind-the-scenes webmaster tools.
 
 ## v0.17.1 — "Webmaster Mode"
 **Mon Oct 12, 2026 · 7:28 PM HST**

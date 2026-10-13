@@ -108,7 +108,7 @@ export async function onRequestPost({ request, env }) {
   ).bind(keep, pass, recipient ? recipient.id : null, user.id, day).run();
   if (!claim.meta.changes) return json({ error: "You already picked from this pack." }, 400);
 
-  const keptRes = await env.DB.batch(mintStatements(env, ids[keep], user.id, "daily"));
+  const keptRes = await env.DB.batch(await mintStatements(env, ids[keep], user.id, "daily"));
   if (keptRes[0].meta.changes !== 1) {
     // The one you picked sold out a moment ago: reopen so you can choose again.
     await env.DB.prepare(
@@ -120,7 +120,7 @@ export async function onRequestPost({ request, env }) {
 
   let passed = false;
   if (recipient) {
-    const passRes = await env.DB.batch(mintStatements(env, ids[pass], recipient.id, "pass_on", user.id));
+    const passRes = await env.DB.batch(await mintStatements(env, ids[pass], recipient.id, "pass_on", user.id));
     passed = passRes[0].meta.changes === 1; // false only if that one sold out
   }
   await sealSafe(env);
