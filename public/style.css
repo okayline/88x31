@@ -646,3 +646,38 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 
 .add-skipped { max-height: 160px; overflow-y: auto; margin: 6px 0 0; text-align: left; }
 .add-batch { margin: 4px 0; }
+
+/* ---------- sealed packs (v0.22) ---------- */
+.packs-shelf { margin: 0 0 14px; }
+.packs-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.pack-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 120px; text-align: center; }
+.pack-tile {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  width: 92px; height: 120px; padding: 6px; box-sizing: border-box; text-decoration: none;
+  border: 2px solid #c0c0c0; border-radius: 4px 4px 10px 10px;
+  background: linear-gradient(160deg, #ff00cc 0%, #6600ff 45%, #00ccff 100%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 3px 3px 0 #000;
+  color: #fff; font: bold 11px Arial, sans-serif; text-shadow: 1px 1px 0 #000;
+  background-size: 200% 200%; animation: pack-shine 4s ease-in-out infinite alternate;
+}
+.pack-tile:hover { transform: translateY(-3px) rotate(-1deg); }
+.pack-tile.revealed { filter: saturate(0.5); }
+.pack-top { font-size: 9px; letter-spacing: 1px; opacity: 0.9; }
+.pack-name { font-size: 13px; color: #ffff00; text-align: center; }
+.pack-sub { font-size: 9px; font-style: italic; }
+@keyframes pack-shine { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+@media (prefers-reduced-motion: reduce) { .pack-tile { animation: none; } }
+.card.small-card { min-width: 0; }
+.pack-give input { width: 140px; }
+.series-tag { color: #0066cc; }
+
+/* webmaster: give packs */
+.givepacks { margin-top: 10px; border-top: 1px dashed #ff6666; padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.givepacks p { margin: 0; color: #ff9999; }
+.givepacks input[type="number"] { width: 48px; }
+
+/* logged-out Wall: pictures only */
+.wall-tile.still { cursor: default; }
+.wall-tile.still:hover img.banner, .wall-tile.still:hover .mystery-tile { outline: none; }
+/* [ ? ] tiles in the Buttons you can collect strip */
+.strip-track .strip-q { display: inline-block; width: 88px; height: 31px; line-height: 31px; vertical-align: top; font-size: 18px; }

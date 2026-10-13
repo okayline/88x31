@@ -34,6 +34,7 @@ export async function onRequestGet({ request, env }) {
   const design = await db.prepare(
     `SELECT d.id, d.name, d.image_key, d.image_hash, d.type, d.rarity, d.stats, d.max_editions, d.status, d.created_at,
             d.source_title, d.source_author, d.source_url, d.license, d.tier, f.name AS found_by,
+            (SELECT name FROM series WHERE id = d.series_id) AS series,
             (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted,
             (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id AND i.consumed = 0) AS left_count
      FROM designs d LEFT JOIN users f ON f.id = d.found_by

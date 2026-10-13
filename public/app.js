@@ -14,12 +14,27 @@ const showTop = (id) => {
   document.querySelectorAll(".only-out").forEach((x) => (x.hidden = !!me));
   $("dash").hidden = true; // the "Hi!" box only shows on your own page (showPage turns it on)
 };
+// "Buttons you can collect": a random handful of buttons the viewer may see, found ones mixed in,
+// and a few [ ? ] tiles standing in for the rare stuff. Repeated once so the scroll loops.
+async function fillStrip() {
+  try {
+    const { designs } = await api("/api/designs");
+    const seen = designs.filter((d) => !d.hidden), mystery = designs.filter((d) => d.hidden);
+    for (let i = seen.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [seen[i], seen[j]] = [seen[j], seen[i]]; }
+    const picks = seen.slice(0, 16).map((d) => el("img", { src: d.image_key, alt: "", width: 88, height: 31 }));
+    for (let k = 0; k < Math.min(3, mystery.length); k++) picks.splice(Math.floor(Math.random() * (picks.length + 1)), 0, el("span", { class: "mystery-tile strip-q" }, "?"));
+    const track = $("strip-track");
+    track.textContent = "";
+    track.append(...picks, ...picks.map((x) => x.cloneNode(true)));
+  } catch {}
+}
+
 // Logged-out front page: join / log in boxes, with the Wall of Buttons right below them.
 function showFront() {
   showTop("out");
   $("wall").hidden = false;
 }
-const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades"];
+const VIEWS = ["view-pull", "view-page", "view-banner", "view-codes", "view-trades", "view-pack"];
 const showView = (id) => VIEWS.forEach((v) => ($(v).hidden = v !== id));
 
 // Tiny element builder. Text always goes in as text, never as HTML.
@@ -89,7 +104,7 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added",
+  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack",
 };
 
 // ---------- foils, patterns, effects ----------
@@ -203,9 +218,9 @@ async function route() {
     return showWall(hash.slice(5)).catch((e) => say(e.message));
   }
   // Player pages and button pages are public: anyone can look, members can interact.
-  if (!me && (hash.startsWith("u/") || hash.startsWith("banner/"))) {
+  if (!me && (hash.startsWith("u/") || hash.startsWith("banner/") || hash.startsWith("pack/"))) {
     showTop("in");
-    try { return hash.startsWith("u/") ? await showPage(hash.slice(2)) : await showBanner(hash.slice(7)); }
+    try { return hash.startsWith("u/") ? await showPage(hash.slice(2)) : hash.startsWith("pack/") ? await showPack(hash.slice(5)) : await showBanner(hash.slice(7)); }
     catch (e) { say(e.message); return; }
   }
   if (!me) { showFront(); return showWall().catch((e) => say(e.message)); }
@@ -214,6 +229,7 @@ async function route() {
   try {
     if (hash.startsWith("u/")) return await showPage(hash.slice(2));
     if (hash.startsWith("banner/")) return await showBanner(hash.slice(7));
+    if (hash.startsWith("pack/")) return await showPack(hash.slice(5));
     if (hash === "codes") return await showCodes();
     if (hash === "trades") return await showTrades();
     if (hash === "pull") return await showPull();
@@ -243,12 +259,16 @@ window.addEventListener("hashchange", setPageMode);
 async function refresh() {
   wallLoaded = false;
   const [{ user, trades_waiting }] = await Promise.all([api("/api/me"), loadFoils()]);
+  fillStrip();
   me = user;
   setUploadMode();
   if (!me) return route();
   setTradeCount(trades_waiting || 0);
   loadSummary();
   $("who").textContent = me.name;
+  const short = me.name.length > 16 ? me.name.slice(0, 15) + "…" : me.name;
+  document.querySelectorAll(".my-page-name").forEach((a) => { a.textContent = `${short}'s Page`; a.title = `${me.name}'s Page`; });
+  setupGivePacks();
   document.querySelectorAll(".my-page-link").forEach((a) => (a.href = "#u/" + encodeURIComponent(me.name)));
   loadPlayers();
   await route();
@@ -396,6 +416,7 @@ async function showPage(name) {
 
   const mine = !!me && owner.toLowerCase() === me.name.toLowerCase();
   $("dash").hidden = !mine;
+  loadShelf(mine);
 
   stopArranging(false);
   $("arrange-bar").hidden = !mine || col.banners.length < 2;
@@ -465,17 +486,20 @@ const RARITY_LABEL = { common: "common", uncommon: "uncommon", rare: "rare", ult
 let wallLoaded = false;
 
 async function showWall(openId) {
+  // logged out, the Wall is pictures only: no info box, no "click one" line
+  $("info-win").hidden = !me;
+  document.querySelectorAll(".wall-intro").forEach((x) => (x.hidden = !me));
+  if (!me) openId = null;
   if (!wallLoaded) {
     const { designs } = await api("/api/designs");
     const grid = $("wall-grid");
     grid.textContent = "";
     const order = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
     designs.sort((a, b) => (a.hidden ? 8 : order[a.rarity] ?? 9) - (b.hidden ? 8 : order[b.rarity] ?? 9) || a.id - b.id);
-    for (const d of designs) {
-      grid.append(d.hidden
-        ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: "???" }, el("span", { class: "mystery-tile" }, "?"))
-        : el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.name }, bannerImg(d)));
-    }
+    // logged out: just the pictures, nothing to click
+    const tile = (d, inner) => (me ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.hidden ? "???" : d.name }, inner)
+      : el("span", { class: "wall-tile still", title: d.hidden ? "???" : d.name }, inner));
+    for (const d of designs) grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
     $("wall-count").textContent = `${designs.length} buttons and counting!`;
     wallLoaded = true;
   }
@@ -668,7 +692,7 @@ async function openInfo(id) {
   const left = [
     el("p", { class: "center" }, bannerImg(d, 3)),
     st.variant_of ? el("p", { class: "variant center" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`) : null,
-    el("p", {}, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
+    el("p", {}, d.series ? el("b", { class: "series-tag" }, `Series ${d.series} · `) : null, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
     el("p", {}, d.max_editions ? `${d.minted} of ${d.max_editions} copies made` + (d.minted >= d.max_editions ? " (all gone!)" : "")
       : `${d.minted} copies so far (unlimited)`,
       d.left_count != null && d.left_count < d.minted ? ` · ${d.left_count} left` : ""),
@@ -696,7 +720,7 @@ async function openInfo(id) {
           const fin = finishName(look);
           return el("li", {},
             el("a", { href: `#wall/${d.id}/c/${c.id}`, class: "copy-pic", title: "See this copy" }, bannerImg(look, 0.5)),
-            el("span", {}, el("span", { class: "who-line", title: c.owner || "" }, el("a", { href: `#wall/${d.id}/c/${c.id}` }, `#${c.edition}`), " · ", who(c),
+            el("span", {}, el("span", { class: "who-line", title: c.owner || "" }, el("a", { href: "#banner/" + c.id, title: "Open this copy's page" }, `#${c.edition}`), " · ", who(c),
               c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null),
               el("span", { class: "fin" + (fin && fin !== "None" ? " special" : "") }, fin || "First Print")));
         }))
@@ -731,7 +755,7 @@ function renderSets(owner, r) {
           e.preventDefault();
           try {
             await api("/api/sets/claim", { method: "POST", body: { set_id: st.id } });
-            say("★ SET COMPLETE! ★ Your reward is waiting in your collection!");
+            say("★ SET COMPLETE! ★ Your reward is in your collection, plus a sealed pack on your shelf!");
             await showPage(me.name); loadSummary();
           } catch (err) { say(err.message); }
         } }, "Claim reward!")
@@ -1210,7 +1234,7 @@ async function showBanner(id) {
     variantLine(b),
     foilLine(b, fe),
     b.status === "removed" ? el("p", {}, el("b", {}, "Removed by request."), " This copy and its travel log stay, but the art is gone.") : null,
-    el("p", {}, `Type: ${b.type} · Rarity: ${b.rarity === "ultra" ? "ULTRA RARE" : b.rarity}`,
+    el("p", {}, b.series ? `Series ${b.series} · ` : "", `Type: ${b.type} · Rarity: ${b.rarity === "ultra" ? "ULTRA RARE" : b.rarity}`,
       b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
     ownedLine(b, history),
 
@@ -1235,10 +1259,145 @@ async function showBanner(id) {
       `${fmtStamp(h.created_at)}: ${HOW[h.reason] || h.reason}`,
       h.reason === "fusion"
         ? (h.to_name ? ` by ${h.to_name}: came out shinier` : " → used up")
+        : h.reason === "pack" && h.ref_id
+        ? [" ", el("a", { href: "#pack/" + h.ref_id }, `#${h.ref_id}`), ` → ${h.to_name || "a former player"}`]
         : [h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
            ` → ${h.to_name || "a former player"}`],
       fp(h.hash, h.ledger_id)))),
     fuseBox(b));
+}
+
+// ---------- sealed packs ----------
+// Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
+// them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
+const PACK_FROM = { webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
+const packLabel = (p) => (p.series ? `Series ${p.series}` : "Mixed") + " Pack";
+
+function packTile(p, href) {
+  return el("a", { href, class: "pack-tile" + (p.revealed ? " revealed" : ""), title: p.note || PACK_FROM[p.source] || "" },
+    el("span", { class: "pack-top" }, "88x31 cLuB"),
+    el("span", { class: "pack-name" }, p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED"),
+    el("span", { class: "pack-sub" }, p.revealed ? "opened!" : "sealed pack"));
+}
+
+async function loadShelf(mine) {
+  const shelf = $("packs-shelf");
+  shelf.hidden = true;
+  if (!mine) return;
+  try {
+    const { packs } = await api("/api/packs");
+    const grid = $("packs-grid");
+    grid.textContent = "";
+    if (!packs.length) return;
+    for (const p of packs) grid.append(el("div", { class: "pack-slot" }, packTile(p, "#pack/" + p.id),
+      el("span", { class: "small" }, p.note || PACK_FROM[p.source] || "")));
+    shelf.hidden = false;
+  } catch {}
+}
+
+async function showPack(id) {
+  const seq = ++loadSeq;
+  showView("view-pack");
+  const box = $("pack-body");
+  box.textContent = "Loading...";
+  const st = await api("/api/packs?id=" + encodeURIComponent(id));
+  if (seq !== loadSeq) return;
+  const p = st.pack;
+  const mine = me && p.owner && p.owner.toLowerCase() === me.name.toLowerCase();
+  box.textContent = "";
+  box.append(el("h2", {}, `» ${packLabel(p)} #${p.id} «`),
+    el("p", { class: "center" }, packTile({ ...p, revealed: !!p.opened_at }, "#pack/" + p.id)),
+    el("p", { class: "center small" }, `Made ${fmtDate(p.created_at)} · ${p.note || PACK_FROM[p.source] || p.source} · keep ${p.keep} of 3`));
+
+  if (!p.opened_at && mine) {
+    const open = el("button", { type: "button" }, "Open it!");
+    const give = el("form", { class: "pack-give" }, "or give it to ",
+      el("input", { name: "to", placeholder: "player name", autocomplete: "off", list: "player-names" }), " ", el("button", {}, "Give"));
+    give.onsubmit = async (e) => {
+      e.preventDefault();
+      const to = give.to.value.trim();
+      if (!to) return;
+      if (!(await ask(`Give this sealed pack to ${to}?`, { ok: "Give it!" }))) return;
+      try { await api("/api/packs", { method: "POST", body: { action: "give", id: p.id, to } }); say(`Sent to ${to}!`); location.hash = "#u/" + encodeURIComponent(me.name); }
+      catch (err) { say(err.message); }
+    };
+    open.onclick = () => openPackCards(p, box);
+    box.append(el("p", { class: "center" }, open), el("p", { class: "center small" }, give));
+    return;
+  }
+  if (!p.opened_at) {
+    box.append(el("p", { class: "center" }, `Still sealed! Owned by `, p.owner ? el("a", { href: "#u/" + encodeURIComponent(p.owner) }, p.owner) : "nobody", "."));
+  }
+  // its story
+  const fp = (hash, lid) => hash ? el("span", { class: "hash small", title: hash }, ` [ledger #${lid} · ${hash.slice(0, 12)}…]`) : null;
+  box.append(el("h2", {}, "» Its Story «"),
+    el("ol", { class: "log" }, st.history.map((h) => el("li", {}, `${fmtStamp(h.created_at)}: `,
+      h.reason === "made" ? ["made for ", h.to_name || "a former player"] : ["given by ", h.from_name || "a former player", " to ", h.to_name || "a former player"],
+      fp(h.hash, h.ledger_id)))));
+  if (st.opening) {
+    box.append(el("p", {}, `Opened ${fmtStamp(st.opening.at)} by `, st.opening.opened_by ? el("a", { href: "#u/" + encodeURIComponent(st.opening.opened_by) }, st.opening.opened_by) : "a former player", fp(st.opening.hash, st.opening.ledger_id)),
+      el("p", {}, el("b", {}, "It held:")),
+      el("div", { class: "pull-row" }, (st.held || []).map((d) => d ? el("div", { class: "card small-card" }, bannerImg(d, 2), el("b", {}, d.name), el("span", { class: "small" }, d.series ? `Series ${d.series}` : "found")) : el("div", { class: "card" }, "(gone)"))),
+      el("p", {}, el("b", {}, "Kept:")),
+      el("div", { class: "grid" }, st.kept.map((c) => el("a", { href: "#banner/" + c.id, class: "tile" }, bannerImg(c), el("span", { class: "small" }, `#${c.edition} ${finishName(c) || ""}`)))));
+  }
+}
+
+// The opening: 3 cards, pick `keep` of them.
+async function openPackCards(p, box) {
+  let o;
+  try { o = await api("/api/packs", { method: "POST", body: { action: "open", id: p.id } }); }
+  catch (err) { return say(err.message); }
+  box.textContent = "";
+  box.append(el("h2", {}, `» ${packLabel(p)} #${p.id} «`), el("p", { class: "center" }, el("b", {}, `Pick ${o.keep} to keep!`)));
+  const picked = new Set();
+  const go = el("button", { type: "button", disabled: "disabled" }, `Keep these ${o.keep}!`);
+  const cards = o.options.map((d, i) => {
+    const c = card(d, i, { kept_index: null }, () => {
+      if (picked.has(i)) picked.delete(i); else if (picked.size < o.keep) picked.add(i);
+      cards.forEach((x, j) => x.classList.toggle("chosen", picked.has(j)));
+      go.disabled = picked.size !== Math.min(o.keep, o.options.length);
+    });
+    if (d && d.series) c.append(el("span", { class: "small" }, `Series ${d.series}`));
+    return c;
+  });
+  box.append(el("div", { class: "pull-row" }, cards), el("p", { class: "center" }, go));
+  go.onclick = async () => {
+    go.disabled = true;
+    try {
+      const r = await api("/api/packs", { method: "POST", body: { action: "keep", id: p.id, picks: [...picked] } });
+      say(r.sold_out ? "Kept! (One of them sold out a moment ago, sorry.)" : "Added to your collection!");
+      loadSummary();
+      showPack(p.id);
+    } catch (err) { say(err.message); go.disabled = false; }
+  };
+}
+
+// Webmasters: hand out sealed packs to a player or everyone.
+let givePacksReady = false;
+async function setupGivePacks() {
+  const form = $("givepacks-form");
+  form.hidden = !(me && me.is_admin);
+  if (form.hidden || givePacksReady) return;
+  givePacksReady = true;
+  try {
+    const { series } = await api("/api/series");
+    for (const x of series) form.series.append(el("option", { value: x.id }, `Series ${x.name}` + (x.status !== "active" ? ` (${x.status})` : "")));
+  } catch {}
+  form.everyone.onchange = () => { form.name.disabled = form.everyone.checked; };
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const everyone = form.everyone.checked, name = form.name.value.trim(), count = Number(form.count.value) || 1;
+    if (!everyone && !name) return say("Type a player's name, or tick everyone.");
+    const who = everyone ? "EVERYONE (bots too)" : name;
+    if (!(await ask(`Give ${count} sealed pack${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
+    try {
+      const r = await api("/api/admin", { method: "POST", body: { action: "give_packs", everyone, name, count, series_id: form.series.value || null, note: form.note.value } });
+      say(`Gave out ${r.made} pack${r.made === 1 ? "" : "s"}!`);
+      form.note.value = "";
+      loadShelf(true);
+    } catch (err) { say(err.message); }
+  };
 }
 
 // ---------- Fuse: 3 copies of one button in, 1 shinier one out ----------
@@ -1324,6 +1483,7 @@ function credit(d) {
 
 // Webmaster entries on the ledger, said plainly (no names)
 const ADMIN_SAYS = {
+  give_packs: "handed out sealed packs!",
   remove_design: "a button was removed by request",
   restore_design: "a removed button came back",
   block_uploader: "someone's button finding was paused",
@@ -1359,6 +1519,12 @@ async function showAbout() {
       const fin = finishName(h);
       const f = h.foil === "clear" && !h.effect ? "no foil" : !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
       what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), `${h.design || "a button"} #${h.edition ?? "?"} came with ${f}`);
+    } else if (h.kind === "pack") {
+      what = el("div", { class: "led-what" }, el("b", {}, "PACK "), "sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`),
+        h.pack_reason === "made" ? ` made for ${h.pack_to || "a former player"} (${PACK_FROM[h.pack_source] || h.pack_source})`
+          : ` given by ${h.pack_from || "a former player"} to ${h.pack_to || "a former player"}`);
+    } else if (h.kind === "pack_open") {
+      what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), "sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`), " was opened");
     } else if (h.kind === "admin") {
       what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {

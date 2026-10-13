@@ -1,8 +1,21 @@
-# 88x31 cLuB Changelog — v0.21
+# 88x31 cLuB Changelog — v0.22
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.22 — "Series Alpha"
+**Tue Oct 13, 2026 · 1:20 AM HST**
+
+- **Series Alpha!** Every button the cLuB has made so far is now part of Series Alpha. More series are coming...
+- **Sealed packs!** Earn packs and keep them on your shelf until you're ready to open one. Earned packs let you keep 2!
+- Sealed packs can be given to friends, and every pack has its own page with its whole story.
+- Finishing a set now comes with a sealed pack too.
+- Big visitor milestones mean packs for everybody.
+- The "Buttons you can collect" scroll shows a fresh handful every visit.
+- Your name is up in the menu now.
+- Old buttons that are a pixel off from 88x31 can be added now.
+- Fixed a couple of buttons that some browser add-ons were hiding.
 
 ## v0.21 — "Surf's Up"
 **Tue Oct 13, 2026 · 12:50 AM HST**

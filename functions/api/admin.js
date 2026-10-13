@@ -3,10 +3,12 @@
 //   { action: "restore_design", design_id }           undoes a removal
 //   { action: "block_uploader",   name, remove_uploads?: bool }   stops them adding buttons
 //   { action: "unblock_uploader", name }
+//   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, note? }   sealed packs (keep 2)
 // Every action is written to admin_actions and sealed into the ledger (no images, just what and when).
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
+import { givePacks, everyoneIds } from "../../lib/packs.js";
 
 const TOMBSTONE = "banners/removed.gif";
 
@@ -78,6 +80,24 @@ export async function onRequestPost({ request, env }) {
     await db.batch(stmts);
     await sealSafe(env);
     return json({ ok: true, removed });
+  }
+
+  if (body.action === "give_packs") {
+    const count = Math.max(1, Math.min(10, Number(body.count) || 1));
+    let ids, who = null;
+    if (body.everyone) ids = await everyoneIds(env);
+    else {
+      const u = await userByName(env, body.name);
+      if (!u) return json({ error: "No player by that name." }, 404);
+      ids = [u.id]; who = u.id;
+    }
+    let series = body.series_id ? Number(body.series_id) : null;
+    if (series && !(await db.prepare("SELECT 1 FROM series WHERE id = ?").bind(series).first())) return json({ error: "No such series." }, 400);
+    const made = await givePacks(env, ids, count, { series, source: "webmaster", note });
+    await db.prepare("INSERT INTO admin_actions (admin_id, action, user_id, note, created_at) VALUES (?, 'give_packs', ?, ?, ?)")
+      .bind(me.id, who, `${made} pack${made === 1 ? "" : "s"}${body.everyone ? " to everyone" : ""}${note ? ": " + note : ""}`, t).run();
+    await sealSafe(env);
+    return json({ ok: true, made });
   }
 
   return json({ error: "Unknown action." }, 400);

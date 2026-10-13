@@ -162,6 +162,24 @@ Player homepages were removed (the `users.homepage` column stays, unused).
 - **Bots fuse** at most once a day, only buttons with no copy limit (commons/uncommons):
   hoarders often, givers rarely.
 
+## Updating to v0.22 (series, sealed packs)
+
+Run once, **before** pushing the v0.22 code:
+
+```
+curl.exe -O https://raw.githubusercontent.com/okayline/88x31/main/migrations/016_series_packs.sql
+npx wrangler d1 execute 88x31-db --remote --file=016_series_packs.sql
+```
+
+- **Series**: the cLuB's originals belong to a series (`series` table: upcoming / active / retired).
+  Everything made before v0.22 is Series Alpha. Up to 3 active; each original card in a pack picks a
+  series by `SERIES_WEIGHTS` (60/25/15, newest first). Found buttons are outside series.
+- **Sealed packs** (lib/packs.js): items made when earned (webmaster gift, visitor milestone, finishing
+  a set). Contents roll when opened; earned packs keep 2 of 3. Made/given/opened are sealed into the
+  ledger (kinds `pack`, `pack_open`); copies from a pack carry reason `pack` + the pack id.
+- **Webmasters** give packs to a player or everyone (bots too) from the Hi! box.
+- **Milestones**: `MILESTONES` in functions/api/hit.js; each one gives everyone a pack, once.
+
 ## Run locally (optional)
 
 ```

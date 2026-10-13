@@ -19,13 +19,13 @@ async function sha256Bytes(bytes) {
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// A GIF whose logical screen is exactly 88x31.
+// A GIF whose logical screen is 88x31, give or take a pixel (old buttons weren't always exact).
 export function isButtonGif(b) {
   if (b.length < 13) return false;
   const sig = String.fromCharCode(...b.slice(0, 6));
   if (sig !== "GIF89a" && sig !== "GIF87a") return false;
   const w = b[6] | (b[7] << 8), h = b[8] | (b[9] << 8);
-  return w === 88 && h === 31;
+  return w >= 87 && w <= 89 && h >= 30 && h <= 32;
 }
 
 const clean = (v, max) => String(v || "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, max);
@@ -44,7 +44,7 @@ export async function onRequestPost({ request, env }) {
   if (!file || typeof file === "string") return json({ error: "Pick a GIF to add." }, 400);
   if (file.size > MAX_BYTES) return json({ error: "That file is too big for an 88x31 button (100 KB max)." }, 400);
   const bytes = new Uint8Array(await file.arrayBuffer());
-  if (!isButtonGif(bytes)) return json({ error: "It has to be a real 88x31 GIF." }, 400);
+  if (!isButtonGif(bytes)) return json({ error: "It has to be an 88x31 GIF (give or take a pixel)." }, 400);
 
   const name = clean(String(file.name || "").replace(/\.gif$/i, ""), 40) || "untitled";
   const batch = !!me.is_admin && form.get("batch") === "1";

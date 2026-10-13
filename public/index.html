@@ -9,12 +9,12 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.21">
+<link rel="stylesheet" href="style.css?v=0.22">
 </head>
 <body>
 <main>
   <nav class="top-bar" id="top-nav">
-    <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link">My Page</a> ] -
+    <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link my-page-name">My Page</a> ] -
     [ <a href="#pull">Daily Pull</a> ] -</span>
     <span class="only-out">[ <a href="#">Join the cLuB!</a> ] -</span>
     <span class="only-in">[ <a href="#wall">Wall of Buttons</a> ] -</span>
@@ -58,6 +58,16 @@
           <button>Go!</button>
         </form>
         <datalist id="player-names"></datalist>
+        <!-- webmasters: hand out sealed packs -->
+        <form id="givepacks-form" class="givepacks" hidden>
+          <p><b>☠ Give packs</b></p>
+          <label><input type="checkbox" name="everyone"> everyone</label>
+          <input name="name" placeholder="player name" autocomplete="off" list="player-names">
+          <label>how many <input name="count" type="number" min="1" max="10" value="1"></label>
+          <select name="series"><option value="">mixed</option></select>
+          <input name="note" placeholder="note (optional)" maxlength="200" autocomplete="off">
+          <button>Give!</button>
+        </form>
       </div>
     </div>
   </section>
@@ -167,7 +177,7 @@
   <section id="wall" hidden>
     <div class="panel">
       <h2 class="center">~*~ Wall of Buttons ~*~</h2>
-      <p class="center small">Every button in the cLuB. Click one for its info, credits and who owns it!</p>
+      <p class="center small wall-intro">Every button in the cLuB. Click one for its info, credits and who owns it!</p>
       <div class="wall-cols">
         <div>
           <div id="wall-grid" class="wall-grid"></div>
@@ -227,6 +237,10 @@
         <h2 class="center own-title">~*~ Welcome 2 <span class="page-name-2"></span>'s Page ~*~</h2>
         <p class="center small bot-note" id="page-seen" hidden></p>
         <p class="center small bot-note" id="page-bot" hidden>[BOT] This page belongs to one of the cLuB's friendly bots. Bots play once a day and can never win ultras.</p>
+        <div id="packs-shelf" class="packs-shelf" hidden>
+          <h2>&raquo; Unopened Packs &laquo;</h2>
+          <div id="packs-grid" class="packs-grid"></div>
+        </div>
         <h2>&raquo; My Button Collection &laquo;</h2>
         <div id="page-collection" class="grid"></div>
         <p class="arrange-bar" id="arrange-bar" hidden>
@@ -310,6 +324,11 @@
       <div id="banner-body"></div>
     </div>
 
+    <!-- one sealed pack: open it, or see its story -->
+    <div id="view-pack" class="view panel" hidden>
+      <div id="pack-body"></div>
+    </div>
+
     <!-- save codes -->
     <div id="view-codes" class="view panel" hidden>
       <h2>&raquo; My Save Codes &laquo;</h2>
@@ -336,9 +355,7 @@
 
   <p class="center"><b>~ Buttons you can collect ~</b></p>
   <div class="button-strip" aria-hidden="true">
-    <div class="strip-track">
-      <img src="banners/neon-nite.gif" alt="" width="88" height="31"><img src="banners/surf-the-web.gif" alt="" width="88" height="31"><img src="banners/under-construction.gif" alt="" width="88" height="31"><img src="banners/sign-my-guestbook.gif" alt="" width="88" height="31"><img src="banners/webring-member.gif" alt="" width="88" height="31"><img src="banners/hit-counter.gif" alt="" width="88" height="31"><img src="banners/rainbow-divider.gif" alt="" width="88" height="31"><img src="banners/best-viewed.gif" alt="" width="88" height="31"><img src="banners/made-with-notepad.gif" alt="" width="88" height="31"><img src="banners/email-me.gif" alt="" width="88" height="31"><img src="banners/neon-nite.gif" alt="" width="88" height="31"><img src="banners/surf-the-web.gif" alt="" width="88" height="31"><img src="banners/under-construction.gif" alt="" width="88" height="31"><img src="banners/sign-my-guestbook.gif" alt="" width="88" height="31"><img src="banners/webring-member.gif" alt="" width="88" height="31"><img src="banners/hit-counter.gif" alt="" width="88" height="31"><img src="banners/rainbow-divider.gif" alt="" width="88" height="31"><img src="banners/best-viewed.gif" alt="" width="88" height="31"><img src="banners/made-with-notepad.gif" alt="" width="88" height="31"><img src="banners/email-me.gif" alt="" width="88" height="31">
-    </div>
+    <div class="strip-track" id="strip-track"></div>
   </div>
 
   <hr class="rainbow">
@@ -350,7 +367,7 @@
   </div>
 
   <p class="center small">
-    <span class="only-in">[ <a href="#" class="my-page-link">My Page</a> ] &nbsp; [ <a href="#pull">Daily Pull</a> ] &nbsp; [ <a href="#wall">Wall of Buttons</a> ] &nbsp;</span>
+    <span class="only-in">[ <a href="#" class="my-page-link my-page-name">My Page</a> ] &nbsp; [ <a href="#pull">Daily Pull</a> ] &nbsp; [ <a href="#wall">Wall of Buttons</a> ] &nbsp;</span>
     <span class="only-out">[ <a href="#">Join</a> ] &nbsp;</span>
     [ <a href="#about">About</a> ]
     <span class="only-in">&nbsp; [ <a href="#" class="logout-link">Log Out</a> ]</span>
@@ -366,7 +383,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.21</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.22</span>
   </p>
 
 </main>
@@ -382,6 +399,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.21"></script>
+<script src="app.js?v=0.22"></script>
 </body>
 </html>
