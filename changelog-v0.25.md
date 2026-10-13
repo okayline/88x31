@@ -7,6 +7,7 @@ Newest first. Times are Hawaii time (HST).
 ## v0.25.1 — "Clean Desk"
 **Tue Oct 13, 2026 · 4:50 AM HST**
 
+- **10 new Series Beta rares** from the age of tapes: Blinking 12:00, REC, Be Kind Rewind, Side A, Fast Forward, Hi-Fi Stereo, Tracking, Hi-Speed Dubbing, Boom Box and Press Play on Tape. Only 25 of each, ever!
 - Fixed the button info window not opening on the Wall of Buttons.
 - The Wall's Show and Order switches are smaller and tucked into the top corner, and only for members.
 - Cool Links are gone for now. Webrings are coming soon!
