@@ -1752,9 +1752,9 @@ async function renderFreePack() {
     }
   };
   box.append(el("div", { class: "pull-row" }, card(st.card, 0, { kept_index: null })),
-    el("p", { class: "center" }, "This one's yours to keep. Sign it to make it official!", el("br"),
-      el("span", { class: "small" }, "(This also creates your account)")),
-    form);
+    el("p", { class: "center" }, "This one's yours to keep. Sign it to make it official!"),
+    form,
+    el("p", { class: "center small fp-note" }, "(This also creates your account)"));
   if (st.sitekey) loadTurnstile(st.sitekey, human);
 }
 
