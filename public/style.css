@@ -715,3 +715,4 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 }
 .sig-line { white-space: nowrap; max-width: 100%; }
 .sig-input { width: 9em; max-width: 55vw; }
+.pack-tile.welcome { background: linear-gradient(160deg, #ff99cc 0%, #ff3399 50%, #9933ff 100%); background-size: 200% 200%; }

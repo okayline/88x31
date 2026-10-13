@@ -1356,13 +1356,13 @@ async function showBanner(id) {
 // ---------- sealed packs ----------
 // Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
-const PACK_FROM = { webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
-const packLabel = (p) => (p.series ? `Series ${p.series}` : "Mixed") + " Pack";
+const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
+const packLabel = (p) => (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "Mixed") + " Pack";
 
 function packTile(p, href) {
-  return el("a", { href, class: "pack-tile" + (p.revealed ? " revealed" : ""), title: p.note || PACK_FROM[p.source] || "" },
+  return el("a", { href, class: "pack-tile" + (p.source === "welcome" ? " welcome" : "") + (p.revealed ? " revealed" : ""), title: p.note || PACK_FROM[p.source] || "" },
     el("span", { class: "pack-top" }, "88x31 cLuB"),
-    el("span", { class: "pack-name" }, p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED"),
+    el("span", { class: "pack-name" }, p.source === "welcome" ? "WELCOME" : p.series ? `SERIES ${p.series.toUpperCase()}` : "MIXED"),
     el("span", { class: "pack-sub" }, p.revealed ? "opened!" : "sealed pack"));
 }
 
@@ -1451,9 +1451,11 @@ async function openPackCards(p, box, onDone = null) {
   catch (err) { return say(err.message); }
   box.textContent = "";
   box.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  box.append(el("h3", { class: "center" }, `${packLabel(p)} #${p.id}`), el("p", { class: "center" }, el("b", {}, `Pick ${o.keep} to keep!`)));
-  const picked = new Set();
-  const go = el("button", { type: "button", disabled: "disabled" }, `Keep these ${o.keep}!`);
+  box.append(el("h3", { class: "center" }, `${packLabel(p)} #${p.id}`),
+    el("p", { class: "center" }, el("b", {}, o.keep >= o.options.length ? "They're all yours!" : `Pick ${o.keep} to keep!`)));
+  const all = o.keep >= o.options.length;
+  const picked = new Set(all ? o.options.map((_, i) => i) : []);
+  const go = el("button", { type: "button", ...(all ? {} : { disabled: "disabled" }) }, all ? `Keep all ${o.options.length}!` : `Keep these ${o.keep}!`);
   const cards = o.options.map((d, i) => {
     const c = card(d, i, { kept_index: null }, () => {
       if (picked.has(i)) picked.delete(i); else if (picked.size < o.keep) picked.add(i);
@@ -1461,6 +1463,7 @@ async function openPackCards(p, box, onDone = null) {
       go.disabled = picked.size !== Math.min(o.keep, o.options.length);
     });
     if (d && d.series) c.append(el("span", { class: "small" }, `Series ${d.series}`));
+    if (all) c.classList.add("chosen");
     return c;
   });
   box.append(el("div", { class: "pull-row" }, cards), el("p", { class: "center" }, go));
