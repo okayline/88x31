@@ -1,5 +1,5 @@
 // GET  /api/trades -> { incoming: [...open offers to me], outgoing: [...my open offers], history: [...] }
-// POST /api/trades { to, give: [ids], want: [ids], message } -> { ok, id }
+// POST /api/trades { to, give: [ids], want: [ids], give_packs: [ids], want_packs: [ids], message } -> { ok, id }
 import { json, readJson, currentUser } from "../../../lib/auth.js";
 import { userByName } from "../../../lib/game.js";
 import { expireTrades, proposeTrade, listTrades } from "../../../lib/trades.js";
@@ -25,6 +25,6 @@ export async function onRequestPost({ request, env }) {
   const to = await userByName(env, body.to);
   if (!to) return json({ error: "No player by that name." }, 404);
   await expireTrades(env);
-  const r = await proposeTrade(env, me.id, to.id, body.give, body.want, body.message);
+  const r = await proposeTrade(env, me.id, to.id, body.give, body.want, body.message, body.give_packs || [], body.want_packs || []);
   return r.ok ? json(r) : json(r, 400);
 }

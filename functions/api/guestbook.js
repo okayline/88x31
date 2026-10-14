@@ -1,8 +1,8 @@
 // Guestbooks.
 // GET  /api/guestbook?user=NAME -> { owner, entries: [{ author, message, created_at, gift }] }
-// POST /api/guestbook { user, message, instance_id? }
-//   Signing can carry one of your banners as a gift (the "stamp"): it moves to the page
-//   owner and stays shown next to your message. One signature per guestbook per day.
+// POST /api/guestbook { user, message, instance_id? | pack_id? }
+//   Signing can carry one of your banners, or a sealed pack (v0.34), as a gift (the "stamp"):
+//   it moves to the page owner and stays shown next to your message. One signature per guestbook per day.
 import { json, readJson, currentUser, rateLimit, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { listTrades } from "../../lib/trades.js";
@@ -16,16 +16,21 @@ export async function onRequestGet({ request, env }) {
   const { results } = await env.DB.prepare(
     `SELECT g.id, g.message, g.created_at, a.name AS author, a.is_bot AS author_is_bot,
             g.instance_id AS gift_id, i.design_id AS gift_design, i.edition AS gift_edition, i.foil AS gift_foil, i.foil_seed AS gift_foil_seed, i.pattern AS gift_pattern, i.effect AS gift_effect, d.name AS gift_name,
-            d.image_key AS gift_image, d.rarity AS gift_rarity, d.max_editions AS gift_max
+            d.image_key AS gift_image, d.rarity AS gift_rarity, d.max_editions AS gift_max,
+            g.pack_id AS gift_pack, p.source AS pack_source, p.note AS pack_note, p.keep AS pack_keep, p.special AS pack_special,
+            p.special_no AS pack_special_no, ps.special_name AS pack_special_name, ps.special_limit AS pack_special_limit, ps.name AS pack_series,
+            p.created_at AS pack_created_at, (p.opened_at IS NOT NULL) AS pack_opened
      FROM guestbook_entries g
      JOIN users a ON a.id = g.author_id
      LEFT JOIN instances i ON i.id = g.instance_id
      LEFT JOIN designs d ON d.id = i.design_id
+     LEFT JOIN packs p ON p.id = g.pack_id
+     LEFT JOIN series ps ON ps.id = p.series_id
      WHERE g.page_user = ? ORDER BY g.created_at DESC, g.id DESC LIMIT 100`
   ).bind(owner.id).all();
 
   const trades = (await listTrades(env, owner.id, { status: "accepted", limit: 30 }))
-    .map((t) => ({ id: t.id, at: t.resolved_at, from_name: t.from_name, to_name: t.to_name, give: t.give, want: t.want }));
+    .map((t) => ({ id: t.id, at: t.resolved_at, from_name: t.from_name, to_name: t.to_name, give: t.give, want: t.want, give_packs: t.give_packs, want_packs: t.want_packs }));
   const viewer = await currentUser(env, request);
   if (viewer) await markSeen(env, viewer, [...results.map((e) => e.gift_design), ...trades.flatMap((t) => [...t.give, ...t.want].map((i) => i.design_id))]);
   return json({ owner, entries: results, trades });
@@ -50,8 +55,30 @@ export async function onRequestPost({ request, env }) {
   const day = today();
   const t = now();
   const giftId = body.instance_id ? Number(body.instance_id) : null;
+  const packId = !giftId && body.pack_id ? Number(body.pack_id) : null;
 
   try {
+    if (packId) {
+      // a sealed pack as the stamp: it moves only if it's mine, sealed and not in a trade
+      const pk = await env.DB.prepare("SELECT owner_id, special FROM packs WHERE id = ?").bind(packId).first();
+      if (page.is_bot && pk && pk.special) return json({ error: "Limited packs are for people, not bots!" }, 400);
+      const sealedMine = `id = ? AND owner_id = ? AND locked = 0 AND opened_at IS NULL
+         AND NOT EXISTS (SELECT 1 FROM pack_openings o WHERE o.pack_id = packs.id)`;
+      const r = await env.DB.batch([
+        env.DB.prepare(
+          `INSERT INTO guestbook_entries (page_user, author_id, message, pack_id, day, created_at)
+           SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM packs WHERE ${sealedMine})`
+        ).bind(page.id, me.id, message, packId, day, t, packId, me.id),
+        env.DB.prepare(
+          `INSERT INTO pack_history (pack_id, from_user, to_user, reason, created_at)
+           SELECT ?, ?, ?, 'guestbook', ? WHERE changes() = 1`
+        ).bind(packId, me.id, page.id, t),
+        env.DB.prepare(`UPDATE packs SET owner_id = ? WHERE ${sealedMine} AND changes() = 1`).bind(page.id, packId, me.id),
+      ]);
+      if (r[0].meta.changes !== 1) return json({ error: "That pack isn't yours to give right now (only sealed packs can be stamped)." }, 400);
+      await sealSafe(env);
+      return json({ ok: true });
+    }
     if (!giftId) {
       await env.DB.prepare(
         "INSERT INTO guestbook_entries (page_user, author_id, message, day, created_at) VALUES (?, ?, ?, ?, ?)"

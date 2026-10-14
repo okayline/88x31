@@ -627,3 +627,12 @@ CREATE TABLE IF NOT EXISTS visits (
   streak     INTEGER NOT NULL DEFAULT 1
 );
 -- v0.31: rarity 'prototype' = 4 copies (max_editions 4); rares made from now on have no cap. See migrations/024_prototypes.sql.
+
+-- ---------- v0.34: packs in trades and guestbook gifts (also in migrations/025_pack_trades.sql) ----------
+CREATE TABLE IF NOT EXISTS trade_packs (
+  trade_id   INTEGER NOT NULL REFERENCES trades(id) ON DELETE CASCADE,
+  pack_id    INTEGER NOT NULL REFERENCES packs(id),
+  side       TEXT NOT NULL,
+  PRIMARY KEY (trade_id, pack_id)
+);
+-- (guestbook_entries.pack_id INTEGER REFERENCES packs(id) is added by migration 025)

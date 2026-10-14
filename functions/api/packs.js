@@ -1,6 +1,7 @@
 // Sealed packs (lib/packs.js).
 // GET  /api/packs        -> { packs: [...your unopened packs] }
 // GET  /api/packs?id=N   -> { pack, history, opening, held, kept }   a pack's whole story (public)
+// GET  /api/packs?user=NAME -> { packs: [...their sealed packs] }  for the trade builder (v0.34)
 // GET  /api/packs?all=1  -> { packs: [...every pack, newest first] }   the public Packs page (v0.31.2)
 // POST /api/packs { action: "open", id }            -> { options: [3 designs], keep }
 // POST /api/packs { action: "keep", id, picks: [] } -> { ok, kept: [instance ids] }
@@ -22,6 +23,11 @@ export async function onRequestGet({ request, env }) {
     return story ? json(story) : json({ error: "No such pack." }, 404);
   }
   if (params.get("all")) return json({ packs: await allPacks(env) });
+  if (params.get("user")) {
+    const u = await userByName(env, params.get("user"));
+    if (!u) return json({ error: "No player by that name." }, 404);
+    return json({ packs: (await packsOf(env, u.id)).filter((p) => !p.revealed) });
+  }
   const me = await currentUser(env, request);
   if (!me) return json({ error: "Not logged in." }, 401);
   return json({ packs: await packsOf(env, me.id) });

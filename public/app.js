@@ -477,6 +477,15 @@ async function showPage(name) {
         onclick: () => { chooseGift(b); $("gift-picker").hidden = true; } },
         bannerImg(b), el("span", { class: "small" }, edition(b))));
     }
+    // sealed packs can be stamped too (v0.34); limited ones never go to bots
+    try {
+      const { packs } = await api("/api/packs");
+      for (const p of packs.filter((x) => !x.revealed && !x.in_trade && !(col.owner.is_bot && x.special))) {
+        grid.append(el("button", { type: "button", class: "tile pick-tile pack-pick", title: packTitle(p),
+          onclick: () => { chooseGift({ pack: p }); $("gift-picker").hidden = true; } },
+          packMini(p), el("span", { class: "small" }, "pack")));
+      }
+    } catch {}
   }
 
   // Trade panel: only on other people's pages.
@@ -486,6 +495,7 @@ async function showPage(name) {
   if (!tp.hidden) {
     document.querySelectorAll(".tb-name").forEach((n) => (n.textContent = owner));
     tp.dataset.user = owner;
+    tp.dataset.bot = col.owner.is_bot ? "1" : "";
     tradeTheirs = col.banners;
   }
 
@@ -506,7 +516,12 @@ async function showPage(name) {
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect })),
-        el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null));
+        el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null,
+      g.gift_pack ? el("p", { class: "stamp" }, ...(() => {
+        const p = { id: g.gift_pack, source: g.pack_source, note: g.pack_note, keep: g.pack_keep, special: g.pack_special, special_no: g.pack_special_no,
+          special_name: g.pack_special_name, special_limit: g.pack_special_limit, series: g.pack_series, revealed: !!g.pack_opened };
+        return [el("a", { href: "#pack/" + p.id }, packMini(p)), el("span", { class: "small" }, ` stamped a sealed ${packTitle(p)}${p.revealed ? " (opened since!)" : ""}`)];
+      })()) : null));
   }
 }
 
@@ -1081,14 +1096,20 @@ function setTradeCount(n) {
   });
 }
 
-const smallList = (list) => list.map((b) => el("span", { class: "tr-item", title: `${b.name} ${edition(b)}` },
-  el("a", { href: "#banner/" + b.id }, bannerImg(b)), el("span", { class: "small" }, ` ${b.name} ${edition(b)}`)));
+const smallList = (list, packs = []) => [
+  ...list.map((b) => el("span", { class: "tr-item", title: `${b.name} ${edition(b)}` },
+    el("a", { href: "#banner/" + b.id }, bannerImg(b)), el("span", { class: "small" }, ` ${b.name} ${edition(b)}`))),
+  ...(packs || []).map((p) => el("span", { class: "tr-item", title: packTitle(p) },
+    el("a", { href: "#pack/" + p.id }, packMini(p)), el("span", { class: "small" }, ` ${packTitle(p)}`)))];
+
+// Sealed packs in trades and gifts (v0.34): a half-size copy of the real pack.
+const packMini = (p) => el("span", { class: "pk-mini" }, packTile(p, "#"));
 
 function tradeNote(t) {
   return el("div", { class: "entry trade-note" },
     el("p", { class: "small" }, `⇄ TRADE · ${fmtDate(t.at)}`),
     el("p", {}, el("a", { href: "#u/" + encodeURIComponent(t.from_name) }, t.from_name), " traded ",
-      ...smallList(t.give), " to ", el("a", { href: "#u/" + encodeURIComponent(t.to_name) }, t.to_name), " for ", ...smallList(t.want)));
+      ...smallList(t.give, t.give_packs), " to ", el("a", { href: "#u/" + encodeURIComponent(t.to_name) }, t.to_name), " for ", ...smallList(t.want, t.want_packs)));
 }
 
 function pickGrid(box, list, picked, label) {
@@ -1112,22 +1133,49 @@ function pickGrid(box, list, picked, label) {
   }
 }
 
+// Sealed packs to pick for a trade (v0.34): up to 3 a side, on top of the buttons.
+const pickedGiveP = new Set(), pickedWantP = new Set();
+function packPickGrid(box, list, picked, giving, toBot) {
+  box.textContent = "";
+  box.hidden = !list.length;
+  for (const p of list) {
+    const busy = giving && p.in_trade, nope = giving && toBot && p.special;
+    const tile = el("button", { type: "button", class: "tile pick-tile pack-pick" + (busy || nope ? " busy" : ""),
+      title: busy ? "Already in another trade" : nope ? "Limited packs are for people, not bots" : packTitle(p) },
+      packMini(p), el("span", { class: "small" }, busy ? "in a trade" : nope ? "not 4 bots" : "pack"));
+    if (busy || nope) tile.disabled = true;
+    tile.onclick = () => {
+      if (picked.has(p.id)) picked.delete(p.id);
+      else if (picked.size < 3) picked.add(p.id);
+      else return say("Up to 3 packs on each side!");
+      say("");
+      tile.classList.toggle("picked", picked.has(p.id));
+    };
+    box.append(tile);
+  }
+}
+
 $("trade-open").onclick = async () => {
-  pickedGive.clear(); pickedWant.clear();
+  pickedGive.clear(); pickedWant.clear(); pickedGiveP.clear(); pickedWantP.clear();
   $("tb-note").value = "";
+  const them = $("trade-panel").dataset.user, toBot = $("trade-panel").dataset.bot === "1";
   try {
-    const mine = await api("/api/collection");
+    const [mine, myPacks, theirPacks] = await Promise.all([api("/api/collection"), api("/api/packs"),
+      api("/api/packs?user=" + encodeURIComponent(them)).catch(() => ({ packs: [] }))]);
     pickGrid($("tb-give"), mine.banners, pickedGive, "to give");
     pickGrid($("tb-want"), tradeTheirs, pickedWant, "to ask for");
+    packPickGrid($("tb-give-packs"), myPacks.packs.filter((p) => !p.revealed), pickedGiveP, true, toBot);
+    packPickGrid($("tb-want-packs"), theirPacks.packs, pickedWantP, false, toBot);
     $("trade-builder").hidden = false;
   } catch (e) { say(e.message); }
 };
 $("tb-close").onclick = () => { $("trade-builder").hidden = true; };
 $("tb-send").onclick = async () => {
-  if (!pickedGive.size || !pickedWant.size) return say("Pick at least one button on each side!");
+  if (!(pickedGive.size + pickedGiveP.size) || !(pickedWant.size + pickedWantP.size)) return say("Pick at least one button or pack on each side!");
   try {
     await api("/api/trades", { method: "POST", body: {
-      to: $("trade-panel").dataset.user, give: [...pickedGive], want: [...pickedWant], message: $("tb-note").value } });
+      to: $("trade-panel").dataset.user, give: [...pickedGive], want: [...pickedWant],
+      give_packs: [...pickedGiveP], want_packs: [...pickedWantP], message: $("tb-note").value } });
     $("trade-builder").hidden = true;
     say("Offer sent! Check the Trades page for their answer.");
   } catch (e) { say(e.message); }
@@ -1142,13 +1190,13 @@ async function showTrades() {
     el("p", { class: "small" }, t.to_user === me.id
       ? el("span", {}, el("a", { href: "#u/" + encodeURIComponent(t.from_name) }, t.from_name), t.from_bot ? " [BOT]" : "", ` offered on ${fmtDate(t.created_at)}:`)
       : el("span", {}, "To ", el("a", { href: "#u/" + encodeURIComponent(t.to_name) }, t.to_name), t.to_bot ? " [BOT]" : "", ` on ${fmtDate(t.created_at)}:`)),
-    el("p", {}, t.to_user === me.id ? "You get " : "You give ", ...smallList(t.give)),
-    el("p", {}, t.to_user === me.id ? "You give " : "You get ", ...smallList(t.want)),
+    el("p", {}, t.to_user === me.id ? "You get " : "You give ", ...smallList(t.give, t.give_packs)),
+    el("p", {}, t.to_user === me.id ? "You give " : "You get ", ...smallList(t.want, t.want_packs)),
     t.message ? el("p", { class: "small" }, `"${t.message}"`) : null,
     t.status === "open" ? el("p", { class: "small" }, `Expires ${fmtDate(t.expires_at)}`) : null,
     buttons ? el("p", { class: "sign-buttons" }, buttons) : null);
   const act = (t, action, label) => el("button", { type: "button", onclick: async () => {
-    if (action === "accept" && !(await ask("Accept this trade? The buttons swap right away.", { ok: "Deal!", cancel: "Hmm, wait" }))) return;
+    if (action === "accept" && !(await ask("Accept this trade? Everything swaps right away.", { ok: "Deal!", cancel: "Hmm, wait" }))) return;
     try { await api("/api/trades/act", { method: "POST", body: { id: t.id, action } }); say(action === "accept" ? "Trade done! Enjoy ur new buttons!" : "Done."); await showTrades(); }
     catch (e) { say(e.message); await showTrades(); }
   } }, label);
@@ -1466,7 +1514,7 @@ function chooseGift(b) {
   box.textContent = "";
   box.hidden = !b;
   $("stamp-btn").textContent = b ? "Change Gift" : "Stamp a Gift!";
-  if (b) box.append("Stamping: ", bannerImg(b), ` ${b.name} ${edition(b)} `,
+  if (b) box.append("Stamping: ", ...(b.pack ? [packMini(b.pack), ` ${packTitle(b.pack)} `] : [bannerImg(b), ` ${b.name} ${edition(b)} `]),
     el("button", { type: "button", class: "mini", onclick: () => chooseGift(null) }, "remove"));
 }
 $("stamp-btn").onclick = () => { $("gift-picker").hidden = !$("gift-picker").hidden; };
@@ -1475,11 +1523,14 @@ $("sign-form").onsubmit = async (e) => {
   e.preventDefault();
   say("");
   const f = e.target;
-  const gift = giftPick ? giftPick.id : null;
+  const pk = giftPick && giftPick.pack;
+  const gift = giftPick && !pk ? giftPick.id : null;
   if (gift && !(await ask(`Stamp ${giftPick.name} ${edition(giftPick)} into ${f.dataset.user}'s guestbook? It'll be theirs to keep!`,
     { ok: "Send it!", cancel: "Wait, no", pic: bannerImg(giftPick, 2) }))) return;
+  if (pk && !(await ask(`Stamp your sealed ${packTitle(pk)} into ${f.dataset.user}'s guestbook? They get to open it!`,
+    { ok: "Send it!", cancel: "Wait, no", pic: packTile(pk, "#") }))) return;
   try {
-    await api("/api/guestbook", { method: "POST", body: { user: f.dataset.user, message: f.message.value, instance_id: gift || null } });
+    await api("/api/guestbook", { method: "POST", body: { user: f.dataset.user, message: f.message.value, instance_id: gift || null, pack_id: pk ? pk.id : null } });
     f.reset();
     chooseGift(null);
     say("Signed! Thanks 4 visiting!");
@@ -1726,6 +1777,12 @@ async function loadPacksPanel(mine) {
     }
     for (const p of packs) {
       const t = packTile(p, "#pack/" + p.id);
+      if (p.in_trade) {   // offered in a trade (v0.34): sealed shut until the trade's answered
+        t.classList.add("in-trade");
+        t.onclick = (e) => { e.preventDefault(); say("That pack is in a trade offer. Cancel the offer on the Trades page to open it."); };
+        grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, el("a", { href: "#trades" }, "in a trade"))));
+        continue;
+      }
       const go = () => { if (startOpening("pack" + p.id, t)) openPackCards(p, $("pack-open"), afterOpening); };
       t.onclick = async (e) => {
         e.preventDefault();
@@ -1796,7 +1853,9 @@ async function showPack(id) {
   const fp = (hash, lid) => hash ? el("span", { class: "hash small", title: hash }, ` [ledger #${lid} · ${hash.slice(0, 12)}…]`) : null;
   box.append(el("h2", {}, "» Its Story «"),
     el("ol", { class: "log" }, st.history.map((h) => el("li", {}, `${fmtStamp(h.created_at)}: `,
-      h.reason === "made" ? ["made for ", h.to_name || "a former player"] : ["given by ", h.from_name || "a former player", " to ", h.to_name || "a former player"],
+      h.reason === "made" ? ["made for ", h.to_name || "a former player"]
+        : [h.reason === "trade" ? "traded by " : h.reason === "guestbook" ? "stamped by " : "given by ", h.from_name || "a former player",
+           h.reason === "guestbook" ? " into the guestbook of " : " to ", h.to_name || "a former player"],
       fp(h.hash, h.ledger_id)))));
   if (st.opening) {
     box.append(el("p", {}, `Opened ${fmtStamp(st.opening.at)} by `, st.opening.opened_by ? el("a", { href: "#u/" + encodeURIComponent(st.opening.opened_by) }, st.opening.opened_by) : "a former player", fp(st.opening.hash, st.opening.ledger_id)),
@@ -2038,7 +2097,7 @@ function ledgerItem(h) {
       const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
       what = el("div", { class: "led-what" }, el("b", {}, "PACK "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)],
         h.pack_reason === "made" ? ` made for ${h.pack_to || "a former player"} (${PACK_FROM[h.pack_source] || h.pack_source})`
-          : ` given by ${h.pack_from || "a former player"} to ${h.pack_to || "a former player"}`);
+          : ` ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} by ${h.pack_from || "a former player"} to ${h.pack_to || "a former player"}`);
     } else if (h.kind === "pack_open") {
       const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
       what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)], " was opened");

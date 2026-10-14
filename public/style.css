@@ -1175,3 +1175,10 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .tear-flap.gone { transition: transform .45s ease-in, opacity .45s; transform: translate(26px, -46px) rotate(-40deg) !important; opacity: 0; }
 .pack-tile .tear-cut { top: 15% !important; }
 .pack-tile.torn::after { display: none; }
+
+/* v0.34: sealed packs in trades and guestbook stamps, at half size */
+.pk-mini { display: inline-block; width: 50px; height: 68px; overflow: hidden; pointer-events: none; vertical-align: middle; }
+.pk-mini .pack-tile, .pk-mini .pack-tile:hover { transform: scale(0.5); transform-origin: top left; }
+.tb-packs { margin-top: 6px; }
+.pack-tile.in-trade { opacity: .55; }
+.pack-tile.in-trade:hover { transform: none; }
