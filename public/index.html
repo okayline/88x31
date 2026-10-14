@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.34.4">
+<link rel="stylesheet" href="style.css?v=0.34.5">
 </head>
 <body>
 <main>
@@ -63,12 +63,12 @@
         <div id="dash-gifts" class="dash-gifts"></div>
         <!-- webmasters: the newest players -->
         <div id="newplayers-box" class="givepacks" hidden>
-          <p><b>☠ New Players</b></p>
+          <p class="admin-head"><b>☠ New Players</b></p>
           <ol id="newplayers-list" class="newplayers"><li>Loading...</li></ol>
         </div>
         <!-- webmasters: hand out sealed packs -->
         <form id="givepacks-form" class="givepacks" hidden>
-          <p><b>☠ Give packs</b></p>
+          <p class="admin-head"><b>☠ Give packs</b></p>
           <input name="name" placeholder="player name, or everyone" autocomplete="off" list="givepack-names">
           <datalist id="givepack-names"></datalist>
           <label>how many <input name="count" type="number" min="1" max="10" value="1"></label>
@@ -274,7 +274,7 @@
       </form>
       <!-- webmasters: the series of cLuB originals (what's coming, what's in packs, what's retired) -->
       <div class="series-panel" id="series-panel" hidden>
-        <h3 class="center">☠ Series</h3>
+        <h3 class="center admin-head">☠ Series</h3>
         <p class="small center" id="series-note"></p>
         <p class="center add-status" id="series-msg" aria-live="polite"></p>
         <table class="series-table"><tbody id="series-rows"></tbody></table>
@@ -476,7 +476,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.34.4</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.34.5</span>
   </p>
 
 </main>
@@ -492,6 +492,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.34.4"></script>
+<script src="app.js?v=0.34.5"></script>
 </body>
 </html>

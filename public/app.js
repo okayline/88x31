@@ -211,7 +211,7 @@ function adminBox(designId, name, status, finder, after) {
     try { const r = await api("/api/admin", { method: "POST", body }); say(msg + (r.removed ? ` (${r.removed} removed)` : "")); wallLoaded = false; after(); }
     catch (e) { say(e.message); }
   };
-  const box = el("div", { class: "admin-box" }, el("p", { class: "small" }, el("b", {}, "☠ Webmaster")));
+  const box = el("div", { class: "admin-box" }, el("p", { class: "small admin-head" }, el("b", {}, "☠ Webmaster")));
   if (status === "removed") {
     box.append(el("button", { type: "button", onclick: async () => {
       if (await ask(`Bring back "${name}"? It goes back into play.`, { ok: "Restore" })) run({ action: "restore_design", design_id: designId }, "Restored.");
@@ -1227,7 +1227,7 @@ function playerAdminBox(name, owner) {
   box.textContent = "";
   box.hidden = !(me && me.is_admin) || owner.is_bot || name.toLowerCase() === me.name.toLowerCase();
   if (box.hidden) return;
-  box.append(el("p", { class: "small" }, el("b", {}, "☠ Webmaster")), el("button", { type: "button", onclick: async () => {
+  box.append(el("p", { class: "small admin-head" }, el("b", {}, "☠ Webmaster")), el("button", { type: "button", onclick: async () => {
     const typed = await askText(`Delete ${name}'s account? Their buttons, packs, guestbook and wishes all go, and it can't be undone. Type their name to confirm:`, "", { ok: "Delete forever" });
     if (typed === null) return;
     if (typed.trim().toLowerCase() !== name.toLowerCase()) return say("The name didn't match, so nothing was deleted.");
@@ -2551,11 +2551,13 @@ refresh().catch((e) => { say(e.message); showTop("out"); });
 // Any heading written » Like This « folds: click it and everything under it (up to the next such
 // heading) tucks away. The leading » is the arrow: it points down while open, right while folded.
 // Remembered per heading in this browser. Works for headings drawn later too (pack pages, button pages...).
+// Webmaster boxes fold too (v0.34.5): their "☠ ..." line (.admin-head) folds the rest of its box.
 const foldKey = (h) => "fold-" + h.textContent.replace(/[»«\s]+/g, " ").trim().toLowerCase();
-const isFoldHead = (h) => h && h.tagName === "H2" && /^\s*»/.test(h.textContent) && /«\s*$/.test(h.textContent) && !h.closest(".ho-win");
+const isFoldHead = (h) => h && ((h.tagName === "H2" && /^\s*»/.test(h.textContent) && /«\s*$/.test(h.textContent) && !h.closest(".ho-win"))
+  || h.classList.contains("admin-head"));
 function foldBody(h) {   // the elements this heading folds: its following siblings, up to the next fold heading
   const out = [];
-  for (let n = h.nextElementSibling; n && !(n.tagName === "H2" && isFoldHead(n)); n = n.nextElementSibling) out.push(n);
+  for (let n = h.nextElementSibling; n && !isFoldHead(n); n = n.nextElementSibling) out.push(n);
   return out;
 }
 function setFold(h, folded) {
@@ -2573,24 +2575,24 @@ function prepFold(h) {
   if (t && t.textContent.trimStart().startsWith("»")) {
     t.textContent = t.textContent.replace(/^\s*»\s*/, "");
     h.prepend(el("span", { class: "fold-arrow", "aria-hidden": "true" }, "»"), " ");
-  }
+  } else if (h.classList.contains("admin-head")) h.prepend(el("span", { class: "fold-arrow", "aria-hidden": "true" }, "»"), " ");
   let folded = false;
   try { folded = localStorage.getItem(foldKey(h)) === "1"; } catch {}
   setFold(h, folded);
 }
-function applyFolds(root = document) { for (const h of root.querySelectorAll("h2")) if (isFoldHead(h)) prepFold(h); }
+function applyFolds(root = document) { for (const h of root.querySelectorAll("h2, .admin-head")) if (isFoldHead(h)) prepFold(h); }
 function toggleFold(h) {
   const folded = !h.classList.contains("folded");
   setFold(h, folded);
   try { folded ? localStorage.setItem(foldKey(h), "1") : localStorage.removeItem(foldKey(h)); } catch {}
 }
 document.addEventListener("click", (e) => {
-  const h = e.target.closest && e.target.closest("h2.fold-head");
+  const h = e.target.closest && e.target.closest(".fold-head");
   if (!h || e.target.closest("a, button, input")) return;
   toggleFold(h);
 });
 document.addEventListener("keydown", (e) => {
-  const h = e.target.closest && e.target.closest("h2.fold-head");
+  const h = e.target.closest && e.target.closest(".fold-head");
   if (h && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleFold(h); }
 });
 // headings drawn later (pack pages, button pages, the All the Packs page...)
@@ -2601,7 +2603,7 @@ new MutationObserver(() => {
   requestAnimationFrame(() => {
     foldQueued = false;
     applyFolds();
-    for (const h of document.querySelectorAll("h2.fold-head.folded")) setFold(h, true);   // re-tuck anything redrawn under a folded heading
+    for (const h of document.querySelectorAll(".fold-head.folded")) setFold(h, true);   // re-tuck anything redrawn under a folded heading
   });
 }).observe(document.body, { childList: true, subtree: true });
 applyFolds();
