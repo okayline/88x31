@@ -2661,11 +2661,14 @@ function addTear(tile, onTorn) {
   const cut = el("span", { class: "tear-cut", "aria-hidden": "true" }), hint = el("span", { class: "tear-hint", "aria-hidden": "true" }, "✂ - - - -");
   const art = tile.querySelector(".pack-art");
   art.append(cut, hint);
-  // the torn part of the top simply disappears as the cut runs along, and comes back if you go back
+  // the torn part of the top fades away as the cut runs along, and comes back if you go back
   const STRIP = 15;   // % of the pack's height above the cut
   const setCurl = (f, dir) => {
     if (f <= 0.01) { art.style.webkitMask = art.style.mask = ""; return; }
-    const keep = `linear-gradient(#000 0 0) ${dir === 1 ? "right" : "left"} top / ${(100 - f * 100).toFixed(1)}% 100% no-repeat, linear-gradient(#000 0 0) left bottom / 100% ${100 - STRIP}% no-repeat`;
+    // the top strip fades out behind the cut: gone where you started, soft fade up to the cut's tip
+    const tip = f * 100, soft = Math.max(0, tip - 22);
+    const fade = `linear-gradient(to ${dir === 1 ? "right" : "left"}, transparent ${soft.toFixed(1)}%, #000 ${tip.toFixed(1)}%)`;
+    const keep = `${fade} left top / 100% ${STRIP + 0.5}% no-repeat, linear-gradient(#000 0 0) left bottom / 100% ${100 - STRIP}% no-repeat`;
     art.style.webkitMask = art.style.mask = keep;
   };
   const LINE = 1;   // the cut has to reach all the way across before it can rip
