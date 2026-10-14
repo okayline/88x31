@@ -2082,7 +2082,7 @@ function ledgerItem(h) {
       what = h.mystery ? el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, ""), " joined ~*~ tHe cLuB ~*~")
         : el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, h.design || "?"), ` (${h.rarity}`
         + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
-        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, h.who ? [", added by ", ledWho(h)] : null);
+        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, h.who ? [", found by ", ledWho(h)] : null);
     } else if (h.kind === "fusion") {
       const name = h.fused_status === "removed" ? "a removed button" : h.fused_design || "a button";
       const fin = finishName({ foil: h.fused_foil, pattern: h.fused_pattern, effect: h.fused_effect });

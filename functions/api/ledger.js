@@ -31,7 +31,7 @@ export async function onRequestGet({ request, env }) {
             CASE l.kind
               WHEN 'request' THEN (SELECT name FROM users WHERE id = rq.user_id)
               WHEN 'fusion' THEN (SELECT name FROM users WHERE id = fu.user_id)
-              WHEN 'design' THEN (SELECT name FROM users WHERE id = d1.creator_id)
+              WHEN 'design' THEN (SELECT name FROM users WHERE id = d1.found_by)   -- only players' finds; batch imports and cLuB originals have no finder
               WHEN 'pack_open' THEN (SELECT u.name FROM pack_openings po JOIN users u ON u.id = po.user_id WHERE po.pack_id = l.ref_id)
               WHEN 'foil' THEN (SELECT u.name FROM ownership_history oh JOIN users u ON u.id = oh.to_user WHERE oh.instance_id = fi.id ORDER BY oh.id LIMIT 1)
             END AS who
