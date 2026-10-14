@@ -182,6 +182,18 @@
       <h2>&raquo; The Ledger &laquo;</h2>
       <p>Everything that happens to every button (every pack, trade and gift) gets written down in the Ledger. Each entry is locked to the one before it, so nobody can sneak in and change history... not even the webmaster!! ;)</p>
     </div>
+    <div class="panel" id="fp-receipts">
+      <h2>&raquo; Bitcoin Receipts &laquo;</h2>
+      <p>But wait... what if the webmaster rewrote the WHOLE Ledger from the top?! :O Good news: we thought of that!!</p>
+      <ul>
+        <li><b>Every hour</b>, a little robot on GitHub writes down the Ledger's latest fingerprint (it stands for every entry ever made!) on a public receipt.</li>
+        <li>That receipt gets stamped by <a href="https://opentimestamps.org" target="_blank" rel="noopener">OpenTimestamps</a>, which bundles it with stamps from all over the 'net and locks the bundle into the <b>Bitcoin</b> blockchain within a few hours.</li>
+        <li>Once it's in there, nobody can change it. Not us, not GitHub, not anybody! So if the Ledger's past ever stopped matching an old receipt, everyone would know.</li>
+      </ul>
+      <p>And nope, <b>no crypto here!!</b> The cLuB doesn't buy, hold or spend a single coin. Bitcoin is just our free notary. :)</p>
+      <p>Wanna check for yourself? Grab any receipt and its <code>.ots</code> proof from the <a href="https://github.com/okayline/88x31-anchors" target="_blank" rel="noopener">Receipts Archive</a>, drop them on opentimestamps.org, then compare its fingerprint with the one below.</p>
+      <p class="small">The fine print: receipts prove the Ledger hasn't changed <i>since</i> they were stamped. They can't prove every event was written down honestly in the first place, and that goes for every blockchain out there.</p>
+    </div>
 
     <div class="panel">
       <h2>&raquo; Ledger Status &laquo;</h2>
@@ -425,7 +437,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.28.2</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.28.3</span>
   </p>
 
 </main>
