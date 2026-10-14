@@ -2653,7 +2653,7 @@ function holdToOpen(p, anchor = null) {
   });
 }
 
-// Tear a crimped pouch open: press near the top and drag sideways. The last stretch is stiffer, and
+// Tear a crimped pouch open: press at a top corner (left or right notch) and drag across. The last stretch is stiffer, and
 // past the line the pack shakes. The rip only happens when you LET GO past the line, so you can always drag back and let go early to keep it sealed.
 // A drag never counts as a click, so it can't pop up the Open Pack window either. (v0.33.1)
 function addTear(tile, onTorn) {
@@ -2661,22 +2661,24 @@ function addTear(tile, onTorn) {
   const cut = el("span", { class: "tear-cut", "aria-hidden": "true" }), hint = el("span", { class: "tear-hint", "aria-hidden": "true" }, "✂ - - - -");
   tile.querySelector(".pack-art").append(cut, hint);
   const LINE = 0.8;
-  let x0 = null, id = null, moved = false, f = 0;
+  let x0 = null, id = null, moved = false, f = 0, dir = 1;
   tile.addEventListener("pointerdown", (e) => {
     if (tile.dataset.tore) return;
-    const r = tile.getBoundingClientRect();
-    if (e.clientY - r.top > r.height * 0.3) return;   // only the top of the pack tears
-    x0 = e.clientX; id = e.pointerId; moved = false; f = 0;
+    const r = tile.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+    // a tear starts at a corner notch: the top strip, near the left or right edge (not the middle)
+    if (e.clientY - r.top > r.height * 0.22 || (x > 0.25 && x < 0.75)) return;
+    x0 = e.clientX; id = e.pointerId; moved = false; f = 0; dir = x <= 0.25 ? 1 : -1;   // tear toward the other side
   });
   tile.addEventListener("pointermove", (e) => {
     if (x0 == null || e.pointerId !== id) return;
-    const r = tile.getBoundingClientRect(), dx = Math.abs(e.clientX - x0);
+    const r = tile.getBoundingClientRect(), dx = Math.max(0, (e.clientX - x0) * dir);
     if (dx > 6 && !moved) { moved = true; tile.setPointerCapture(id); tile.classList.add("tearing"); }
     if (!moved) return;
     // the last stretch fights back: past 60% it takes twice as much drag to move the cut
     const raw = dx / r.width;
     f = Math.min(1, raw < 0.6 ? raw : 0.6 + (raw - 0.6) * 0.5);
     cut.style.width = (f * 100) + "%";
+    cut.style.left = dir === 1 ? "0" : "auto"; cut.style.right = dir === 1 ? "auto" : "0";
     const ready = f >= LINE;
     if (ready && !tile.classList.contains("tear-ready")) { try { navigator.vibrate && navigator.vibrate(30); } catch {} }
     tile.classList.toggle("tear-ready", ready);   // past the line: the pack shakes, let go to rip
