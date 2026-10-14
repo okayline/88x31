@@ -4,7 +4,7 @@
 import { json, currentUser } from "../../lib/auth.js";
 import { today, PULLS_PER_DAY } from "../../lib/game.js";
 import { readyCount } from "../../lib/sets.js";
-import { questStatus, touchStreak } from "../../lib/progress.js";
+import { questStatus, touchStreak, streakDays } from "../../lib/progress.js";
 import { sealSafe } from "../../lib/ledger.js";
 
 export async function onRequestGet({ request, env }) {
@@ -37,6 +37,7 @@ export async function onRequestGet({ request, env }) {
     db.prepare("SELECT COUNT(*) AS n FROM instances WHERE owner_id = ? AND consumed = 0").bind(me.id).first(),
   ]);
   const streak = await touchStreak(env, me);
+  if (streak) streak.days = await streakDays(env, me.id, streak.streak);
   const quests = await questStatus(env, me);
   if ((streak && streak.given) || quests.rewarded) await sealSafe(env);
   return json({
