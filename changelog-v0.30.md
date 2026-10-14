@@ -1,8 +1,18 @@
-# 88x31 cLuB Changelog — v0.29
+# 88x31 cLuB Changelog — v0.30
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.30 — "Come Back Tomorrow!"
+**Tue Oct 13, 2026 · 11:42 PM HST**
+
+- **Starter quests!** New here? Open your daily pack, sign a guestbook and make a wish on the Request Board to win a ~*~cLuB~*~ pack.
+- **Visit streaks!** Come back every day for packs on day 2, 3 and 5, and a series pack on day 7. Keep it going for more every week!
+- **Trade-ins!** Turn any 5 commons or uncommons into a sealed ~*~cLuB~*~ pack, right from your Packs box. As many as you like!
+- **Hidden until seen:** buttons you haven't come across yet are a mystery ?. Open packs and visit other people's pages to uncover them!
+- The Request Board has a new picker with pictures, and you can wish for **rares** now. Fill a rare wish to get a **series pack** as thanks!
+- **Ultras can be traded**, if their owner wants to.
 
 ## v0.29 — "Who Goes There?"
 **Tue Oct 13, 2026 · 10:03 PM HST**
