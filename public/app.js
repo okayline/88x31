@@ -2654,13 +2654,13 @@ function holdToOpen(p, anchor = null) {
 }
 
 // Tear a crimped pouch open: press at a top corner (left or right notch) and drag across. The last stretch is stiffer, and
-// past the line the pack shakes. The rip only happens when you LET GO past the line, so you can always drag back and let go early to keep it sealed.
+// past the line the pack shakes. The rip only happens when you LET GO with the cut all the way across, so you can always drag back and let go early to keep it sealed.
 // A drag never counts as a click, so it can't pop up the Open Pack window either. (v0.33.1)
 function addTear(tile, onTorn) {
   if (!tile.classList.contains("pouch")) return;
   const cut = el("span", { class: "tear-cut", "aria-hidden": "true" }), hint = el("span", { class: "tear-hint", "aria-hidden": "true" }, "✂ - - - -");
   tile.querySelector(".pack-art").append(cut, hint);
-  const LINE = 0.8;
+  const LINE = 1;   // the cut has to reach all the way across before it can rip
   let x0 = null, id = null, moved = false, f = 0, dir = 1;
   tile.addEventListener("pointerdown", (e) => {
     if (tile.dataset.tore) return;
@@ -2674,9 +2674,9 @@ function addTear(tile, onTorn) {
     const r = tile.getBoundingClientRect(), dx = Math.max(0, (e.clientX - x0) * dir);
     if (dx > 6 && !moved) { moved = true; tile.setPointerCapture(id); tile.classList.add("tearing"); }
     if (!moved) return;
-    // the last stretch fights back: past 60% it takes twice as much drag to move the cut
+    // the last stretch fights back: past 60% the cut moves slower than your drag
     const raw = dx / r.width;
-    f = Math.min(1, raw < 0.6 ? raw : 0.6 + (raw - 0.6) * 0.5);
+    f = Math.min(1, raw < 0.6 ? raw : 0.6 + (raw - 0.6) * 0.7);
     cut.style.width = (f * 100) + "%";
     cut.style.left = dir === 1 ? "0" : "auto"; cut.style.right = dir === 1 ? "auto" : "0";
     const ready = f >= LINE;
