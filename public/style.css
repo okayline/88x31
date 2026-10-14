@@ -928,6 +928,61 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .pack-art .win95 .pg .uc { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: repeating-linear-gradient(-45deg, #000 0 4px, #fc0 4px 8px); }
 .th-club-c .club-name { margin-top: 6px; }
 
+/* v0.33: three more ~*~cLuB~*~ looks */
+/* D: kawaii (pastel, hearts, a little cat) */
+.th-club-d .pack-art { background:
+  radial-gradient(circle at 15% 20%, rgba(255,255,255,.7) 0 2px, transparent 3px), radial-gradient(circle at 80% 70%, rgba(255,255,255,.6) 0 2px, transparent 3px),
+  linear-gradient(170deg, #ffd1ec 0%, #ffb3de 40%, #d9c2ff 100%); color: #ff3fa4; text-shadow: 0 1px 0 #fff; }
+.pack-art .hearts { position: absolute; inset: 0; z-index: 1; color: rgba(255,255,255,.75); font-size: 9px; line-height: 17px; letter-spacing: 9px; white-space: pre; text-shadow: none; overflow: hidden; }
+.pack-art .kitty { position: relative; z-index: 3; margin-top: 18px; width: 64px; height: 44px; display: flex !important; align-items: center; justify-content: center;
+  background: #fff; border-radius: 50% 50% 46% 46%; color: #ff3fa4; font: bold 11px Arial, sans-serif; text-shadow: none; box-shadow: 0 2px 0 #ff9dd2, 0 0 0 2px #ffe3f3; }
+.pack-art .kitty::before, .pack-art .kitty::after { content: ""; position: absolute; top: -7px; width: 0; height: 0; border: 9px solid transparent; border-bottom-color: #fff; }
+.pack-art .kitty::before { left: 6px; transform: rotate(-18deg); } .pack-art .kitty::after { right: 6px; transform: rotate(18deg); }
+.pack-art .kitty i { position: absolute; bottom: 9px; width: 7px; height: 4px; border-radius: 50%; background: #ffb3d6; font-style: normal; }
+.pack-art .kitty i.l { left: 8px; } .pack-art .kitty i.r { right: 8px; }
+.th-club-d .club-name { margin-top: 10px; color: #ff3fa4; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; }
+.th-club-d .pack-sub { color: #b04dff; text-shadow: 0 1px 0 #fff; }
+.th-club-d .pack-top { color: #b04dff; text-shadow: 0 1px 0 #fff; }
+.pack-art .twinkle { position: absolute; z-index: 4; color: #fff; font-size: 12px; text-shadow: 0 0 4px #ff8ad0; animation: club-twinkle 1.8s ease-in-out infinite; }
+.pack-art .twinkle.t2 { animation-delay: .6s; font-size: 9px; } .pack-art .twinkle.t3 { animation-delay: 1.2s; font-size: 10px; }
+@keyframes club-twinkle { 0%, 100% { transform: scale(.4); opacity: .2; } 50% { transform: scale(1.1); opacity: 1; } }
+
+/* E: bling (rhinestones on black velvet, chrome letters) */
+.th-club-e .pack-art { background: radial-gradient(ellipse at 50% 35%, #3a1450 0%, #14051c 70%); }
+.pack-art .gems { position: absolute; inset: 3px; z-index: 2; border-radius: 3px 3px 8px 8px; pointer-events: none;
+  background:
+    radial-gradient(circle, #fff 0 1px, #c9f 1.6px, transparent 2.6px) 0 0 / 8px 8px repeat-x,
+    radial-gradient(circle, #fff 0 1px, #9ff 1.6px, transparent 2.6px) 0 100% / 8px 8px repeat-x,
+    radial-gradient(circle, #fff 0 1px, #fcf 1.6px, transparent 2.6px) 0 0 / 8px 8px repeat-y,
+    radial-gradient(circle, #fff 0 1px, #ff9 1.6px, transparent 2.6px) 100% 0 / 8px 8px repeat-y; }
+.pack-art .bling { position: relative; z-index: 3; margin-top: 24px; font: 900 25px "Arial Black", Arial, sans-serif; letter-spacing: -1px; line-height: 1; text-shadow: none;
+  background: linear-gradient(180deg, #fff 0%, #e6e6e6 30%, #8c8c8c 50%, #fff 52%, #d4af37 80%, #fff 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 3px rgba(255, 200, 255, .8)) drop-shadow(1px 1px 0 #000); }
+.th-club-e .gem { position: relative; z-index: 3; margin-top: 4px; width: 16px; height: 16px; transform: rotate(45deg);
+  background: linear-gradient(135deg, #fff, #9ff 40%, #c6f 70%, #fff); box-shadow: 0 0 8px #fff, 0 0 2px #c6f; animation: club-gem 2.4s ease-in-out infinite; }
+@keyframes club-gem { 50% { box-shadow: 0 0 14px #fff, 0 0 6px #9ff; filter: brightness(1.3); } }
+.th-club-e .club-name { margin-top: 10px; color: #ffd700; text-shadow: 0 0 4px #ff00cc, 1px 1px 0 #000; }
+.th-club-e .pack-sub { color: #ffccff; }
+.th-club-e .sparkle { position: absolute; z-index: 5; width: 9px; height: 9px; background: #fff; pointer-events: none;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: club-twinkle 1.6s ease-in-out infinite; }
+
+/* F: holo heart sticker book */
+.th-club-f .pack-art { background: linear-gradient(130deg, #c6f7ff, #ffd6f5 25%, #fff6c4 45%, #d4ffd9 65%, #e0d1ff 85%, #c6f7ff);
+  background-size: 300% 300% !important; animation: pack-shine 3s ease-in-out infinite alternate; color: #6a2ca0; text-shadow: 0 1px 0 #fff; }
+.pack-art .holo-heart { position: relative; z-index: 3; margin-top: 18px; width: 58px; height: 52px; display: grid !important; place-items: center; }
+.pack-art .holo-heart::before { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #ff5fc8, #ff9ad5 40%, #c77dff 70%, #ff5fc8);
+  clip-path: path("M29 50 C 6 34, 0 22, 4 12 C 9 0, 24 0, 29 11 C 34 0, 49 0, 54 12 C 58 22, 52 34, 29 50 Z");
+  filter: drop-shadow(0 2px 0 #fff); }
+.pack-art .holo-heart b { position: relative; margin-top: -6px; color: #fff; font: 900 12px "Arial Black", Arial, sans-serif; text-shadow: 1px 1px 0 #b0006a; }
+.pack-art .stk { position: absolute; z-index: 4; padding: 1px 4px; font: bold 7.5px Arial, sans-serif; color: #fff; text-shadow: none; border: 1px solid #fff; border-radius: 6px; box-shadow: 1px 1px 0 rgba(0,0,0,.35); }
+.pack-art .stk.xo { right: 4px; top: 22px; background: #ff4fa8; transform: rotate(12deg); }
+.pack-art .stk.qt { left: 3px; top: 66px; background: #6c8cff; transform: rotate(-10deg); }
+.pack-art .star { position: absolute; z-index: 4; color: #ffd400; font-size: 13px; text-shadow: 0 0 0 #fff, 1px 1px 0 #fff, -1px -1px 0 #fff; }
+.th-club-f .club-name { margin-top: 8px; color: #ff2fa0; text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; }
+.th-club-f .pack-sub, .th-club-f .pack-top { color: #6a2ca0; text-shadow: 0 1px 0 #fff; }
+@media (prefers-reduced-motion: reduce) { .pack-art .twinkle, .th-club-e .gem, .th-club-e .sparkle { animation: none; } }
+
 /* opened for today: grey and completely still */
 .pack-tile.used { cursor: default; }
 .pack-tile.used:hover { transform: none; }
@@ -1053,7 +1108,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 /* v0.31.2: opened packs lose their shine and color; the All the Packs page */
 .pack-tile.spent { filter: grayscale(1) brightness(0.8) contrast(0.9); }
 .pack-tile.spent, .pack-tile.spent * { animation: none !important; }
-.pack-tile.spent .gleam, .pack-tile.spent .sparks, .pack-tile.spent .refresh, .pack-tile.spent .scan { display: none !important; }
+.pack-tile.spent .gleam, .pack-tile.spent .sparkle, .pack-tile.spent .twinkle, .pack-tile.spent .sparks, .pack-tile.spent .refresh, .pack-tile.spent .scan { display: none !important; }
 .pack-tile.spent:hover { transform: none; }
 .allpacks { justify-content: flex-start; }
 .allpacks .pack-slot .small { text-align: center; }

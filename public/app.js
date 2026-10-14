@@ -1629,10 +1629,19 @@ function packTile(p, href) {
     parts = [spanC("confetti"), spanC("gleam"), top(), spanC("script", "Welcome"), spanC("pack-sub", sub)];
   } else {
     // the ~*~ cLuB ~*~ pack: one of three looks, picked by its number so a pack always keeps its look
-    const look = "abc"[(Number(p.id) || 0) % 3];
+    // (v0.33: six looks, a-f, picked by pack number)
+    const look = "abcdef"[(Number(p.id) || 0) % 6];
     theme = "club-" + look;
-    const name = spanC("club-name", "~*~cLuB~*~ pack"), sealed = spanC("pack-sub", p.revealed ? "opened!" : "Sealed Pack");
-    parts = look === "a" ? [spanC("gleam"), top(), spanC("sticker", "NEW!"), spanC("logo", "88x31"), name, sealed]
+    const name = spanC("club-name", "~*~cLuB~*~ pack"), sealed = spanC("pack-sub", p.revealed ? "opened!" : look === "d" ? "Sealed Pack ♡" : look === "e" ? "$ealed Pack" : "Sealed Pack");
+    const at = (node, style) => { node.setAttribute("style", style); return node; };
+    parts = look === "d" ? [el("span", { class: "hearts" }, "♡ ♥ ♡ ♥ ♡\n".repeat(9)), spanC("gleam"), top(),
+        el("span", { class: "kitty" }, "=^･ω･^=", el("i", { class: "l" }), el("i", { class: "r" })),
+        at(spanC("twinkle", "✦"), "left:8px;top:30px"), at(spanC("twinkle t2", "✦"), "right:9px;top:44px"), at(spanC("twinkle t3", "✧"), "left:16px;top:96px"), name, sealed]
+      : look === "e" ? [spanC("gems"), spanC("gleam"), top(), spanC("bling", "BLiNG"), spanC("gem"),
+        at(spanC("sparkle"), "left:14px;top:26px"), at(spanC("sparkle"), "right:12px;top:58px;animation-delay:.5s"), at(spanC("sparkle"), "left:22px;bottom:30px;animation-delay:1s"), name, sealed]
+      : look === "f" ? [spanC("gleam"), top(), el("span", { class: "holo-heart" }, el("b", {}, "88x31")), spanC("stk xo", "xoxo"), spanC("stk qt", "QT ♡"),
+        at(spanC("star", "★"), "left:8px;top:20px"), at(spanC("star", "★"), "right:10px;top:82px;font-size:10px"), name, sealed]
+      : look === "a" ? [spanC("gleam"), top(), spanC("sticker", "NEW!"), spanC("logo", "88x31"), name, sealed]
       : look === "b" ? [spanC("gleam"), top(), el("span", { class: "club-btn" }, el("i", {}, "~*~"), "\u00a0cLuB\u00a0", el("i", {}, "~*~")), name, spanC("stars3", "★★★"), sealed]
       : [spanC("gleam"), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "88x31.app"),
           el("span", { class: "pg" }, el("b", {}, "Welcome 2"), el("em", {}, "~*~ 88x31 cLuB ~*~"), spanC("uc"))), name, sealed];
