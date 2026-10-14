@@ -2666,7 +2666,7 @@ function addTear(tile, onTorn) {
   const setCurl = (f, dir) => {
     if (f <= 0.01) { art.style.webkitMask = art.style.mask = ""; return; }
     // the top strip fades out behind the cut: gone where you started, soft fade up to the cut's tip
-    const tip = f * 100, soft = Math.max(0, tip - 22);
+    const tip = f * 100, soft = Math.max(0, tip - 7);   // a short fade right at the cut, so it keeps up
     const fade = `linear-gradient(to ${dir === 1 ? "right" : "left"}, transparent ${soft.toFixed(1)}%, #000 ${tip.toFixed(1)}%)`;
     const keep = `${fade} left top / 100% ${STRIP + 0.5}% no-repeat, linear-gradient(#000 0 0) left bottom / 100% ${100 - STRIP}% no-repeat`;
     art.style.webkitMask = art.style.mask = keep;
