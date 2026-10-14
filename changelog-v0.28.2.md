@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.28.1
+# 88x31 cLuB Changelog — v0.28.2
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.28.2 — "Show and Tell"
+**Tue Oct 13, 2026 · 8:37 PM HST**
+
+- The webmaster's button wall now shows up on another site too, in the same order as here. Behind the scenes only, nothing changes in the game.
 
 ## v0.28.1 — "Squishy"
 **Tue Oct 13, 2026 · 7:21 AM HST**
