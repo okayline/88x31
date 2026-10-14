@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.31">
+<link rel="stylesheet" href="style.css?v=0.31.1">
 </head>
 <body>
 <main>
@@ -59,6 +59,8 @@
           <button>Go!</button>
         </form>
         <datalist id="player-names"></datalist>
+        <!-- last gift in and out (filled by loadSummary) -->
+        <div id="dash-gifts" class="dash-gifts"></div>
         <!-- webmasters: the newest players -->
         <div id="newplayers-box" class="givepacks" hidden>
           <p><b>☠ New Players</b></p>
@@ -299,12 +301,6 @@
         <h2>&raquo; Packs &laquo;</h2>
         <div id="packs-grid" class="packs-grid"></div>
         <div id="pack-open" class="pack-open"></div>
-        <details class="tradein" id="tradein-box">
-          <summary>&#9851; Trade in buttons for a pack</summary>
-          <p class="small">Pick commons or uncommons, 5 for each sealed ~*~cLuB~*~ pack. Trade in as many as you like!</p>
-          <div id="tradein-grid" class="pick-grid"></div>
-          <p class="center"><button type="button" id="tradein-go" disabled>Trade in</button> <span class="small" id="tradein-count"></span></p>
-        </details>
         <p class="small" id="pull-odds"></p>
       </div>
       <div class="panel">
@@ -372,9 +368,18 @@
       </div>
       <div class="panel">
         <h2>&raquo; Request Board &laquo;</h2>
-        <p class="small">Wish for a common or uncommon. Fill someone's wish and ~*~ tHe cLuB ~*~ sends you a sealed pack as thanks (one a day)!</p>
+        <p class="small">Wish for a common, uncommon or rare. Fill someone's wish and ~*~ tHe cLuB ~*~ sends you a sealed pack as thanks (one a day), or a series pack for a rare!</p>
         <details class="board-post"><summary>Post a request</summary><div id="rq-post"></div></details>
         <div id="rq-list"></div>
+      </div>
+      <div class="panel">
+        <h2>&raquo; Trade In &laquo;</h2>
+        <details class="tradein" id="tradein-box">
+          <summary>&#9851; Trade in buttons for a pack</summary>
+          <p class="small">Pick commons or uncommons, 5 for each sealed ~*~cLuB~*~ pack. Trade in as many as you like!</p>
+          <div id="tradein-grid" class="pick-grid"></div>
+          <p class="center"><button type="button" id="tradein-go" disabled>Trade in</button> <span class="small" id="tradein-count"></span></p>
+        </details>
       </div>
       <div class="panel">
         <h2>&raquo; Offers You Sent &laquo;</h2>
@@ -456,7 +461,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.31</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.31.1</span>
   </p>
 
 </main>
@@ -472,6 +477,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.31"></script>
+<script src="app.js?v=0.31.1"></script>
 </body>
 </html>

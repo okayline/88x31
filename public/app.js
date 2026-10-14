@@ -967,10 +967,13 @@ async function loadSummary() {
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "Read »"));
   const pic = (g) => el("a", { href: "#banner/" + g.id, class: "dash-pic", title: label(g) }, bannerImg(g));
   dashExtras(s, list);
-  if (s.last_received) li("Last gift you got: ", pic(s.last_received), el("br"),
-    el("a", { href: "#banner/" + s.last_received.id }, label(s.last_received)), " from ", who(s.last_received.who), `, ${ago(s.last_received.at)}`);
-  if (s.last_given) li("Last thing you gave: ", pic(s.last_given), el("br"),
-    el("a", { href: "#banner/" + s.last_given.id }, label(s.last_given)), " to ", who(s.last_given.who), `, ${ago(s.last_given.at)}`);
+  // last gift in and out sit in the right-hand column, under "Visit a page"
+  const gifts = $("dash-gifts");
+  gifts.textContent = "";
+  const giftBox = (title, g, dir) => el("div", { class: "dash-gift" }, el("span", { class: "small" }, title), pic(g),
+    el("span", { class: "small" }, el("a", { href: "#banner/" + g.id }, label(g)), el("br"), `${dir} `, who(g.who), `, ${ago(g.at)}`));
+  if (s.last_received) gifts.append(giftBox("Last gift you got:", s.last_received, "from"));
+  if (s.last_given) gifts.append(giftBox("Last gift you gave:", s.last_given, "to"));
   if (s.sets_ready) li(el("b", { class: "hot" }, `★ ${s.sets_ready} set${s.sets_ready === 1 ? "" : "s"} complete!`), " Claim your reward on ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "your guestbook »"));
   li(`You have ${s.buttons} button${s.buttons === 1 ? "" : "s"} in your collection.`);
@@ -1128,6 +1131,7 @@ $("tb-send").onclick = async () => {
 
 async function showTrades() {
   showView("view-trades");
+  setupTradeIn();
   const { incoming, outgoing, history } = await api("/api/trades");
   setTradeCount(incoming.length);
   const card = (t, buttons) => el("div", { class: "entry" },
@@ -1702,7 +1706,6 @@ async function loadPacksPanel(mine) {
       t.onclick = (e) => { e.preventDefault(); if (!done && startOpening("daily", t)) showPull().catch((err) => say(err.message)); };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
     }
-    setupTradeIn();
     for (const p of packs) {
       const t = packTile(p, "#pack/" + p.id);
       t.onclick = (e) => { e.preventDefault(); if (startOpening("pack" + p.id, t)) openPackCards(p, $("pack-open"), afterOpening); };
@@ -2420,3 +2423,25 @@ loadMarquee();   // once per page load, so it stays put while you read it
 })();
 
 refresh().catch((e) => { say(e.message); showTop("out"); });
+
+// ---------- collapsible panels (v0.31.1) ----------
+// Click a panel's » Title « heading to fold it up; it stays folded in this browser.
+const foldKey = (h) => "fold-" + h.textContent.replace(/[»«\s]+/g, " ").trim().toLowerCase();
+const isFoldHead = (h) => h && h.tagName === "H2" && h.parentElement && h.parentElement.classList.contains("panel")
+  && h.parentElement.querySelector(":scope > h2") === h && /^»/.test(h.textContent.trim());
+function applyFolds(root = document) {
+  for (const h of root.querySelectorAll(".panel > h2")) {
+    if (!isFoldHead(h)) continue;
+    h.classList.add("fold-head");
+    let folded = false;
+    try { folded = localStorage.getItem(foldKey(h)) === "1"; } catch {}
+    h.parentElement.classList.toggle("folded", folded);
+  }
+}
+document.addEventListener("click", (e) => {
+  const h = e.target.closest && e.target.closest("h2");
+  if (!isFoldHead(h) || e.target.closest("a, button, input")) return;
+  const folded = h.parentElement.classList.toggle("folded");
+  try { folded ? localStorage.setItem(foldKey(h), "1") : localStorage.removeItem(foldKey(h)); } catch {}
+});
+applyFolds();
