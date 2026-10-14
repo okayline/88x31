@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.28.2
+# 88x31 cLuB Changelog — v0.28.3
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.28.3 — "Notarized"
+**Tue Oct 13, 2026 · 9:13 PM HST**
+
+- **Bitcoin Receipts!** Every hour, the Ledger's latest fingerprint gets a public receipt that's locked into the Bitcoin blockchain, so not even the webmaster could rewrite the cLuB's history. No crypto involved! Read all about it on Fair Play.
 
 ## v0.28.2 — "Show and Tell"
 **Tue Oct 13, 2026 · 8:37 PM HST**
