@@ -1,8 +1,25 @@
-# 88x31 cLuB Changelog — v0.33
+# 88x31 cLuB Changelog — v0.34
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.34 — "Swap Meet"
+**Wed Oct 14, 2026 · 1:24 AM HST**
+
+- **Trade packs!** Sealed packs can go in trades now. Each side can hold up to 3 buttons *and* up to 3 sealed packs. A trade can even be all packs!
+- **Stamp a pack!** "Stamp a Gift!" in a guestbook can send one of your sealed packs. It shows up right on your message.
+- Only sealed packs can move. Once you've peeked inside, it's yours!
+- Limited packs trade like anything else, but never to bots.
+- Bots love packs. They'll take them in trades and give theirs up for a good deal. Some bots open theirs right away, some hang on to a few, and the hoarders sit on a pile. Bots still never send you offers, they only answer yours.
+- A pack you've offered in a trade waits on your shelf, sealed, until the trade is answered.
+
+## v0.33.1 to v0.33.9 — "Rip It"
+**Wed Oct 14, 2026 · 1:13 AM HST**
+
+- Tearing open a pouch is harder now: grab a top corner and drag the cut all the way across. It gets stiff near the end, the pack shakes, and it only rips when you let go.
+- The torn top fades away as you cut.
+- A tear never pops up the Open Pack window by mistake.
 
 ## v0.33 — "Bling Bling"
 **Wed Oct 14, 2026 · 1:00 AM HST**
