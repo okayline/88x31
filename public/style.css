@@ -1010,3 +1010,18 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .design-pick { display: flex; flex-direction: column; align-items: center; width: 104px; }
 .design-pick .small { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .design-search { width: 100%; max-width: 260px; }
+
+/* v0.30.1: dashboard spacing and the streak track */
+.dash-gap { height: 1em; }
+.streak-chart { display: flex; gap: 0; margin: 4px 0 6px; flex-wrap: nowrap; }
+.sk-day { display: flex; flex-direction: column; align-items: center; flex: 1 1 0; min-width: 0; position: relative; }
+.sk-day:not(:last-child)::after { content: ""; position: absolute; top: 9px; left: 60%; right: -40%; border-top: 1px dashed #6666aa; z-index: 0; }
+.sk-pack { height: 18px; display: flex; gap: 1px; align-items: center; position: relative; z-index: 1; background: var(--panel); padding: 0 2px; }
+.sk-box { font-size: 14px; line-height: 1; color: #ffcc00; }
+.sk-series .sk-box { color: #66ffff; }
+.sk-none { color: #555577; }
+.sk-num { font-size: 11px; color: #9999cc; }
+.sk-past .sk-box, .sk-past .sk-num { color: #666688; }
+.sk-past .sk-num::after { content: " ✓"; }
+.sk-today .sk-num { color: #ffff00; font-weight: bold; }
+.sk-today .sk-pack { outline: 1px solid #ffff00; }

@@ -987,11 +987,34 @@ function dashExtras(s, list) {
   const st = s.streak;
   if (st) {
     const next = st.next ? ` Come back ${st.next.day === st.streak + 1 ? "tomorrow" : "for day " + st.next.day} for ${STREAK_SAYS[st.next.reward]}!` : "";
-    top.push(el("li", {}, "🔥 ", el("b", {}, `Day ${st.streak} visit streak!`),
+    top.push(el("li", {}, streakChart(st.streak), "🔥 ", el("b", {}, `Day ${st.streak} visit streak!`),
       st.given ? ` You got ${STREAK_SAYS[st.reward]} for coming back!` : "", next));
   }
   list.prepend(...top);
   if ((st && st.given) || (q && q.rewarded)) loadPacksPanel(true);   // show the new packs on the shelf
+}
+
+// The streak week as a little track: 7 days, each with its reward (if any) above the day number.
+// Week 1 is days 1-7; after that it shows the current week (days 8-14, 15-21...).
+function streakChart(n) {
+  const start = n <= 7 ? 1 : n - ((n - 1) % 7);
+  const PICS = { club: ["▣"], club2: ["▣", "▣"], series: ["◆"] };
+  const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
+  const cells = [];
+  for (let d = start; d < start + 7; d++) {
+    const r = streakDay(d);
+    const state = d < n ? "past" : d === n ? "today" : "future";
+    cells.push(el("span", { class: `sk-day sk-${state}` + (r ? " sk-" + r : ""), title: r ? `Day ${d}: ${TIPS[r]}` : `Day ${d}` },
+      el("span", { class: "sk-pack" }, r ? PICS[r].map((x) => el("span", { class: "sk-box" }, x)) : el("span", { class: "sk-none" }, "·")),
+      el("span", { class: "sk-num" }, String(d))));
+  }
+  return el("div", { class: "streak-chart" }, cells);
+}
+// same schedule as the server (lib/progress.js streakReward)
+function streakDay(d) {
+  if (d <= 1) return null;
+  if (d <= 7) return { 2: "club", 3: "club", 5: "club2", 7: "series" }[d] || null;
+  return { 3: "club", 5: "club", 7: "series" }[((d - 1) % 7) + 1] || null;
 }
 
 // ---------- trade in: 5 commons/uncommons for a sealed cLuB pack ----------
