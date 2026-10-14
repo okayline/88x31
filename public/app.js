@@ -1013,28 +1013,30 @@ function dashExtras(s, list) {
   const st = s.streak;
   if (st) {
     const next = st.next ? ` Come back ${st.next.day === st.streak + 1 ? "tomorrow" : "for day " + st.next.day} for ${STREAK_SAYS[st.next.reward]}!` : "";
-    top.push(el("li", { class: "dash-gap-after" }, streakChart(st), "🔥 ", el("b", {}, `Day ${st.streak} visit streak!`),
-      st.given ? ` You got ${STREAK_SAYS[st.reward]} for coming back!` : "", next));
+    // day 1 is just your first visit: the streak starts when you come back (v0.34.8)
+    top.push(el("li", { class: "dash-gap-after" }, streakChart(st),
+      ...(st.streak <= 1 ? ["🔥 ", el("b", {}, "Start a visit streak!"), ` Come back tomorrow for ${STREAK_SAYS[st.next ? st.next.reward : "club"]}!`]
+        : ["🔥 ", el("b", {}, `Day ${st.streak} visit streak!`), st.given ? ` You got ${STREAK_SAYS[st.reward]} for coming back!` : "", next])));
   }
   list.prepend(...top);
   if ((st && st.given) || (q && q.rewarded)) loadPacksPanel(true);   // show the new packs on the shelf
 }
 
 // The streak week as a little track: 7 days, evenly spread, each with its pack above the day number.
-// Week 1 is days 1-7; after that it shows the current week (days 8-14, 15-21...). v0.34.7: days you've
-// been through show what you actually got (the real streak packs, gray once opened, each linking to
-// its page; or that day's daily pack, linking to the button you kept), days before today are crossed
-// out, and today is circled. Days ahead show what's coming.
+// Week 1 is days 2-7 (v0.34.8: day 1 is just your first visit, so the streak starts at day 2); after
+// that it shows the current week (days 8-14, 15-21...). v0.34.7: days you've been through show the real
+// streak packs you got (gray once opened, each linking to its page), days before today are crossed out,
+// and today is circled. Days ahead show what's coming.
 function streakChart(st) {
   const n = st.streak;
-  const start = n <= 7 ? 1 : n - ((n - 1) % 7);
+  const start = n <= 7 ? 2 : n - ((n - 1) % 7);
   const got = Object.fromEntries((st.days || []).map((x) => [x.day, x]));
   const mini = (tile) => el("span", { class: "sk-mini" }, tile);
   const club = () => mini(packTile({ id: 0, source: "streak" }, "#"));
   const PICS = { club: () => [club()], club2: () => [club(), club()], series: () => [mini(packTile({ id: 0, source: "streak", series: STREAK_SERIES }, "#"))] };
   const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
   const cells = [];
-  for (let d = start; d < start + 7; d++) {
+  for (let d = start; d < (start === 2 ? 8 : start + 7); d++) {
     const r = streakDay(d);
     const state = d < n ? "past" : d === n ? "today" : "future";
     const g = got[d];
@@ -1046,16 +1048,12 @@ function streakChart(st) {
         t.title = `${packTitle(p)}${p.opened ? " (opened)" : " (still sealed)"}`;
         return el("span", { class: "sk-mini sk-real" }, t);
       });
-    } else if (state !== "future" && g && g.daily) {
-      const t = dailyTile(true, "");
-      t.href = "#banner/" + g.daily; t.title = `Day ${d}: your daily pack (click to see the button you kept)`;
-      pics = [el("span", { class: "sk-mini sk-real" }, t)];
     } else pics = r ? PICS[r]() : [el("span", { class: "sk-none" }, "·")];
     cells.push(el("span", { class: `sk-day sk-${state}` + (r ? " sk-" + r : ""), title: tip },
       el("span", { class: "sk-pack" + (pics.length > 1 ? " sk-stack" : "") }, pics),
       el("span", { class: "sk-num" }, String(d))));
   }
-  return el("div", { class: "streak-chart" }, cells);
+  return el("div", { class: "streak-chart", style: `grid-template-columns: repeat(${cells.length}, 1fr)` }, cells);
 }
 // the series pack shown on day 7: the current series' look
 const STREAK_SERIES = "Beta";
