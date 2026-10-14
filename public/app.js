@@ -1012,11 +1012,14 @@ function dashExtras(s, list) {
   }
   const st = s.streak;
   if (st) {
-    const next = st.next ? ` Come back ${st.next.day === st.streak + 1 ? "tomorrow" : "for day " + st.next.day} for ${STREAK_SAYS[st.next.reward]}!` : "";
+    // "Come back tomorrow for a ~*~cLuB~*~ pack!" / "Come back in 2 days for a Beta Series pack!" (v0.34.9)
+    const says = (r) => r === "series" && st.series ? `a ${st.series} Series pack` : STREAK_SAYS[r];
+    const wait = st.next ? st.next.day - Math.max(1, st.streak) : 0;
+    const next = st.next ? ` Come back ${wait === 1 ? "tomorrow" : `in ${wait} days`} for ${says(st.next.reward)}!` : "";
     // day 1 is just your first visit: the streak starts when you come back (v0.34.8)
     top.push(el("li", { class: "dash-gap-after" }, streakChart(st),
-      ...(st.streak <= 1 ? ["🔥 ", el("b", {}, "Start a visit streak!"), ` Come back tomorrow for ${STREAK_SAYS[st.next ? st.next.reward : "club"]}!`]
-        : ["🔥 ", el("b", {}, `Day ${st.streak} visit streak!`), st.given ? ` You got ${STREAK_SAYS[st.reward]} for coming back!` : "", next])));
+      ...(st.streak <= 1 ? ["🔥 ", el("b", {}, "Start a visit streak!"), next]
+        : ["🔥 ", el("b", {}, `Day ${st.streak} visit streak!`), st.given ? ` You got ${says(st.reward)} for coming back!` : "", next])));
   }
   list.prepend(...top);
   if ((st && st.given) || (q && q.rewarded)) loadPacksPanel(true);   // show the new packs on the shelf
@@ -1033,7 +1036,7 @@ function streakChart(st) {
   const got = Object.fromEntries((st.days || []).map((x) => [x.day, x]));
   const mini = (tile) => el("span", { class: "sk-mini" }, tile);
   const club = () => mini(packTile({ id: 0, source: "streak" }, "#"));
-  const PICS = { club: () => [club()], club2: () => [club(), club()], series: () => [mini(packTile({ id: 0, source: "streak", series: STREAK_SERIES }, "#"))] };
+  const PICS = { club: () => [club()], club2: () => [club(), club()], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
   const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
   const cells = [];
   for (let d = start; d < (start === 2 ? 8 : start + 7); d++) {
@@ -1056,7 +1059,7 @@ function streakChart(st) {
   return el("div", { class: "streak-chart", style: `grid-template-columns: repeat(${cells.length}, 1fr)` }, cells);
 }
 // the series pack shown on day 7: the current series' look
-const STREAK_SERIES = "Beta";
+const STREAK_SERIES = "Beta";   // fallback: the server says which series is newest (st.series)
 // same schedule as the server (lib/progress.js streakReward)
 function streakDay(d) {
   if (d <= 1) return null;
