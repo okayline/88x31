@@ -2451,26 +2451,63 @@ loadMarquee();   // once per page load, so it stays put while you read it
 
 refresh().catch((e) => { say(e.message); showTop("out"); });
 
-// ---------- collapsible panels (v0.31.1) ----------
-// Click a panel's » Title « heading to fold it up; it stays folded in this browser.
+// ---------- folding sections (v0.31.1, v0.32.2) ----------
+// Any heading written » Like This « folds: click it and everything under it (up to the next such
+// heading) tucks away. The leading » is the arrow: it points down while open, right while folded.
+// Remembered per heading in this browser. Works for headings drawn later too (pack pages, button pages...).
 const foldKey = (h) => "fold-" + h.textContent.replace(/[»«\s]+/g, " ").trim().toLowerCase();
-const isFoldHead = (h) => h && h.tagName === "H2" && h.parentElement && h.parentElement.classList.contains("panel")
-  && h.parentElement.querySelector(":scope > h2") === h && /^»/.test(h.textContent.trim());
-function applyFolds(root = document) {
-  for (const h of root.querySelectorAll(".panel > h2")) {
-    if (!isFoldHead(h)) continue;
-    h.classList.add("fold-head");
-    let folded = false;
-    try { folded = localStorage.getItem(foldKey(h)) === "1"; } catch {}
-    h.parentElement.classList.toggle("folded", folded);
+const isFoldHead = (h) => h && h.tagName === "H2" && /^\s*»/.test(h.textContent) && /«\s*$/.test(h.textContent) && !h.closest(".ho-win");
+function foldBody(h) {   // the elements this heading folds: its following siblings, up to the next fold heading
+  const out = [];
+  for (let n = h.nextElementSibling; n && !(n.tagName === "H2" && isFoldHead(n)); n = n.nextElementSibling) out.push(n);
+  return out;
+}
+function setFold(h, folded) {
+  h.classList.toggle("folded", folded);
+  h.setAttribute("aria-expanded", folded ? "false" : "true");
+  for (const n of foldBody(h)) n.classList.toggle("fold-away", folded);
+}
+function prepFold(h) {
+  if (h.dataset.fold) return;
+  h.dataset.fold = "1";
+  h.classList.add("fold-head");
+  h.tabIndex = 0;
+  // turn the leading » into the arrow
+  const t = [...h.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+  if (t && t.textContent.trimStart().startsWith("»")) {
+    t.textContent = t.textContent.replace(/^\s*»\s*/, "");
+    h.prepend(el("span", { class: "fold-arrow", "aria-hidden": "true" }, "»"), " ");
   }
+  let folded = false;
+  try { folded = localStorage.getItem(foldKey(h)) === "1"; } catch {}
+  setFold(h, folded);
+}
+function applyFolds(root = document) { for (const h of root.querySelectorAll("h2")) if (isFoldHead(h)) prepFold(h); }
+function toggleFold(h) {
+  const folded = !h.classList.contains("folded");
+  setFold(h, folded);
+  try { folded ? localStorage.setItem(foldKey(h), "1") : localStorage.removeItem(foldKey(h)); } catch {}
 }
 document.addEventListener("click", (e) => {
-  const h = e.target.closest && e.target.closest("h2");
-  if (!isFoldHead(h) || e.target.closest("a, button, input")) return;
-  const folded = h.parentElement.classList.toggle("folded");
-  try { folded ? localStorage.setItem(foldKey(h), "1") : localStorage.removeItem(foldKey(h)); } catch {}
+  const h = e.target.closest && e.target.closest("h2.fold-head");
+  if (!h || e.target.closest("a, button, input")) return;
+  toggleFold(h);
 });
+document.addEventListener("keydown", (e) => {
+  const h = e.target.closest && e.target.closest("h2.fold-head");
+  if (h && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleFold(h); }
+});
+// headings drawn later (pack pages, button pages, the All the Packs page...)
+let foldQueued = false;
+new MutationObserver(() => {
+  if (foldQueued) return;
+  foldQueued = true;
+  requestAnimationFrame(() => {
+    foldQueued = false;
+    applyFolds();
+    for (const h of document.querySelectorAll("h2.fold-head.folded")) setFold(h, true);   // re-tuck anything redrawn under a folded heading
+  });
+}).observe(document.body, { childList: true, subtree: true });
 applyFolds();
 
 // ---------- every pack ever made (v0.31.2) ----------

@@ -1043,10 +1043,12 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .dash-gift { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; max-width: 170px; }
 .dash-gift .dash-pic { margin-left: 0; }
 .fold-head { cursor: pointer; user-select: none; }
-.fold-head:hover { text-decoration: underline dotted; }
-.fold-head::after { content: " ▾"; font-size: 0.7em; opacity: .7; }
-.panel.folded > .fold-head::after { content: " ▸"; }
-.panel.folded > :not(.fold-head) { display: none !important; }
+.fold-head:hover .fold-arrow, .fold-head:focus-visible .fold-arrow { text-shadow: 0 0 6px currentColor; }
+.fold-head:focus-visible { outline: 1px dotted currentColor; outline-offset: 2px; }
+.fold-arrow { display: inline-block; transform: rotate(90deg); transition: transform .15s; }
+.fold-head.folded .fold-arrow { transform: none; }
+.fold-away { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .fold-arrow { transition: none; } }
 
 /* v0.31.2: opened packs lose their shine and color; the All the Packs page */
 .pack-tile.spent { filter: grayscale(1) brightness(0.8) contrast(0.9); }
