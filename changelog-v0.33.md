@@ -1,8 +1,24 @@
-# 88x31 cLuB Changelog — v0.32
+# 88x31 cLuB Changelog — v0.33
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.33 — "Bling Bling"
+**Wed Oct 14, 2026 · 1:00 AM HST**
+
+- **Three new ~*~cLuB~*~ pack covers!** A kawaii kitty with hearts and sparkles, a rhinestone **BLiNG** pack, and a holo heart covered in stickers. Your packs might be wearing a new look!
+
+## v0.32.2 — "Fold It Up"
+**Wed Oct 14, 2026 · 12:56 AM HST**
+
+- Every » Heading « on the site folds now, and the » turns to show if it's open.
+
+## v0.32.1 — "Right Here"
+**Wed Oct 14, 2026 · 12:51 AM HST**
+
+- The Open Pack window pops up right over the pack, smaller, and the page doesn't go dark.
+- A little more breathing room on your dashboard.
 
 ## v0.32 — "Please Wait..."
 **Wed Oct 14, 2026 · 12:45 AM HST**
