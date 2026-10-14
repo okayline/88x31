@@ -1094,3 +1094,17 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .pack-tile.torn::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 16%; background: inherit; animation: tear-off .45s ease-in forwards; pointer-events: none; }
 @keyframes tear-off { to { transform: translate(30px, -40px) rotate(18deg); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .pack-tile.torn::after { animation: none; display: none; } }
+
+/* v0.32.1: a smaller loader window that sits over the pack; breathing room on the dashboard */
+.ho-shade { background: rgba(0, 0, 40, .25); }
+.ho-win { width: min(250px, calc(100vw - 16px)); }
+.ho-tb { font-size: 11px; padding: 2px 3px 2px 5px; }
+.ho-body { padding: 8px; gap: 6px; }
+.ho-status { font-size: 12px; min-height: 2.5em; }
+.ho-well { height: 15px; }
+.ho-pct { font-size: 11px; }
+.ho-btn { font-size: 12px; padding: 5px 12px; }
+.ho-row .small { font-size: 10px; }
+.ho-term { font-size: 12px; min-height: 4.8em; }
+.ho-modem span { width: 8px; height: 8px; }
+.dash-list li.dash-gap-after { margin-bottom: 1.1em; }

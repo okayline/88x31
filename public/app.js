@@ -989,7 +989,7 @@ function dashExtras(s, list) {
   const top = [];
   const q = s.quests;
   if (q && !q.done) {
-    top.push(el("li", { class: "quests" }, el("b", {}, "★ Starter quests ★"), " (finish all 3 for a ~*~cLuB~*~ pack!)",
+    top.push(el("li", { class: "quests dash-gap-after" }, el("b", {}, "★ Starter quests ★"), " (finish all 3 for a ~*~cLuB~*~ pack!)",
       el("ul", { class: "quest-list" }, q.steps.map((x) => el("li", { class: x.done ? "quest done" : "quest" }, x.done ? "☑ " : "☐ ", x.label)))));
   } else if (q && q.rewarded) {
     top.push(el("li", {}, el("b", { class: "hot" }, "★ Starter quests done! ★"), " A ~*~cLuB~*~ pack is on your shelf. Welcome 2 the cLuB!!"));
@@ -997,7 +997,7 @@ function dashExtras(s, list) {
   const st = s.streak;
   if (st) {
     const next = st.next ? ` Come back ${st.next.day === st.streak + 1 ? "tomorrow" : "for day " + st.next.day} for ${STREAK_SAYS[st.next.reward]}!` : "";
-    top.push(el("li", {}, streakChart(st.streak), "🔥 ", el("b", {}, `Day ${st.streak} visit streak!`),
+    top.push(el("li", { class: "dash-gap-after" }, streakChart(st.streak), "🔥 ", el("b", {}, `Day ${st.streak} visit streak!`),
       st.given ? ` You got ${STREAK_SAYS[st.reward]} for coming back!` : "", next));
   }
   list.prepend(...top);
@@ -1710,7 +1710,7 @@ async function loadPacksPanel(mine) {
       t.onclick = async (e) => {
         e.preventDefault();
         if (done) return;
-        if (!(openingKey === "daily" && $("pack-open").childElementCount) && !(await holdToOpen({ daily: true }))) return;
+        if (!(openingKey === "daily" && $("pack-open").childElementCount) && !(await holdToOpen({ daily: true }, t))) return;
         if (startOpening("daily", t)) showPull().catch((err) => say(err.message));
       };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
@@ -1722,7 +1722,7 @@ async function loadPacksPanel(mine) {
         e.preventDefault();
         if (t.dataset.tore) return;   // a tear just opened it
         const again = openingKey === "pack" + p.id && $("pack-open").childElementCount;
-        if (!again && !p.revealed && !(await holdToOpen(p))) return;
+        if (!again && !p.revealed && !(await holdToOpen(p, t))) return;
         go();
       };
       if (!p.revealed) addTear(t, go);
@@ -1772,7 +1772,7 @@ async function showPack(id) {
       catch (err) { say(err.message); }
     };
     open.onclick = async () => {
-      if (!(await holdToOpen(p))) return;
+      if (!(await holdToOpen(p, box.querySelector(".pack-tile") || open))) return;
       open.disabled = true; openPackCards(p, box);
     };
     const pageTile = box.querySelector(".pack-tile");
@@ -2305,7 +2305,7 @@ async function renderFreePack() {
     const tile = freeTile();
     tile.onclick = async (e) => {
       e.preventDefault();
-      if (!(await holdToOpen({ free: true }))) return;
+      if (!(await holdToOpen({ free: true }, tile))) return;
       try { await api("/api/freepack", { method: "POST", body: { action: "open" } }); fpJustOpened = true; renderFreePack(); }
       catch (err) { fpOops.textContent = err.message; }
     };
@@ -2524,8 +2524,8 @@ const CASSETTE_SVG = `<svg class="ho-cassette" viewBox="0 0 300 190" role="img" 
 <text class="ho-tcount" x="150" y="148" text-anchor="middle" font-family="monospace" font-size="17" fill="#ffcf3a">000</text>
 <path d="M70 186 L86 156 H214 L230 186 Z" fill="#1d1d22" stroke="#0e0e12" stroke-width="2"/><circle cx="112" cy="172" r="5" fill="#0e0e12"/><circle cx="188" cy="172" r="5" fill="#0e0e12"/></svg>`;
 
-// Show the window for this pack. Resolves true once the bar fills, false if closed.
-function holdToOpen(p) {
+// Show the window for this pack, right over the pack (anchor). Resolves true once the bar fills, false if closed.
+function holdToOpen(p, anchor = null) {
   return new Promise((resolve) => {
     const kind = loaderKind(p), L = LOADER[kind];
     const dosFile = p.special && p.special_no ? `${(p.special_name || "SPECIAL").replace(/[^A-Za-z]/g, "").slice(0, 8).toUpperCase()}.ZIP` : "PACK.ZIP";
@@ -2546,6 +2546,13 @@ function holdToOpen(p) {
         el("div", { class: "ho-row" }, btn, el("span", { class: "small" }, "hold, don't click"))));
     const shade = el("div", { class: "ho-shade" }, win);
     document.body.append(shade);
+    // sit over the pack itself, kept on screen
+    if (anchor) {
+      const a = anchor.getBoundingClientRect(), w = win.getBoundingClientRect(), pad = 8;
+      const left = Math.max(pad, Math.min(window.innerWidth - w.width - pad, a.left + a.width / 2 - w.width / 2));
+      const top = Math.max(pad, Math.min(window.innerHeight - w.height - pad, a.top + a.height / 2 - w.height / 2));
+      Object.assign(win.style, { position: "fixed", left: left + "px", top: top + "px" });
+    }
     btn.focus();
     const files = ["BUTTON1.GIF", "BUTTON2.GIF", "BUTTON3.GIF"];
     let v = 0, holding = false, last = 0, raf = 0, done = false, spin = 0;
