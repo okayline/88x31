@@ -1047,3 +1047,11 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .fold-head::after { content: " ▾"; font-size: 0.7em; opacity: .7; }
 .panel.folded > .fold-head::after { content: " ▸"; }
 .panel.folded > :not(.fold-head) { display: none !important; }
+
+/* v0.31.2: opened packs lose their shine and color; the All the Packs page */
+.pack-tile.spent { filter: grayscale(1) brightness(0.8) contrast(0.9); }
+.pack-tile.spent, .pack-tile.spent * { animation: none !important; }
+.pack-tile.spent .gleam, .pack-tile.spent .sparks, .pack-tile.spent .refresh, .pack-tile.spent .scan { display: none !important; }
+.pack-tile.spent:hover { transform: none; }
+.allpacks { justify-content: flex-start; }
+.allpacks .pack-slot .small { text-align: center; }

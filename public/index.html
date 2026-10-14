@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.31.1">
+<link rel="stylesheet" href="style.css?v=0.31.2">
 </head>
 <body>
 <main>
@@ -190,7 +190,7 @@
       <p class="center small" id="fair-oops"></p>
     </div>
     <div class="panel" id="fp-odds"><h2>&raquo; Rarity Chances &laquo;</h2><p class="small">The chance for each card in a pack.</p><div id="fair-odds">Loading...</div></div>
-    <div class="panel" id="fp-packs"><h2>&raquo; Packs &laquo;</h2><div id="fair-packs">Loading...</div></div>
+    <div class="panel" id="fp-packs"><h2>&raquo; Packs &laquo;</h2><div id="fair-packs">Loading...</div><p class="small center"><a href="#packs">See every pack ever made &raquo;</a></p></div>
     <div class="panel" id="fp-foils"><h2>&raquo; Foils &laquo;</h2><p class="small">The chance a new button comes out shiny.</p><div id="fair-foils">Loading...</div></div>
     <div class="panel" id="fp-runs"><h2>&raquo; Print Runs &laquo;</h2><p class="small">Live! Once a series runs out, it's gone for good.</p><div id="fair-runs">Loading...</div></div>
     <div class="panel" id="fp-ledger">
@@ -226,6 +226,19 @@
       <p class="center small" id="ledger-start" hidden>★ That's the very beginning! ★</p>
     </div>
     <p class="center"><a href="#">&laquo; Back to the homepage</a></p>
+  </section>
+
+  <!-- Every pack ever made (open to everyone, v0.31.2) -->
+  <section id="packs" hidden>
+    <div class="panel">
+      <h2 class="center">~*~ All the Packs ~*~</h2>
+      <p class="center small">Every pack ~*~ tHe cLuB ~*~ ever made. Sealed packs haven't picked their buttons yet, so there's nothing to spoil! Click one for its story.</p>
+      <h2>&raquo; Still Sealed &laquo;</h2>
+      <div id="allpacks-sealed" class="packs-grid allpacks">Loading...</div>
+      <h2>&raquo; Opened &laquo;</h2>
+      <div id="allpacks-opened" class="packs-grid allpacks"></div>
+    </div>
+    <p class="center"><a href="#fair/packs">&laquo; Back to Fair Play</a></p>
   </section>
 
   <!-- Wall of Buttons (open to everyone) -->
@@ -461,7 +474,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.31.1</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.31.2</span>
   </p>
 
 </main>
@@ -477,6 +490,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.31.1"></script>
+<script src="app.js?v=0.31.2"></script>
 </body>
 </html>

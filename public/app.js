@@ -36,7 +36,7 @@ document.addEventListener("pointerup", (e) => {
   t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop");
 });
 document.addEventListener("animationend", (e) => { if (e.animationName === "pack-pop") e.target.classList.remove("pop"); });
-const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall"];
+const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall", "packs"];
 const showTop = (id) => {
   TOP.forEach((s) => ($(s).hidden = s !== id));
   $("top-nav").hidden = id === "code-card"; // one-line menu at the very top (members get more links)
@@ -234,6 +234,7 @@ function adminBox(designId, name, status, finder, after) {
 const GIFTY = ["pass_on", "guestbook", "trade", "gift", "open_trade", "request"]; // reasons that always have a giver
 
 let me = null;
+let fairScroll = 0;   // where you were on Fair Play, for coming back to it
 
 // ---------- routing ----------
 
@@ -248,9 +249,11 @@ async function route() {
     showTop(page);
     const jump = () => { const t = part && $((page === "howto" ? "ht-" : "fp-") + part); if (t) t.scrollIntoView({ block: "start" }); };
     jump();
-    return (page === "howto" ? showHowto() : showFair()).then(jump).catch((e) => say(e.message));
+    const back = page === "fair" && !part && fairScroll;   // coming back to Fair Play: same spot as before
+    return (page === "howto" ? showHowto() : showFair()).then(() => { jump(); if (back) window.scrollTo(0, fairScroll); }).catch((e) => say(e.message));
   }
   if (hash === "check") { showTop("check"); return; }
+  if (hash === "packs") { showTop("packs"); return showAllPacks().catch((e) => say(e.message)); }
   if (hash === "wall" || hash.startsWith("wall/")) {
     if (!me) { showFront(); return showWall(hash.slice(5)).catch((e) => say(e.message)); }
     showTop("wall");
@@ -282,6 +285,7 @@ window.addEventListener("hashchange", (e) => {
   const onWall = /^wall(\/|$)/.test(was) || (!me && !/^(about|check|u\/|banner\/)/.test(was));
   if (onWall && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5), true).catch((err) => say(err.message)); return; }
   if (onWall && now === "wall" && wallLoaded) { closeInfo(); return; }
+  if (/^fair(\/|$)/.test(was)) fairScroll = window.scrollY;   // remember where you were on Fair Play
   window.scrollTo(0, 0); route();
 });
 
@@ -1633,7 +1637,7 @@ function packTile(p, href) {
       : [spanC("gleam"), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "88x31.app"),
           el("span", { class: "pg" }, el("b", {}, "Welcome 2"), el("em", {}, "~*~ 88x31 cLuB ~*~"), spanC("uc"))), name, sealed];
   }
-  return packArt({ shape, theme, parts, title, href, cls: cls + (p.revealed ? " revealed" : "") });
+  return packArt({ shape, theme, parts, title, href, cls: cls + (p.revealed ? " revealed" : "") + (p.opened_at ? " spent" : "") });
 }
 function dailyTile(done, label) {
   return packArt({ shape: "flat", theme: "daily", cls: done ? "used" : "", title: done ? "Opened! New ones tomorrow." : "Today's daily pack",
@@ -2023,7 +2027,11 @@ function ledgerItem(h) {
 }
 
 let ledgerLast = null, ledgerOldest = null;
-async function showLedger() {
+// The ledger stays as you left it (older pages and all) when you pop over to a button and come back.
+let ledgerShownAt = 0;
+async function showLedger(force = false) {
+  if (!force && ledgerShownAt && Date.now() - ledgerShownAt < 10 * 60 * 1000 && $("ledger-recent").childElementCount) return;
+  ledgerShownAt = Date.now();
   const L = await api("/api/ledger?limit=15");
   $("ledger-ok").textContent = L.ok ? "ALL GOOD! The chain is unbroken." : `BROKEN at entry #${L.broken_at}!`;
   $("ledger-ok").className = L.ok ? "ok" : "bad";
@@ -2445,3 +2453,18 @@ document.addEventListener("click", (e) => {
   try { folded ? localStorage.setItem(foldKey(h), "1") : localStorage.removeItem(foldKey(h)); } catch {}
 });
 applyFolds();
+
+// ---------- every pack ever made (v0.31.2) ----------
+async function showAllPacks() {
+  const { packs } = await api("/api/packs?all=1");
+  const sealed = $("allpacks-sealed"), opened = $("allpacks-opened");
+  sealed.textContent = ""; opened.textContent = "";
+  for (const p of packs) {
+    const who = p.owner ? [p.opened_at ? "opened by " : "held by ", p.owner + (p.owner_bot ? " [BOT]" : "")] : ["a former player"];
+    const slot = el("div", { class: "pack-slot" }, packTile(p, "#pack/" + p.id),
+      el("span", { class: "small" }, p.special_no ? `#${p.special_no} of ${p.special_limit || 25}` : `#${p.id}`, el("br"), ...who));
+    (p.opened_at ? opened : sealed).append(slot);
+  }
+  if (!sealed.childElementCount) sealed.append(el("p", { class: "small" }, "No sealed packs right now."));
+  if (!opened.childElementCount) opened.append(el("p", { class: "small" }, "None opened yet."));
+}
