@@ -4,6 +4,12 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.34.11 — "What's Limited?"
+**Wed Oct 14, 2026 · 3:20 AM HST**
+
+- Fair Play now explains **Limited packs**: every series has one, a numbered run of 25 with a guaranteed rare and better foils.
+- Each Limited pack goes by its series' name for it: Series Alpha's is the **Cool Site of the Day Pack**, Series Beta's is the **Gold Master Pack**. Fair Play shows both names together so it's easy to tell.
+
 ## v0.34.6 to v0.34.10 — "Keep It Up"
 **Wed Oct 14, 2026 · 2:05 AM HST**
 

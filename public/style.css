@@ -1195,3 +1195,6 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .fs-info { flex: 1 1 240px; min-width: 0; }
 .fs-info h3 { margin-top: 0; }
 .pack-tile.still, .pack-tile.still:hover, .pack-tile.still:active { transform: none; cursor: default; }
+
+/* v0.34.11: Fair Play "LIMITED" tag under each series' limited pack */
+.limited-tag { display: inline-block; margin-top: 2px; padding: 0 4px; border: 1px solid currentColor; font-size: 10px; letter-spacing: 1px; }

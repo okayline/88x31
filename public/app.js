@@ -2164,10 +2164,17 @@ async function showFair() {
   const live = o.series.filter((s) => s.status === "active");
   const cap = (r) => r[0].toUpperCase() + r.slice(1);
 
+  // what "Limited" means, and each series' limited pack by name (v0.34.11)
+  const named = o.series.filter((s) => s.special_name);
+  const limitedNote = el("p", { class: "small" }, el("b", {}, "Limited packs: "),
+    `every series has one Limited pack, a numbered run of ${named[0]?.special_limit || 25}, with a guaranteed rare and better foils.`,
+    named.length ? [" ", ...named.flatMap((s, i) => [i ? " · " : "", `Series ${s.name}: `, el("b", {}, `${s.special_name} Pack`)])] : []);
+
   // rarity chances, per card
   $("fair-odds").replaceChildren(
     table(["Rarity", "Most packs", "Limited packs", "Free pack"],
       RARITIES.map((r) => [cap(r), pctTxt(R.normal[r]), pctTxt(R.special[r]), R.free[r] == null ? "none" : pctTxt(R.free[r])])),
+    limitedNote,
     live.length > 1 ? el("p", { class: "small" }, "Newer series show up more often: ",
       live.flatMap((s, i) => [i ? ", " : "", `Series ${s.name} ${pctTxt(s.pack_share)}`]), ".") : null);
 
@@ -2176,7 +2183,7 @@ async function showFair() {
     ["Daily", "3", String(P.daily.keep), `${P.daily.per_day} a day. ${pctTxt(P.daily.found_chance)} have a found button, ${pctTxt(P.daily.bonus_chance)} have a BONUS PACK card!`],
     ["Welcome & ~*~cLuB~*~", "3", String(P.sealed.keep), `${pctTxt(P.daily.found_chance)} have a found button`],
     ["Series", "3", String(P.sealed.keep), "Only that series"],
-    ["Limited", "3", String(P.sealed.keep), "Only that series, 1 rare guaranteed, always at least 1 foil"],
+    ["Limited" + (named.length ? ` (${named.map((s) => s.special_name).join(", ")})` : ""), "3", String(P.sealed.keep), "Only that series, 1 rare guaranteed, always at least 1 foil, numbered"],
     ["Free", "1", "1", "No prototypes or ultras"],
   ]));
 
@@ -2189,6 +2196,7 @@ async function showFair() {
       tierRow("Tier 2 (Chrome, Gold, Oil Slick)", 2), tierRow("Tier 3 (Prismatic, Double Rainbow, Liquid Metal)", 3),
       ["Any real foil", pctTxt(anyFoil(F.normal.tiers)), pctTxt(anyFoil(F.special.tiers))],
     ]),
+    limitedNote.cloneNode(true),
     el("p", { class: "small" }, `Some real foils also get a pattern (${pctTxt(F.pattern_chance)}), and ${pctTxt(F.effect_chance)} of new buttons do something strange on screen. Finding a button first gives you a ${pctTxt(anyFoil(F.finder.tiers))} foil chance on copy #1!`));
 
   // print runs and limited packs, live
@@ -2209,16 +2217,16 @@ async function showFair() {
     el("div", { class: "fs-packs" },
       el("figure", {}, still({ id: 0, series: s.name }), el("figcaption", { class: "small" }, "Series pack")),
       el("figure", {}, still({ id: 0, series: s.name, special: 1, special_no: 1, special_name: s.special_name, special_limit: s.special_limit }, `only ${s.special_limit} ever`),
-        el("figcaption", { class: "small" }, `${s.special_name} Pack`))),
+        el("figcaption", { class: "small" }, `${s.special_name} Pack`, el("br"), el("b", { class: "limited-tag" }, `LIMITED · only ${s.special_limit} ever`)))),
     el("div", { class: "fs-info" },
       el("h3", {}, `Series ${s.name} `, s.out_of_print ? el("span", { class: "series-status st-oop" }, "out of print")
         : el("span", { class: "series-status st-active" }, "in print")),
       s.released_at ? el("p", { class: "small fs-date" }, `Came out ${new Date(s.released_at * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`) : null,
       s.print_run != null ? el("p", {}, bar(s.printed, s.print_run), ` ${s.left} of ${s.print_run} copies left`) : el("p", {}, `${s.printed} copies printed · no print run limit`),
-      el("p", {}, bar(s.special_made, s.special_limit), ` ${s.special_name} Packs: ${s.special_left} of ${s.special_limit} left`),
+      el("p", {}, bar(s.special_made, s.special_limit), ` Limited packs (${s.special_name}): ${s.special_left} of ${s.special_limit} left`),
       Object.keys(s.buttons || {}).length ? el("p", { class: "small" }, "In this series: ", lineup(s.buttons)) : null,
       s.pack_share ? el("p", { class: "small" }, `${pctTxt(s.pack_share)} of the cLuB's own cards in daily and ~*~cLuB~*~ packs come from Series ${s.name}.`) : null,
-      el("p", { class: "small" }, `Series packs hold 3 Series ${s.name} buttons, keep ${o.packs.sealed.keep}. ${s.special_name} Packs: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.`)))) : [el("p", {}, "No series yet!")]));
+      el("p", { class: "small" }, `Series packs hold 3 Series ${s.name} buttons, keep ${o.packs.sealed.keep}. Its Limited pack, the ${s.special_name} Pack: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.`)))) : [el("p", {}, "No series yet!")]));
 }
 
 // "Show older entries": 100 more each time, all the way back to entry #1
