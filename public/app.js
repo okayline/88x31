@@ -2075,6 +2075,8 @@ const ADMIN_SAYS = {
 const ledName = (h, name) => h.mystery ? el("span", { class: "mystery-name" }, "a mystery button ?")
   : h.copy_id && h.kind !== "design" ? el("a", { href: "#banner/" + h.copy_id }, name)
   : h.kind === "design" && h.design_id && me ? el("a", { href: "#wall/" + h.design_id }, name) : name;
+// who did it (v0.34.2): their page, or "a former player" once the account is gone
+const ledWho = (h) => h.who ? el("a", { href: "#u/" + encodeURIComponent(h.who) }, h.who) : "a former player";
 function ledgerItem(h) {
     // line 1 (small): when + fingerprint · line 2: what happened
     const meta = el("div", { class: "led-meta" }, fmtStamp(h.created_at), " · ",
@@ -2084,17 +2086,19 @@ function ledgerItem(h) {
       what = h.mystery ? el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, ""), " joined ~*~ tHe cLuB ~*~")
         : el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, h.design || "?"), ` (${h.rarity}`
         + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
-        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`);
+        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, h.who ? [", added by ", ledWho(h)] : null);
     } else if (h.kind === "fusion") {
       const name = h.fused_status === "removed" ? "a removed button" : h.fused_design || "a button";
       const fin = finishName({ foil: h.fused_foil, pattern: h.fused_pattern, effect: h.fused_effect });
-      what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), "3 copies of ", ledName(h, name), h.mystery ? " were fused!" : ` became #${h.fused_edition ?? "?"}, now ${fin}!`);
+      what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), ledWho(h), " fused 3 copies of ", ledName(h, name), h.mystery ? "!" : ` into #${h.fused_edition ?? "?"}, now ${fin}!`);
     } else if (h.kind === "foil") {
       const fin = finishName(h);
       const f = h.foil === "clear" && !h.effect ? "no foil" : !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
-      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, ` came with ${h.mystery ? "a finish" : f}`);
+      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, ` came with ${h.mystery ? "a finish" : f}`, h.who ? [" for ", ledWho(h)] : null);
     } else if (h.kind === "request") {
-      what = el("div", { class: "led-what" }, el("b", {}, "REQUEST "), "someone posted a wish on the request board");
+      what = el("div", { class: "led-what" }, el("b", {}, "REQUEST "), ledWho(h), " wished for ",
+        h.mystery ? ledName(h, "") : [h.request_foil ? `a ${foilName(h.request_foil) === "None" ? "plain" : foilName(h.request_foil)} ` : "", ledName(h, h.design || "a button")],
+        " on the request board");
     } else if (h.kind === "pack") {
       const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
       what = el("div", { class: "led-what" }, el("b", {}, "PACK "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)],
@@ -2102,7 +2106,7 @@ function ledgerItem(h) {
           : ` ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} by ${h.pack_from || "a former player"} to ${h.pack_to || "a former player"}`);
     } else if (h.kind === "pack_open") {
       const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
-      what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)], " was opened");
+      what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)], " was opened by ", ledWho(h));
     } else if (h.kind === "admin") {
       what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {
