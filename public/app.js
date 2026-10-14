@@ -2197,10 +2197,31 @@ async function showFair() {
 
   // print runs and limited packs, live
   const bar = (done, total) => el("span", { class: "fair-bar", title: `${done} of ${total}` }, el("span", { style: `width:${total ? Math.min(100, (done / total) * 100) : 0}%` }));
+  // each series with pictures of its two packs (v0.34.3): the regular pouch and its limited pack
+  const still = (p, sub) => {   // a pack picture that just sits there (no link, no tear)
+    const t = packTile(p, "#");
+    t.classList.add("still");
+    t.onclick = (e) => e.preventDefault();
+    if (sub) { const x = t.querySelector(".pack-sub"); if (x) x.textContent = sub; }
+    return t;
+  };
+  const RN = { common: "common", uncommon: "uncommon", rare: "rare", prototype: "prototype", ultra: "ultra" };
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const lineup = (b) => Object.keys(RN).filter((r) => b[r]).map((r) => plural(b[r].count, RN[r])
+    + (r === "prototype" && b[r].cap ? ` (${b[r].cap} copies each)` : r === "ultra" && b[r].cap === 1 ? " (1 of 1)" : "")).join(" · ");
   $("fair-runs").replaceChildren(...(o.series.length ? o.series.map((s) => el("div", { class: "fair-series" },
-    el("h3", {}, `Series ${s.name} `, s.out_of_print ? el("span", { class: "series-status st-oop" }, "out of print") : null),
-    s.print_run != null ? el("p", {}, bar(s.printed, s.print_run), ` ${s.left} of ${s.print_run} left`) : el("p", {}, "No print run limit"),
-    el("p", { class: "small" }, `${s.special_name} Packs: ${s.special_left} of ${s.special_limit} left`))) : [el("p", {}, "No series yet!")]));
+    el("div", { class: "fs-packs" },
+      el("figure", {}, still({ id: 0, series: s.name }), el("figcaption", { class: "small" }, "Series pack")),
+      el("figure", {}, still({ id: 0, series: s.name, special: 1, special_no: 1, special_name: s.special_name, special_limit: s.special_limit }, `only ${s.special_limit} ever`),
+        el("figcaption", { class: "small" }, `${s.special_name} Pack`))),
+    el("div", { class: "fs-info" },
+      el("h3", {}, `Series ${s.name} `, s.out_of_print ? el("span", { class: "series-status st-oop" }, "out of print")
+        : el("span", { class: "series-status st-active" }, "in print")),
+      s.print_run != null ? el("p", {}, bar(s.printed, s.print_run), ` ${s.left} of ${s.print_run} copies left`) : el("p", {}, `${s.printed} copies printed · no print run limit`),
+      el("p", {}, bar(s.special_made, s.special_limit), ` ${s.special_name} Packs: ${s.special_left} of ${s.special_limit} left`),
+      Object.keys(s.buttons || {}).length ? el("p", { class: "small" }, "In this series: ", lineup(s.buttons)) : null,
+      s.pack_share ? el("p", { class: "small" }, `${pctTxt(s.pack_share)} of the cLuB's own cards in daily and ~*~cLuB~*~ packs come from Series ${s.name}.`) : null,
+      el("p", { class: "small" }, `Series packs hold 3 Series ${s.name} buttons, keep ${o.packs.sealed.keep}. ${s.special_name} Packs: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.`)))) : [el("p", {}, "No series yet!")]));
 }
 
 // "Show older entries": 100 more each time, all the way back to entry #1

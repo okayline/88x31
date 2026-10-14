@@ -1182,3 +1182,13 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .tb-packs { margin-top: 6px; }
 .pack-tile.in-trade { opacity: .55; }
 .pack-tile.in-trade:hover { transform: none; }
+
+/* v0.34.3: Print Runs with pack pictures */
+.fair-series { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px dotted #808080; }
+.fair-series:last-child { border-bottom: 0; }
+.fs-packs { display: flex; gap: 12px; flex: none; }
+.fs-packs figure { margin: 0; text-align: center; }
+.fs-packs figcaption { margin-top: 4px; max-width: 110px; }
+.fs-info { flex: 1 1 240px; min-width: 0; }
+.fs-info h3 { margin-top: 0; }
+.pack-tile.still, .pack-tile.still:hover, .pack-tile.still:active { transform: none; cursor: default; }
