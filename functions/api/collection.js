@@ -3,6 +3,9 @@
 import { json, currentUser } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 
+// Sites allowed to read a player's public collection from the browser (okayline.dev shows kura's buttons).
+const SHOW_ON = ["https://okayline.dev", "https://www.okayline.dev"];
+
 export async function onRequestGet({ request, env }) {
   const name = new URL(request.url).searchParams.get("user");
   const owner = name ? await userByName(env, name) : await currentUser(env, request);
@@ -18,6 +21,8 @@ export async function onRequestGet({ request, env }) {
      ORDER BY w.slot IS NULL, w.slot, got_at DESC, i.id DESC`
   ).bind(owner.id).all();
 
+  const origin = request.headers.get("origin");
+  const cors = name && SHOW_ON.includes(origin) ? { "access-control-allow-origin": origin, vary: "Origin" } : { vary: "Origin" };
   return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0,
-    last_seen: owner.is_bot ? owner.last_seen : null, theme: owner.theme || null }, banners: results });
+    last_seen: owner.is_bot ? owner.last_seen : null, theme: owner.theme || null }, banners: results }, 200, cors);
 }
