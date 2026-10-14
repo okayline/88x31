@@ -2653,8 +2653,8 @@ function holdToOpen(p, anchor = null) {
   });
 }
 
-// Tear a crimped pouch open: press near the top and drag sideways. The rip only happens when you
-// LET GO past the line (~80% across), so you can always drag back and let go early to keep it sealed.
+// Tear a crimped pouch open: press near the top and drag sideways. The last stretch is stiffer, and
+// past the line the pack shakes. The rip only happens when you LET GO past the line, so you can always drag back and let go early to keep it sealed.
 // A drag never counts as a click, so it can't pop up the Open Pack window either. (v0.33.1)
 function addTear(tile, onTorn) {
   if (!tile.classList.contains("pouch")) return;
@@ -2673,9 +2673,13 @@ function addTear(tile, onTorn) {
     const r = tile.getBoundingClientRect(), dx = Math.abs(e.clientX - x0);
     if (dx > 6 && !moved) { moved = true; tile.setPointerCapture(id); tile.classList.add("tearing"); }
     if (!moved) return;
-    f = Math.min(1, dx / r.width);
+    // the last stretch fights back: past 60% it takes twice as much drag to move the cut
+    const raw = dx / r.width;
+    f = Math.min(1, raw < 0.6 ? raw : 0.6 + (raw - 0.6) * 0.5);
     cut.style.width = (f * 100) + "%";
-    tile.classList.toggle("tear-ready", f >= LINE);   // past the line: let go to rip
+    const ready = f >= LINE;
+    if (ready && !tile.classList.contains("tear-ready")) { try { navigator.vibrate && navigator.vibrate(30); } catch {} }
+    tile.classList.toggle("tear-ready", ready);   // past the line: the pack shakes, let go to rip
   });
   const up = () => {
     if (x0 == null) return;
