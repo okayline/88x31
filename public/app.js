@@ -1707,12 +1707,25 @@ async function loadPacksPanel(mine) {
     for (let i = 1; i <= sum.pulls_per_day; i++) {
       const done = i <= used;
       const t = dailyTile(done, `pack ${i} of ${sum.pulls_per_day}`);
-      t.onclick = (e) => { e.preventDefault(); if (!done && startOpening("daily", t)) showPull().catch((err) => say(err.message)); };
+      t.onclick = async (e) => {
+        e.preventDefault();
+        if (done) return;
+        if (!(openingKey === "daily" && $("pack-open").childElementCount) && !(await holdToOpen({ daily: true }))) return;
+        if (startOpening("daily", t)) showPull().catch((err) => say(err.message));
+      };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
     }
     for (const p of packs) {
       const t = packTile(p, "#pack/" + p.id);
-      t.onclick = (e) => { e.preventDefault(); if (startOpening("pack" + p.id, t)) openPackCards(p, $("pack-open"), afterOpening); };
+      const go = () => { if (startOpening("pack" + p.id, t)) openPackCards(p, $("pack-open"), afterOpening); };
+      t.onclick = async (e) => {
+        e.preventDefault();
+        if (t.dataset.tore) return;   // a tear just opened it
+        const again = openingKey === "pack" + p.id && $("pack-open").childElementCount;
+        if (!again && !p.revealed && !(await holdToOpen(p))) return;
+        go();
+      };
+      if (!p.revealed) addTear(t, go);
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, p.note || PACK_FROM[p.source] || "")));
     }
   } catch {}
@@ -1758,7 +1771,12 @@ async function showPack(id) {
       try { await api("/api/packs", { method: "POST", body: { action: "give", id: p.id, to } }); say(`Sent to ${to}!`); location.hash = "#u/" + encodeURIComponent(me.name); }
       catch (err) { say(err.message); }
     };
-    open.onclick = () => { open.disabled = true; openPackCards(p, box); };
+    open.onclick = async () => {
+      if (!(await holdToOpen(p))) return;
+      open.disabled = true; openPackCards(p, box);
+    };
+    const pageTile = box.querySelector(".pack-tile");
+    if (pageTile) { pageTile.onclick = (e) => { e.preventDefault(); if (!pageTile.dataset.tore) open.click(); }; addTear(pageTile, () => { open.disabled = true; openPackCards(p, box); }); }
     box.append(el("p", { class: "center" }, open), el("p", { class: "center small" }, give));
     return;
   }
@@ -2287,6 +2305,7 @@ async function renderFreePack() {
     const tile = freeTile();
     tile.onclick = async (e) => {
       e.preventDefault();
+      if (!(await holdToOpen({ free: true }))) return;
       try { await api("/api/freepack", { method: "POST", body: { action: "open" } }); fpJustOpened = true; renderFreePack(); }
       catch (err) { fpOops.textContent = err.message; }
     };
@@ -2467,4 +2486,146 @@ async function showAllPacks() {
   }
   if (!sealed.childElementCount) sealed.append(el("p", { class: "small" }, "No sealed packs right now."));
   if (!opened.childElementCount) opened.append(el("p", { class: "small" }, "None opened yet."));
+}
+
+// ---------- hold to open, and tearing pouches (v0.32) ----------
+// Clicking a pack opens a little 90s window; hold "Open Pack" (or Space) until the bar fills.
+// Let go early and it drains back: nothing opens. Each kind of pack has its own loader:
+//   daily = dial-up · ~*~cLuB~*~ = download · welcome & free = setup · Alpha & limited = MS-DOS · Beta = cassette
+// Crimped pouches (series and limited packs) can also be torn open: drag across the top.
+const HOLD_MS = 1600, DRAIN_MS = 500;
+function loaderKind(p) {
+  if (p.daily) return "dialup";
+  if (p.free || p.source === "welcome") return "setup";
+  if (p.special) return "dos";
+  const s = (p.series || "").toLowerCase();
+  if (s === "beta") return "tape";
+  if (s) return "dos";
+  return "download";
+}
+const LOADER = {
+  dialup: { title: "Connect To ~*~cLuB~*~", lines: [[0, "Ready to dial 88x31..."], [.1, "Dialing https://88x31.app..."], [.5, "Verifying buttons and foiling..."], [.97, "Connected! Your daily pack is here!"]] },
+  download: { title: "Saving: clubpack.zip", lines: [[0, "Location: 88x31.app/packs/clubpack.zip"], [.1, "Receiving buttons..."], [.55, "Polishing the shiny ones..."], [.97, "Download complete! 3 buttons saved."]] },
+  setup: { title: "~*~cLuB~*~ Pack Setup", lines: [[0, "Setup is ready to unpack your ~*~cLuB~*~ pack."], [.1, "Setup is copying your buttons..."], [.55, "Checking for holos..."], [.97, "Setup is complete! Welcome 2 the cLuB!"]] },
+  dos: { title: "MS-DOS Prompt", lines: [] },
+  tape: { title: "Series Beta · Side A", lines: [] },
+};
+const CASSETTE_SVG = `<svg class="ho-cassette" viewBox="0 0 300 190" role="img" aria-label="A cassette tape winding from one reel to the other">
+<rect x="4" y="4" width="292" height="182" rx="12" fill="#2a2a30" stroke="#0e0e12" stroke-width="3"/>
+<circle cx="16" cy="16" r="4" fill="#55555f"/><circle cx="284" cy="16" r="4" fill="#55555f"/><circle cx="16" cy="174" r="4" fill="#55555f"/><circle cx="284" cy="174" r="4" fill="#55555f"/>
+<rect x="22" y="18" width="256" height="118" rx="6" fill="#efe6cf"/><rect x="22" y="18" width="256" height="20" rx="6" fill="#3ad0ff"/><rect x="22" y="30" width="256" height="8" fill="#3ad0ff"/>
+<text x="34" y="33" font-family="monospace" font-size="15" fill="#0e0e12">~*~cLuB~*~ SERIES BETA</text><text x="266" y="33" text-anchor="end" font-family="monospace" font-size="15" fill="#0e0e12">A</text>
+<line x1="34" y1="52" x2="266" y2="52" stroke="#c9bfa5"/><line x1="34" y1="128" x2="266" y2="128" stroke="#c9bfa5"/>
+<text class="ho-tlabel" x="150" y="49" text-anchor="middle" font-family="monospace" font-size="13" fill="#5a4a2a">PRESS PLAY</text>
+<rect x="70" y="58" width="160" height="62" rx="20" fill="#16161b"/><rect x="118" y="78" width="64" height="22" fill="#3a2e22" opacity=".85"/>
+<circle class="ho-tl" cx="104" cy="89" r="26" fill="#3a2e22"/><circle class="ho-tr" cx="196" cy="89" r="12" fill="#3a2e22"/>
+<g class="ho-hl"><circle cx="104" cy="89" r="10" fill="#efe6cf"/><path d="M104 79v20M94 89h20" stroke="#16161b" stroke-width="3"/></g>
+<g class="ho-hr"><circle cx="196" cy="89" r="10" fill="#efe6cf"/><path d="M196 79v20M186 89h20" stroke="#16161b" stroke-width="3"/></g>
+<text class="ho-tcount" x="150" y="148" text-anchor="middle" font-family="monospace" font-size="17" fill="#ffcf3a">000</text>
+<path d="M70 186 L86 156 H214 L230 186 Z" fill="#1d1d22" stroke="#0e0e12" stroke-width="2"/><circle cx="112" cy="172" r="5" fill="#0e0e12"/><circle cx="188" cy="172" r="5" fill="#0e0e12"/></svg>`;
+
+// Show the window for this pack. Resolves true once the bar fills, false if closed.
+function holdToOpen(p) {
+  return new Promise((resolve) => {
+    const kind = loaderKind(p), L = LOADER[kind];
+    const dosFile = p.special && p.special_no ? `${(p.special_name || "SPECIAL").replace(/[^A-Za-z]/g, "").slice(0, 8).toUpperCase()}.ZIP` : "PACK.ZIP";
+    const status = el("div", { class: "ho-status", "aria-live": "polite" });
+    const fill = el("div", { class: "ho-fill" });
+    const pct = el("span", {}, "0%"), side = el("span", {}, "");
+    const btn = el("button", { type: "button", class: "ho-btn" }, "Open Pack");
+    const close = el("button", { type: "button", class: "ho-x", "aria-label": "Close" }, "x");
+    let art = null;
+    if (kind === "tape") { art = el("div", { class: "ho-tape" }); art.innerHTML = CASSETTE_SVG; }
+    if (kind === "dialup") art = el("div", { class: "ho-modem", "aria-hidden": "true" }, [0, 1, 2, 3, 4].map(() => el("span")));
+    const term = kind === "dos" ? el("div", { class: "ho-term" + (p.special ? " gold" : "") }) : null;
+    const win = el("div", { class: "ho-win" + (kind === "dos" && p.special ? " gold" : ""), role: "dialog", "aria-modal": "true", "aria-label": L.title },
+      el("div", { class: "ho-tb" }, el("span", {}, kind === "dos" && p.special_no ? `${limitedName(p)} #${p.special_no}` : L.title), close),
+      el("div", { class: "ho-body" }, art, term, kind !== "dos" ? status : null,
+        kind === "tape" ? null : el("div", { class: "ho-well" + (kind === "download" ? "" : " blocks") }, fill),
+        el("div", { class: "ho-pct" }, pct, side),
+        el("div", { class: "ho-row" }, btn, el("span", { class: "small" }, "hold, don't click"))));
+    const shade = el("div", { class: "ho-shade" }, win);
+    document.body.append(shade);
+    btn.focus();
+    const files = ["BUTTON1.GIF", "BUTTON2.GIF", "BUTTON3.GIF"];
+    let v = 0, holding = false, last = 0, raf = 0, done = false, spin = 0;
+    const draw = () => {
+      const n = Math.min(100, Math.floor(v * 100));
+      fill.style.width = `calc(${v * 100}% - ${v * 4}px)`;
+      pct.textContent = n + "%";
+      if (L.lines.length) { let t = L.lines[0][1]; for (const [at, line] of L.lines) if (v >= at) t = line; status.textContent = t; }
+      if (kind === "dialup") { side.textContent = Math.round(v * 28800).toLocaleString() + " bps"; art.querySelectorAll("span").forEach((s, i) => s.classList.toggle("on", v > i / 5 && (i < 2 || Math.random() > .3))); }
+      if (kind === "download") side.textContent = `${Math.round(v * 88)} KB of 88 KB`;
+      if (kind === "setup") side.textContent = files[Math.min(2, Math.floor(v * 3))];
+      if (kind === "dos") {
+        side.textContent = p.special_no ? `#${p.special_no} of ${p.special_limit || 25}` : "3 files";
+        term.textContent = `C:\\CLUB> pkunzip ${dosFile}\n` + files.slice(0, Math.floor(v * 3.2)).map((f) => `  Inflating: ${f}`).join("\n") + (v >= 1 ? "\nC:\\CLUB> " : "") + "_";
+      }
+      if (kind === "tape") {
+        const R2 = 676, r2 = 144, q = (sel) => art.querySelector(sel);
+        q(".ho-tl").setAttribute("r", Math.sqrt(R2 - (R2 - r2) * v).toFixed(1));
+        q(".ho-tr").setAttribute("r", Math.sqrt(r2 + (R2 - r2) * v).toFixed(1));
+        spin = (spin + (holding ? 9 : -6)) % 360;
+        if (v > 0 && v < 1) { q(".ho-hl").setAttribute("transform", `rotate(${spin} 104 89)`); q(".ho-hr").setAttribute("transform", `rotate(${spin} 196 89)`); }
+        q(".ho-tcount").textContent = String(Math.floor(v * 30)).padStart(3, "0");
+        q(".ho-tlabel").textContent = v >= 1 ? "PACK OPENED!" : v > .5 ? "3 BUTTONS ON SIDE A" : v > 0 ? "PLAYING..." : "PRESS PLAY";
+        status.textContent = v >= 1 ? "Rewinding... just kidding! Here they are." : v > .5 ? "Loading 3 buttons from tape..." : v > 0 ? "Playing side A..." : "Hold Open Pack to play side A.";
+        side.textContent = "C-30 · 3 buttons";
+      }
+    };
+    const finish = (ok) => {
+      if (done) return; done = true; cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKey);
+      setTimeout(() => { shade.remove(); resolve(ok); }, ok ? 350 : 0);
+    };
+    const tick = (now) => {
+      const dt = now - last; last = now;
+      v = holding ? Math.min(1, v + dt / HOLD_MS) : Math.max(0, v - dt / DRAIN_MS);
+      draw();
+      if (v >= 1) { btn.disabled = true; btn.classList.remove("down"); return finish(true); }
+      raf = holding || v > 0 ? requestAnimationFrame(tick) : 0;
+    };
+    const startHold = () => { if (done) return; holding = true; btn.classList.add("down"); if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } };
+    const stopHold = () => { if (!holding) return; holding = false; btn.classList.remove("down"); if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); } };
+    btn.addEventListener("pointerdown", (e) => { e.preventDefault(); btn.setPointerCapture(e.pointerId); startHold(); });
+    btn.addEventListener("pointerup", stopHold); btn.addEventListener("pointercancel", stopHold); btn.addEventListener("lostpointercapture", stopHold);
+    btn.addEventListener("contextmenu", (e) => e.preventDefault());
+    btn.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); startHold(); } });
+    btn.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") stopHold(); });
+    const onKey = (e) => { if (e.key === "Escape") finish(false); };
+    document.addEventListener("keydown", onKey);
+    close.onclick = () => finish(false);
+    shade.addEventListener("pointerdown", (e) => { if (e.target === shade) finish(false); });
+    draw();
+  });
+}
+
+// Tear a crimped pouch open: press near the top and drag sideways past ~70% of its width.
+// Let go early and the cut closes up again. onTorn runs once, when it rips.
+function addTear(tile, onTorn) {
+  if (!tile.classList.contains("pouch")) return;
+  const cut = el("span", { class: "tear-cut", "aria-hidden": "true" }), hint = el("span", { class: "tear-hint", "aria-hidden": "true" }, "✂ - - - -");
+  tile.querySelector(".pack-art").append(cut, hint);
+  let x0 = null, id = null, moved = false;
+  const reset = () => { x0 = null; cut.style.width = "0"; tile.classList.remove("tearing"); };
+  tile.addEventListener("pointerdown", (e) => {
+    const r = tile.getBoundingClientRect();
+    if (e.clientY - r.top > r.height * 0.3) return;   // only the top of the pack tears
+    x0 = e.clientX; id = e.pointerId; moved = false;
+  });
+  tile.addEventListener("pointermove", (e) => {
+    if (x0 == null || e.pointerId !== id) return;
+    const r = tile.getBoundingClientRect(), dx = Math.abs(e.clientX - x0);
+    if (dx > 6 && !moved) { moved = true; tile.setPointerCapture(id); tile.classList.add("tearing"); }
+    if (!moved) return;
+    const f = Math.min(1, dx / r.width);
+    cut.style.width = (f * 100) + "%";
+    if (f >= 0.7) {
+      x0 = null; tile.classList.remove("tearing"); tile.classList.add("torn"); tile.dataset.tore = "1";
+      setTimeout(() => { delete tile.dataset.tore; onTorn(); }, 450);
+    }
+  });
+  const up = () => { if (x0 != null) { if (moved) tile.dataset.tore = "skip"; reset(); setTimeout(() => { if (tile.dataset.tore === "skip") delete tile.dataset.tore; }, 0); } };
+  tile.addEventListener("pointerup", up); tile.addEventListener("pointercancel", up);
+  tile.addEventListener("dragstart", (e) => e.preventDefault());
 }
