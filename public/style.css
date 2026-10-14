@@ -1170,3 +1170,8 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .pack-tile.tear-ready .pack-art { animation: tear-shake .12s linear infinite; }
 @keyframes tear-shake { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-1px, 0) rotate(-1deg); } 75% { transform: translate(1px, 0) rotate(1deg); } }
 @media (prefers-reduced-motion: reduce) { .pack-tile.tear-ready .pack-art { animation: none; outline: 2px dashed #ffff66; } }
+.tear-flap { position: absolute; inset: 0; z-index: 7; pointer-events: none; filter: drop-shadow(0 3px 2px rgba(0,0,0,.55)); transition: transform .06s linear; }
+.tear-flap > .pack-art { position: absolute; inset: 0; }
+.tear-flap.gone { transition: transform .45s ease-in, opacity .45s; transform: translate(26px, -46px) rotate(-40deg) !important; opacity: 0; }
+.pack-tile .tear-cut { top: 15% !important; }
+.pack-tile.torn::after { display: none; }
