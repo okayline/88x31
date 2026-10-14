@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.28.3
+# 88x31 cLuB Changelog — v0.29
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.29 — "Who Goes There?"
+**Tue Oct 13, 2026 · 10:03 PM HST**
+
+- The webmaster can now see the newest members of ~*~ tHe cLuB ~*~ and roughly which website sent them our way. Welcome, everybody!! :D
 
 ## v0.28.3 — "Notarized"
 **Tue Oct 13, 2026 · 9:13 PM HST**
