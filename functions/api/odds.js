@@ -9,7 +9,7 @@ import {
   finishes, seriesPrinted,
 } from "../../lib/game.js";
 import { EARNED_KEEP } from "../../lib/packs.js";
-import { BOARD_DAYS, MAX_OPEN, REQUEST_PACKS_PER_DAY } from "../../lib/board.js";
+import { BOARD_DAYS, MAX_OPEN, REQUEST_PACKS_PER_DAY, REQUESTABLE } from "../../lib/board.js";
 import { TRADE_DAYS, MAX_SIDE } from "../../lib/trades.js";
 import { MILESTONES } from "./hit.js";
 import { FINDER_FOILS, UPLOADS_PER_DAY } from "./upload.js";
@@ -99,7 +99,7 @@ export async function onRequestGet({ env }) {
       free: { cards: 1, hold_days: FREE_HOLD / 86400 },
     },
     foils, series, found_buttons: found,
-    board: { days: BOARD_DAYS, max_open: MAX_OPEN, thank_packs_per_day: REQUEST_PACKS_PER_DAY, requestable: ["common", "uncommon"] },
+    board: { days: BOARD_DAYS, max_open: MAX_OPEN, thank_packs_per_day: REQUEST_PACKS_PER_DAY, requestable: REQUESTABLE },
     trades: { days: TRADE_DAYS, max_side: MAX_SIDE },
     bots: { crawler_series_chance: CRAWLER_SERIES_CHANCE * 100 },
     milestones: MILESTONES, uploads_per_day: UPLOADS_PER_DAY,

@@ -68,12 +68,12 @@ export async function onRequestPost({ request, env }) {
       `INSERT INTO designs (name, image_key, image_hash, creator_id, type, rarity, stats, status, created_at,
                             source_title, source_author, source_url, license, tier, series_id)
        VALUES (?, 'pending', ?, ?, ?, ?, '{}', 'active', ?, ?, '88x31', NULL, 'Original', 'original', ?)`
-    ).bind(name, hash, me.id, form.get("kind") || "neon", ["common", "uncommon", "rare", "ultra"].includes(form.get("rarity")) ? form.get("rarity") : "common", t, name, intoSeries).run();
+    ).bind(name, hash, me.id, form.get("kind") || "neon", ["common", "uncommon", "rare", "prototype", "ultra"].includes(form.get("rarity")) ? form.get("rarity") : "common", t, name, intoSeries).run();
     const did = r.meta.last_row_id;
     await env.DB.batch([
       env.DB.prepare("INSERT INTO design_images (design_id, data) VALUES (?, ?)").bind(did, bytes),
       env.DB.prepare("UPDATE designs SET image_key = ? WHERE id = ?").bind(`api/img?d=${did}`, did),
-      env.DB.prepare("UPDATE designs SET max_editions = CASE rarity WHEN 'ultra' THEN 1 WHEN 'rare' THEN 25 ELSE NULL END WHERE id = ?").bind(did),
+      env.DB.prepare("UPDATE designs SET max_editions = CASE rarity WHEN 'ultra' THEN 1 WHEN 'prototype' THEN 4 ELSE NULL END WHERE id = ?").bind(did),
     ]);
     await sealSafe(env);
     return json({ ok: true, design_id: did, original: true });

@@ -1028,3 +1028,12 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .sk-mini { display: inline-block; width: 22px; height: 30px; overflow: hidden; pointer-events: none; }
 .sk-mini .pack-tile { transform: scale(0.22); transform-origin: top left; }
 .sk-past .sk-mini { opacity: 0.4; }
+
+/* v0.31: prototype tier (only 4 of each) */
+img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
+.lg-prototype { border-color: #c8c8d0; border-style: dashed; }
+.proto-tag { display: inline-block; background: #fbfaf6; color: #3a3a44; padding: 0 5px; font-weight: bold; letter-spacing: 1px;
+  border: 1px solid #55555f; border-radius: 3px 6px 2px 7px / 6px 2px 7px 3px; transform: rotate(-1.5deg);
+  box-shadow: 1px 1px 0 #9a9aa6, -1px 0 0 #b8b8c2 inset;
+  background-image: repeating-linear-gradient(-35deg, transparent 0 3px, rgba(90,90,100,.08) 3px 4px); }
+.proto-note { color: #d8d8e8; font-style: italic; }

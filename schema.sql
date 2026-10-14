@@ -626,3 +626,4 @@ CREATE TABLE IF NOT EXISTS visits (
   last_day   TEXT NOT NULL,
   streak     INTEGER NOT NULL DEFAULT 1
 );
+-- v0.31: rarity 'prototype' = 4 copies (max_editions 4); rares made from now on have no cap. See migrations/024_prototypes.sql.

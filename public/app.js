@@ -323,7 +323,7 @@ async function showPull() {
   box.textContent = "Loading...";
   const pull = await api("/api/pull");
   const o = pull.odds;
-  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}% · ULTRA ${o.ultra}%. Rares are limited editions, and every ultra is one of a kind. About 1 in ${Math.round(1 / pull.bonus_chance)} packs has a BONUS PACK card.`;
+  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}%${o.prototype != null ? ` · PROTOTYPE ${o.prototype}%` : ""} · ULTRA ${o.ultra}%. Only 4 of each prototype exist, and every ultra is one of a kind. About 1 in ${Math.round(1 / pull.bonus_chance)} packs has a BONUS PACK card.`;
   box.textContent = "";
   if (pull.bonus_pack) box.append(el("p", { class: "center bonus-head" }, el("b", {}, "★ BONUS PACK! ★")));
   else if (pull.pulls_per_day > 1) box.append(el("p", { class: "center" }, el("b", {}, `Pack ${pull.pull_number} of ${pull.pulls_per_day} today`)));
@@ -401,7 +401,7 @@ function card(d, i, pull, onPick) {
   }
   const left = d.max_editions ? `${Math.max(0, d.max_editions - d.minted)} of ${d.max_editions} left` : "";
   const c = el("div", { class: "card rarity-" + d.rarity + (pull.kept_index === i ? " chosen" : "") },
-    bannerImg(d, 2), el("b", {}, d.name), el("span", { class: "small" }, `${d.rarity} · ${d.type}`),
+    bannerImg(d, 2), el("b", {}, d.name), el("span", { class: "small" }, rarityTag(d.rarity), ` · ${d.type}`),
     left ? el("span", { class: "small" }, left) : null,
     // a finish already rolled (special packs show theirs before you choose)
     d.foil && d.foil !== "clear" ? el("span", { class: "small card-finish" }, "✦ " + finishName(d)) : null);
@@ -468,7 +468,7 @@ async function showPage(name) {
     grid.textContent = "";
     if (!mine.banners.length) grid.append(el("p", { class: "small" }, "You don't have any buttons to give yet!"));
     // skip buttons tied up in a trade, and ultras when it's a bot's page (bots never get ultras)
-    for (const b of mine.banners.filter((x) => !x.locked && !(col.owner.is_bot && x.rarity === "ultra"))) {
+    for (const b of mine.banners.filter((x) => !x.locked && !(col.owner.is_bot && x.rarity === "ultra"))) {   // prototypes can go to bots as gifts
       grid.append(el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}`,
         onclick: () => { chooseGift(b); $("gift-picker").hidden = true; } },
         bannerImg(b), el("span", { class: "small" }, edition(b))));
@@ -508,7 +508,9 @@ async function showPage(name) {
 
 // ---------- Wall of Buttons + info window ----------
 
-const RARITY_LABEL = { common: "common", uncommon: "uncommon", rare: "rare", ultra: "ULTRA RARE", special: "set reward" };
+const RARITY_LABEL = { common: "common", uncommon: "uncommon", rare: "rare", prototype: "PROTOTYPE", ultra: "ULTRA RARE", special: "set reward" };
+// A rarity as shown on cards and info windows. Prototypes (v0.31) get a pencil-sketched paper tag.
+const rarityTag = (r) => r === "prototype" ? el("span", { class: "proto-tag" }, "PROTOTYPE") : el("span", {}, RARITY_LABEL[r] || r);
 let wallLoaded = false;
 
 // The Wall of Buttons: shuffled every time it loads (mystery tiles always last), with a
@@ -520,7 +522,7 @@ function renderWallGrid() {
   // the Show/Order switches are webmaster-only; everyone else sees cLuB buttons first, then found ones
   const admin = !!(me && me.is_admin);
   const show = admin ? wallPref("show", "all") : "all", order = admin ? wallPref("order", "shuffle") : "shuffle";
-  const RANK = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
+  const RANK = { common: 0, uncommon: 1, rare: 2, prototype: 3, ultra: 4, special: 5 };
   const list = wallDesigns.filter((d) => show === "all" || (show === "found" ? d.tier === "archive" : d.tier !== "archive"));
   const shuffled = (arr) => arr.slice().sort((a, b) => a._r - b._r);
   let tiles;
@@ -846,7 +848,7 @@ async function openInfo(id, scroll = false) {
   const left = [
     el("p", { class: "center" }, bannerImg(d, 3)),
     st.variant_of ? el("p", { class: "variant center" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`) : null,
-    el("p", {}, d.series ? el("b", { class: "series-tag" }, `Series ${d.series} · `) : null, el("b", {}, RARITY_LABEL[d.rarity] || d.rarity), ` · ${d.type}`),
+    el("p", {}, d.series ? el("b", { class: "series-tag" }, `Series ${d.series} · `) : null, el("b", {}, rarityTag(d.rarity)), ` · ${d.type}`),
     d.series_run ? el("p", { class: "small" }, d.series_out ? `Series ${d.series} is out of print! (${d.series_printed} printed)`
       : `Series ${d.series} print run: ${d.series_printed} of ${d.series_run} printed`) : null,
     el("p", {}, d.max_editions ? `${d.minted} of ${d.max_editions} copies made` + (d.minted >= d.max_editions ? " (all gone!)" : "")
@@ -1214,7 +1216,7 @@ function designPicker(designs) {
     if (!list.length) grid.append(el("p", { class: "small" }, designs.length ? "Nothing matches." : "You haven't seen any buttons yet! Open packs and visit pages to find some."));
     for (const d of list) {
       const t = el("button", { type: "button", class: "tile pick-tile design-pick" + (chosen === d.id ? " picked" : ""), title: `${d.name} (${d.rarity})` },
-        bannerImg(d), el("span", { class: "small" }, d.name), el("span", { class: "small rarity-" + d.rarity }, d.rarity));
+        bannerImg(d), el("span", { class: "small" }, d.name), el("span", { class: "small rarity-" + d.rarity }, rarityTag(d.rarity)));
       t.onclick = () => { chosen = d.id; label.textContent = d.name; draw(); };
       grid.append(t);
     }
@@ -1519,7 +1521,7 @@ async function showBanner(id) {
     variantLine(b),
     foilLine(b, fe),
     b.status === "removed" ? el("p", {}, el("b", {}, "Removed by request."), " This copy and its travel log stay, but the art is gone.") : null,
-    el("p", {}, b.series ? `Series ${b.series} · ` : "", `Type: ${b.type} · Rarity: ${b.rarity === "ultra" ? "ULTRA RARE" : b.rarity}`,
+    el("p", {}, b.series ? `Series ${b.series} · ` : "", `Type: ${b.type} · Rarity: `, rarityTag(b.rarity),
       b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
     ownedLine(b, history),
 
@@ -1642,7 +1644,7 @@ function freeTile() {
 // Series packs open (Alpha and new series: rip, then deal & flip; Beta: CRT power off/on).
 // Shelf packs reveal (glow, then deal & flip). Rares and ultras flip last.
 // openingStage(art, cards, kind) -> { node, play() }; append node, then call play().
-const RANK_OF = { common: 0, uncommon: 1, rare: 2, ultra: 3, special: 4 };
+const RANK_OF = { common: 0, uncommon: 1, rare: 2, prototype: 3, ultra: 4, special: 5 };
 const openKind = (p) => (!p.series ? "reveal" : p.series.toLowerCase() === "beta" ? "tv" : "rip");
 function openingStage(art, cards, kind) {
   const row = el("div", { class: "pull-row" });
@@ -1880,7 +1882,7 @@ async function setupGivePacks() {
 // ---------- Fuse: 3 copies of one button in, 1 shinier one out ----------
 // Shown on your own copy's page when you have at least 3 copies of that button.
 function fuseBox(b) {
-  if (!me || !b.owner || b.consumed || b.owner.toLowerCase() !== me.name.toLowerCase() || b.rarity === "ultra") return null;
+  if (!me || !b.owner || b.consumed || b.owner.toLowerCase() !== me.name.toLowerCase() || (b.rarity === "ultra" || b.rarity === "prototype")) return null;
   const box = el("div", { class: "fuse-box", hidden: "hidden" });
   api("/api/collection").then(({ banners }) => {
     const others = banners.filter((c) => c.design_id === b.design_id && c.id !== b.id && !c.locked);
@@ -1943,6 +1945,7 @@ function ownedLine(b, history) {
 function variantLine(b) {
   let st = {};
   try { st = JSON.parse(b.stats || "{}"); } catch {}
+  if (st.prototype_of) return el("p", { class: "variant proto-note" }, `✎ ${st.variant || "Draft"} prototype of ${st.prototype_of} ✎`);
   if (!st.variant_of) return null;
   return el("p", { class: "variant" }, `✦ ${st.variant || "Special"} version of ${st.variant_of} ✦`);
 }
@@ -2047,7 +2050,7 @@ function fillNumbers(root, o) {
 }
 async function showHowto() { try { fillNumbers($("howto"), await getOdds()); } catch {} }
 
-const RARITIES = ["common", "uncommon", "rare", "ultra"];
+const RARITIES = ["common", "uncommon", "rare", "prototype", "ultra"];
 const cell = (tag, ...kids) => el(tag, {}, ...kids);
 function table(head, rows) {
   return el("table", { class: "odds-table" }, el("thead", {}, el("tr", {}, head.map((h) => cell("th", h)))),
@@ -2075,7 +2078,7 @@ async function showFair() {
     ["Welcome & ~*~cLuB~*~", "3", String(P.sealed.keep), `${pctTxt(P.daily.found_chance)} have a found button`],
     ["Series", "3", String(P.sealed.keep), "Only that series"],
     ["Limited", "3", String(P.sealed.keep), "Only that series, 1 rare guaranteed, always at least 1 foil"],
-    ["Free", "1", "1", "No ultras"],
+    ["Free", "1", "1", "No prototypes or ultras"],
   ]));
 
   // foils, by tier

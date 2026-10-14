@@ -7,7 +7,7 @@ import { seenSet } from "../../lib/progress.js";
 // Hidden until seen (v0.30): a logged-in player sees a button on the Wall only once they've owned
 // it, been shown it in a pull or pack, or seen it on someone's page (lib/progress.js). Logged-out
 // visitors keep the old rule: rares, ultras and set rewards are mysteries, the rest show.
-const HIDDEN_OUT = new Set(["rare", "ultra", "special"]);
+const HIDDEN_OUT = new Set(["rare", "prototype", "ultra", "special"]);
 // Buttons in a series that hasn't been released yet stay off the Wall (webmasters still see them).
 const UPCOMING_OUT = (viewer) => (viewer && viewer.is_admin ? ""
   : "AND NOT EXISTS (SELECT 1 FROM series s WHERE s.id = d.series_id AND s.status = 'upcoming')");
