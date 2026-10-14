@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.30
+# 88x31 cLuB Changelog — v0.30.2
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.30.2 — "Little Packs"
+**Tue Oct 13, 2026 · 11:39 PM HST**
+
+- Your visit streak now has a little 7-day track on your dashboard, with tiny packs showing what each day brings!
+- A bit more breathing room under the "Hi!" at the top of your page.
 
 ## v0.30 — "Come Back Tomorrow!"
 **Tue Oct 13, 2026 · 11:42 PM HST**
