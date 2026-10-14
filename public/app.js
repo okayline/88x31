@@ -238,7 +238,8 @@ let fairScroll = 0;   // where you were on Fair Play, for coming back to it
 
 // ---------- routing ----------
 
-async function route() {
+// clicked: got here from a link (not a page load), so a button's info box can scroll into view
+async function route(clicked = false) {
   say("");
   setPageMode();
   const hash = decodeURIComponent(location.hash.slice(1));
@@ -257,7 +258,7 @@ async function route() {
   if (hash === "wall" || hash.startsWith("wall/")) {
     if (!me) { showFront(); return showWall(hash.slice(5)).catch((e) => say(e.message)); }
     showTop("wall");
-    return showWall(hash.slice(5)).catch((e) => say(e.message));
+    return showWall(hash.slice(5), clicked).catch((e) => say(e.message));
   }
   // Player pages and button pages are public: anyone can look, members can interact.
   if (!me && (hash.startsWith("u/") || hash.startsWith("banner/") || hash.startsWith("pack/"))) {
@@ -286,7 +287,7 @@ window.addEventListener("hashchange", (e) => {
   if (onWall && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5), true).catch((err) => say(err.message)); return; }
   if (onWall && now === "wall" && wallLoaded) { closeInfo(); return; }
   if (/^fair(\/|$)/.test(was)) fairScroll = window.scrollY;   // remember where you were on Fair Play
-  window.scrollTo(0, 0); route();
+  window.scrollTo(0, 0); route(true);
 });
 
 // Player pages are pared down: no marquee, ticker, button strip, counter or webring,
@@ -571,7 +572,8 @@ function wallControls() {
   box.append(el("span", {}, "Show ", btn("show", "all", "All"), btn("show", "original", "cLuB Originals"), btn("show", "found", "Found")),
     el("span", {}, "Order ", btn("order", "shuffle", "Shuffle"), btn("order", "rarity", "Rarity")));
 }
-async function showWall(openId) {
+// scroll: bring the info box into view (coming from a link elsewhere, like the Ledger; never on page load)
+async function showWall(openId, scroll = false) {
   loadSeriesPanel();
   // logged out, the Wall is pictures only: no info box, no "click one" line
   $("info-win").hidden = !me;
@@ -585,7 +587,7 @@ async function showWall(openId) {
     renderWallGrid();
     wallLoaded = true;
   }
-  if (openId) await openWallHash(openId);
+  if (openId) await openWallHash(openId, scroll);
 }
 
 // How many owners the info box lists: 12 in two columns, 6 on narrow screens (one column).
