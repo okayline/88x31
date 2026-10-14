@@ -2661,30 +2661,12 @@ function addTear(tile, onTorn) {
   const cut = el("span", { class: "tear-cut", "aria-hidden": "true" }), hint = el("span", { class: "tear-hint", "aria-hidden": "true" }, "✂ - - - -");
   const art = tile.querySelector(".pack-art");
   art.append(cut, hint);
-  // the flap: a copy of the pack's top that lifts and curls as the cut runs along, and lies back down if you go back
+  // the torn part of the top simply disappears as the cut runs along, and comes back if you go back
   const STRIP = 15;   // % of the pack's height above the cut
-  let flap = null;
   const setCurl = (f, dir) => {
-    if (f <= 0.01) {
-      if (flap) { flap.remove(); flap = null; }
-      art.style.webkitMaskImage = art.style.maskImage = "";
-      return;
-    }
-    if (!flap) {
-      flap = el("span", { class: "tear-flap", "aria-hidden": "true" });
-      const copy = art.cloneNode(true);
-      copy.querySelectorAll(".tear-cut, .tear-hint").forEach((n) => n.remove());
-      flap.append(copy);
-      tile.append(flap);
-    }
-    const w = (f * 100).toFixed(1);
-    // hide the torn part of the real top, show it on the flap instead
+    if (f <= 0.01) { art.style.webkitMask = art.style.mask = ""; return; }
     const keep = `linear-gradient(#000 0 0) ${dir === 1 ? "right" : "left"} top / ${(100 - f * 100).toFixed(1)}% 100% no-repeat, linear-gradient(#000 0 0) left bottom / 100% ${100 - STRIP}% no-repeat`;
-    art.style.webkitMaskImage = art.style.maskImage = "none";
     art.style.webkitMask = art.style.mask = keep;
-    flap.style.clipPath = dir === 1 ? `polygon(0 0, ${w}% 0, ${w}% ${STRIP}%, 0 ${STRIP}%)` : `polygon(${100 - w}% 0, 100% 0, 100% ${STRIP}%, ${100 - w}% ${STRIP}%)`;
-    flap.style.transformOrigin = `${dir === 1 ? w : 100 - w}% ${STRIP}%`;
-    flap.style.transform = `translateY(${(-f * 4).toFixed(1)}px) rotate(${(dir * f * 34).toFixed(1)}deg) scaleY(${(1 - f * 0.25).toFixed(2)})`;
   };
   const LINE = 1;   // the cut has to reach all the way across before it can rip
   let x0 = null, id = null, moved = false, f = 0, dir = 1;
@@ -2716,7 +2698,7 @@ function addTear(tile, onTorn) {
     x0 = null; moved = false; tile.classList.remove("tearing", "tear-ready");
     if (!wasDrag) return;                              // a plain click: the Open Pack window handles it
     tile.dataset.tore = rip ? "1" : "skip";            // swallow the click that follows this drag
-    if (rip) { tile.classList.add("torn"); if (flap) flap.classList.add("gone"); setTimeout(() => { delete tile.dataset.tore; onTorn(); }, 450); }
+    if (rip) { tile.classList.add("torn"); setTimeout(() => { delete tile.dataset.tore; onTorn(); }, 450); }
     else { cut.style.width = "0"; setCurl(0, dir); setTimeout(() => { if (tile.dataset.tore === "skip") delete tile.dataset.tore; }, 50); }
   };
   tile.addEventListener("pointerup", up);
