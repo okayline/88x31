@@ -4,6 +4,7 @@
 // owned, and anything in an unreleased series) are listed as "a mystery button", with no name or link.
 import { json, currentUser } from "../../lib/auth.js";
 import { sealLedger, verifyLedger } from "../../lib/ledger.js";
+import { seenSet } from "../../lib/progress.js";
 
 export async function onRequestGet({ request, env }) {
   const params = new URL(request ? request.url : "http://x").searchParams;
@@ -47,14 +48,14 @@ export async function onRequestGet({ request, env }) {
   const admin = !!(viewer && viewer.is_admin);
   let seen = new Set(), upcoming = new Set();
   if (!admin) {
-    if (viewer) seen = new Set((await env.DB.prepare(
-      `SELECT DISTINCT i.design_id FROM ownership_history h JOIN instances i ON i.id = h.instance_id WHERE h.to_user = ?`
-    ).bind(viewer.id).all()).results.map((r) => r.design_id));
+    seen = (await seenSet(env, viewer)) || null;
     try { upcoming = new Set((await env.DB.prepare("SELECT id FROM series WHERE status = 'upcoming'").all()).results.map((r) => r.id)); } catch {}
   }
   const MYSTERY = new Set(["rare", "ultra", "special"]);
   for (const r of recent) {
-    const secret = !admin && r.design_id && ((MYSTERY.has(r.design_rarity) && !seen.has(r.design_id)) || upcoming.has(r.design_series));
+    // hidden until seen (v0.30); logged-out visitors: rares and up stay mysteries
+    const unseen = seen ? !seen.has(r.design_id) : MYSTERY.has(r.design_rarity);
+    const secret = !admin && r.design_id && (unseen || upcoming.has(r.design_series));
     if (secret) {
       Object.assign(r, { design: "a mystery button", fused_design: "a mystery button", mystery: true, design_id: null, copy_id: null,
         rarity: null, max_editions: null, license: null, source_author: null, edition: null, fused_edition: null });

@@ -137,7 +137,7 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", free_pack: "free pack", request: "request filled", open_trade: "open trade",
+  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", free_pack: "free pack", request: "request filled", open_trade: "open trade", trade_in: "traded in",
 };
 
 // ---------- foils, patterns, effects ----------
@@ -963,6 +963,7 @@ async function loadSummary() {
   if (s.guestbook_today) li(el("b", {}, `${s.guestbook_today} new guestbook message${s.guestbook_today === 1 ? "" : "s"}`), " today. ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "Read »"));
   const pic = (g) => el("a", { href: "#banner/" + g.id, class: "dash-pic", title: label(g) }, bannerImg(g));
+  dashExtras(s, list);
   if (s.last_received) li("Last gift you got: ", pic(s.last_received), el("br"),
     el("a", { href: "#banner/" + s.last_received.id }, label(s.last_received)), " from ", who(s.last_received.who), `, ${ago(s.last_received.at)}`);
   if (s.last_given) li("Last thing you gave: ", pic(s.last_given), el("br"),
@@ -970,6 +971,64 @@ async function loadSummary() {
   if (s.sets_ready) li(el("b", { class: "hot" }, `★ ${s.sets_ready} set${s.sets_ready === 1 ? "" : "s"} complete!`), " Claim your reward on ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "your guestbook »"));
   li(`You have ${s.buttons} button${s.buttons === 1 ? "" : "s"} in your collection.`);
+}
+
+// v0.30: starter quests and the visit streak, at the top of the dashboard.
+const STREAK_SAYS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
+function dashExtras(s, list) {
+  const top = [];
+  const q = s.quests;
+  if (q && !q.done) {
+    top.push(el("li", { class: "quests" }, el("b", {}, "★ Starter quests ★"), " (finish all 3 for a ~*~cLuB~*~ pack!)",
+      el("ul", { class: "quest-list" }, q.steps.map((x) => el("li", { class: x.done ? "quest done" : "quest" }, x.done ? "☑ " : "☐ ", x.label)))));
+  } else if (q && q.rewarded) {
+    top.push(el("li", {}, el("b", { class: "hot" }, "★ Starter quests done! ★"), " A ~*~cLuB~*~ pack is on your shelf. Welcome 2 the cLuB!!"));
+  }
+  const st = s.streak;
+  if (st) {
+    const next = st.next ? ` Come back ${st.next.day === st.streak + 1 ? "tomorrow" : "for day " + st.next.day} for ${STREAK_SAYS[st.next.reward]}!` : "";
+    top.push(el("li", {}, "🔥 ", el("b", {}, `Day ${st.streak} visit streak!`),
+      st.given ? ` You got ${STREAK_SAYS[st.reward]} for coming back!` : "", next));
+  }
+  list.prepend(...top);
+  if ((st && st.given) || (q && q.rewarded)) loadPacksPanel(true);   // show the new packs on the shelf
+}
+
+// ---------- trade in: 5 commons/uncommons for a sealed cLuB pack ----------
+const TRADE_IN = 5;
+let tradeInReady = false;
+async function setupTradeIn() {
+  const box = $("tradein-box"), grid = $("tradein-grid"), go = $("tradein-go"), count = $("tradein-count");
+  if (!tradeInReady) { tradeInReady = true; box.addEventListener("toggle", () => { if (box.open) setupTradeIn(); }); }
+  if (!box.open) return;
+  const picked = new Set();
+  const update = () => {
+    const packs = Math.floor(picked.size / TRADE_IN);
+    count.textContent = `${picked.size} picked` + (picked.size % TRADE_IN ? ` (${TRADE_IN - (picked.size % TRADE_IN)} more for the next pack)` : packs ? ` = ${packs} pack${packs === 1 ? "" : "s"}` : "");
+    go.disabled = !packs || picked.size % TRADE_IN !== 0;
+  };
+  grid.textContent = "Loading...";
+  let banners;
+  try { ({ banners } = await api("/api/collection")); } catch (e) { grid.textContent = e.message; return; }
+  const usable = banners.filter((b) => ["common", "uncommon"].includes(b.rarity) && !b.locked);
+  grid.textContent = "";
+  if (!usable.length) grid.append(el("p", { class: "small" }, "No commons or uncommons to trade in right now."));
+  for (const b of usable) {
+    const tile = el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}` }, bannerImg(b), el("span", { class: "small" }, edition(b)));
+    tile.onclick = () => { picked.has(b.id) ? picked.delete(b.id) : picked.add(b.id); tile.classList.toggle("picked", picked.has(b.id)); update(); };
+    grid.append(tile);
+  }
+  update();
+  go.onclick = async () => {
+    const n = picked.size / TRADE_IN;
+    if (!(await ask(`Trade in ${picked.size} buttons for ${n} sealed ~*~cLuB~*~ pack${n === 1 ? "" : "s"}? They'll be gone for good!`, { ok: "Trade in!" }))) return;
+    go.disabled = true;
+    try {
+      const r = await api("/api/tradein", { method: "POST", body: { copies: [...picked] } });
+      say(`Traded in ${r.used} buttons for ${r.packs} sealed pack${r.packs === 1 ? "" : "s"}!`);
+      loadPacksPanel(true); setupTradeIn(); loadSummary();
+    } catch (e) { say(e.message); update(); }
+  };
 }
 
 // ---------- trading ----------
@@ -996,7 +1055,7 @@ function tradeNote(t) {
 
 function pickGrid(box, list, picked, label) {
   box.textContent = "";
-  const usable = list.filter((b) => b.rarity !== "ultra");
+  const usable = list;   // ultras can be traded too (v0.30), just never to a bot
   if (!usable.length) { box.append(el("p", { class: "small" }, `No buttons ${label}.`)); return; }
   for (const b of usable) {
     const busy = b.locked && label === "to give";
@@ -1112,6 +1171,29 @@ function designSelect(designs, filter) {
   for (const d of designs.filter(filter).sort((a, b) => a.name.localeCompare(b.name))) sel.append(el("option", { value: d.id }, `${d.name} (${d.rarity})`));
   return sel;
 }
+// A grid of button pictures with names and a search box (v0.30). Only buttons you've seen get here.
+function designPicker(designs) {
+  let chosen = null;
+  const label = el("b", {}, "(pick one below)");
+  const grid = el("div", { class: "design-pick-grid" });
+  const search = el("input", { type: "search", placeholder: "search buttons...", class: "design-search" });
+  const sorted = [...designs].sort((a, b) => a.name.localeCompare(b.name));
+  const draw = () => {
+    const q = search.value.trim().toLowerCase();
+    grid.textContent = "";
+    const list = sorted.filter((d) => !q || d.name.toLowerCase().includes(q));
+    if (!list.length) grid.append(el("p", { class: "small" }, designs.length ? "Nothing matches." : "You haven't seen any buttons yet! Open packs and visit pages to find some."));
+    for (const d of list) {
+      const t = el("button", { type: "button", class: "tile pick-tile design-pick" + (chosen === d.id ? " picked" : ""), title: `${d.name} (${d.rarity})` },
+        bannerImg(d), el("span", { class: "small" }, d.name), el("span", { class: "small rarity-" + d.rarity }, d.rarity));
+      t.onclick = () => { chosen = d.id; label.textContent = d.name; draw(); };
+      grid.append(t);
+    }
+  };
+  search.oninput = draw;
+  draw();
+  return { box: el("div", { class: "design-picker" }, search, grid), label, value: () => chosen };
+}
 function foilSelect() {
   const sel = el("select", {}, el("option", { value: "" }, "any finish"));
   for (const f of Object.values(FOILS).filter((f) => (f.kind || "foil") === "foil")) sel.append(el("option", { value: f.id }, f.id === "clear" ? "plain (no foil)" : f.name));
@@ -1143,17 +1225,19 @@ async function renderBoard() {
         el("span", { class: "small" }, ` · until ${fmtDate(r.expires_at)}`)),
       mine ? el("button", { type: "button", onclick: () => post({ action: "cancel_request", id: r.id }, "Request taken down.") }, "Take it down")
         : picker(r.can_fill, "Fill it!", async (copy) => {
-          if (!(await ask(`Give your ${r.name} to ${r.user}? You'll get a sealed pack as thanks (one a day).`, { ok: "Give it!" }))) return;
-          post({ action: "fill", id: r.id, copy }, (x) => x.pack ? "Filled! A sealed pack is on your shelf as thanks!" : "Filled! (You already got today's thank-you pack.)");
+          const thanks = r.rarity === "rare" ? "a series pack as thanks (one a day)" : "a sealed pack as thanks (one a day)";
+          if (!(await ask(`Give your ${r.name} to ${r.user}? You'll get ${thanks}.`, { ok: "Give it!" }))) return;
+          post({ action: "fill", id: r.id, copy }, (x) => x.pack === "series" ? "Filled! A series pack is on your shelf as thanks!"
+            : x.pack ? "Filled! A sealed pack is on your shelf as thanks!" : "Filled! (You already got today's thank-you pack.)");
         })));
   }
   // post a request
   const rp = $("rq-post");
   rp.textContent = "";
-  const rqSel = designSelect(seen, (d) => ["common", "uncommon"].includes(d.rarity)), rqFoil = foilSelect();
-  rp.append(el("p", {}, "I wish I had ", rqSel, " in ", rqFoil, " ",
-    el("button", { type: "button", onclick: () => rqSel.value ? post({ action: "request", design_id: rqSel.value, foil: rqFoil.value || null }, "Request posted!") : say("Pick a button first.") }, "Post it")),
-    el("p", { class: "small" }, "Up to 3 at a time. They last a week."));
+  const rqPick = designPicker(seen.filter((d) => ["common", "uncommon", "rare"].includes(d.rarity))), rqFoil = foilSelect();
+  rp.append(rqPick.box, el("p", {}, "I wish I had ", rqPick.label, " in ", rqFoil, " ",
+    el("button", { type: "button", onclick: () => rqPick.value() ? post({ action: "request", design_id: rqPick.value(), foil: rqFoil.value || null }, "Request posted!") : say("Pick a button first.") }, "Post it")),
+    el("p", { class: "small" }, "Up to 3 at a time. They last a week. Only buttons you've seen show up here!"));
 
 }
 
@@ -1431,6 +1515,7 @@ async function showBanner(id) {
       `${fmtStamp(h.created_at)}: ${HOW[h.reason] || h.reason}`,
       h.reason === "fusion"
         ? (h.to_name ? ` by ${h.to_name}: came out shinier` : " → used up")
+        : h.reason === "trade_in" ? [h.from_name ? ` by ${h.from_name}` : "", " for a sealed pack"]
         : h.reason === "pack" && h.ref_id
         ? [" ", el("a", { href: "#pack/" + h.ref_id }, `#${h.ref_id}`), ` → ${h.to_name || "a former player"}`]
         : [h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
@@ -1442,7 +1527,7 @@ async function showBanner(id) {
 // ---------- sealed packs ----------
 // Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
-const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board" };
+const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board", quest: "finishing the starter quests", streak: "a visit streak", trade_in: "a trade-in" };
 const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "~*~ cLuB ~*~") + " Pack";
 // Limited special packs are numbered per series: "Beta Gold Master Pack #7 of 25". Others use the pack's id.
 const limitedName = (p) => `${p.series} ${p.special_name || "Special"} Pack`;
@@ -1575,7 +1660,9 @@ async function loadPacksPanel(mine) {
   if (!mine) return;
   const grid = $("packs-grid");
   try {
-    const [sum, { packs }] = await Promise.all([api("/api/summary"), api("/api/packs")]);
+    let [sum, { packs }] = await Promise.all([api("/api/summary"), api("/api/packs")]);
+    // that summary may have just handed out a streak or quest pack: fetch the shelf again
+    if ((sum.streak && sum.streak.given) || (sum.quests && sum.quests.rewarded)) ({ packs } = await api("/api/packs"));
     grid.textContent = "";
     const used = sum.pulls_per_day - sum.packs_left;
     for (let i = 1; i <= sum.pulls_per_day; i++) {
@@ -1584,6 +1671,7 @@ async function loadPacksPanel(mine) {
       t.onclick = (e) => { e.preventDefault(); if (!done && startOpening("daily", t)) showPull().catch((err) => say(err.message)); };
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
     }
+    setupTradeIn();
     for (const p of packs) {
       const t = packTile(p, "#pack/" + p.id);
       t.onclick = (e) => { e.preventDefault(); if (startOpening("pack" + p.id, t)) openPackCards(p, $("pack-open"), afterOpening); };
@@ -1806,11 +1894,12 @@ function fuseBox(b) {
 // "Owned by space · received from SkAt3rDuDe-bot as a guestbook gift on 10/11/2026"
 const GOT_HOW = {
   welcome: "in their welcome pack", daily: "in a daily pull", pass_on: "as a passed-on gift",
-  guestbook: "as a guestbook gift", free_pack: "in their free pack", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to ~*~ tHe cLuB ~*~",
+  guestbook: "as a guestbook gift", free_pack: "in their free pack", trade: "in a trade", open_trade: "in an open trade", request: "for their request", gift: "as a gift", fusion: "from a fusion", set_reward: "for finishing a set", found: "and added it to ~*~ tHe cLuB ~*~", trade_in: "",
 };
 function ownedLine(b, history) {
   const who = (name) => el("a", { href: "#u/" + encodeURIComponent(name) }, name);
-  if (b.consumed) return el("p", {}, "Used up in a fusion. It lives on in a shinier copy.");
+  if (b.consumed) return el("p", {}, (history[history.length - 1] || {}).reason === "trade_in"
+    ? "Traded in for a sealed pack. Gone, but not forgotten!" : "Used up in a fusion. It lives on in a shinier copy.");
   if (!b.owner) return el("p", {}, "Owned by nobody (retired).");
   const last = history[history.length - 1];
   const p = el("p", { class: "owned" }, "Owned by ", who(b.owner));
@@ -1893,7 +1982,7 @@ function ledgerItem(h) {
       what = el("div", { class: "led-what" },
         ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, `, ${HOW[h.reason] || h.reason}`,
         h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
-        ` → ${h.to_name || "a former player"}`);
+        h.reason === "trade_in" ? " for a sealed pack" : ` → ${h.to_name || "a former player"}`);
     }
   return el("li", { value: h.id }, meta, what);
 }

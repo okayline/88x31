@@ -6,6 +6,7 @@
 import { json, readJson, currentUser, rateLimit, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { listTrades } from "../../lib/trades.js";
+import { markSeen } from "../../lib/progress.js";
 import { today, userByName, transferStatements, newLockToken, lockedBy } from "../../lib/game.js";
 
 export async function onRequestGet({ request, env }) {
@@ -14,7 +15,7 @@ export async function onRequestGet({ request, env }) {
 
   const { results } = await env.DB.prepare(
     `SELECT g.id, g.message, g.created_at, a.name AS author, a.is_bot AS author_is_bot,
-            g.instance_id AS gift_id, i.edition AS gift_edition, i.foil AS gift_foil, i.foil_seed AS gift_foil_seed, i.pattern AS gift_pattern, i.effect AS gift_effect, d.name AS gift_name,
+            g.instance_id AS gift_id, i.design_id AS gift_design, i.edition AS gift_edition, i.foil AS gift_foil, i.foil_seed AS gift_foil_seed, i.pattern AS gift_pattern, i.effect AS gift_effect, d.name AS gift_name,
             d.image_key AS gift_image, d.rarity AS gift_rarity, d.max_editions AS gift_max
      FROM guestbook_entries g
      JOIN users a ON a.id = g.author_id
@@ -25,6 +26,8 @@ export async function onRequestGet({ request, env }) {
 
   const trades = (await listTrades(env, owner.id, { status: "accepted", limit: 30 }))
     .map((t) => ({ id: t.id, at: t.resolved_at, from_name: t.from_name, to_name: t.to_name, give: t.give, want: t.want }));
+  const viewer = await currentUser(env, request);
+  if (viewer) await markSeen(env, viewer, [...results.map((e) => e.gift_design), ...trades.flatMap((t) => [...t.give, ...t.want].map((i) => i.design_id))]);
   return json({ owner, entries: results, trades });
 }
 

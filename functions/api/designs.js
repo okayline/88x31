@@ -2,36 +2,30 @@
 // GET /api/designs?id=N   -> { design, ledger, sets, copies } one design's info window
 import { json, currentUser } from "../../lib/auth.js";
 import { seriesPrinted } from "../../lib/game.js";
+import { seenSet } from "../../lib/progress.js";
 
-// Rares, ultras and set rewards stay a mystery on the Wall until you've owned one yourself.
-const HIDDEN = new Set(["rare", "ultra", "special"]);
-const HIDDEN_OUT = HIDDEN;
+// Hidden until seen (v0.30): a logged-in player sees a button on the Wall only once they've owned
+// it, been shown it in a pull or pack, or seen it on someone's page (lib/progress.js). Logged-out
+// visitors keep the old rule: rares, ultras and set rewards are mysteries, the rest show.
+const HIDDEN_OUT = new Set(["rare", "ultra", "special"]);
 // Buttons in a series that hasn't been released yet stay off the Wall (webmasters still see them).
 const UPCOMING_OUT = (viewer) => (viewer && viewer.is_admin ? ""
   : "AND NOT EXISTS (SELECT 1 FROM series s WHERE s.id = d.series_id AND s.status = 'upcoming')");
-async function uncovered(env, viewer) {
-  if (!viewer) return new Set();
-  if (viewer.is_admin) return { has: () => true }; // admins (the webmaster) can see every button
-  const { results } = await env.DB.prepare(
-    `SELECT DISTINCT i.design_id FROM ownership_history h JOIN instances i ON i.id = h.instance_id
-     JOIN designs d ON d.id = i.design_id WHERE h.to_user = ? AND d.rarity IN ('rare', 'ultra', 'special')`
-  ).bind(viewer.id).all();
-  return new Set(results.map((r) => r.design_id));
-}
+// is this design a mystery to this viewer?
+const mysteryFor = (seen) => (d) => (seen ? !seen.has(d.id) : HIDDEN_OUT.has(d.rarity));
 
 export async function onRequestGet({ request, env }) {
   const id = Number(new URL(request.url).searchParams.get("id"));
   const db = env.DB;
   const viewer = await currentUser(env, request);
-  const seen = await uncovered(env, viewer);
-  const hide = viewer ? HIDDEN : HIDDEN_OUT;
+  const hidden = mysteryFor(await seenSet(env, viewer));
   if (!id) {
     const { results } = await db.prepare(
       `SELECT d.id, d.name, d.type, d.rarity, d.status, d.image_key, d.max_editions, d.stats, d.tier,
               (SELECT COUNT(*) FROM instances i WHERE i.design_id = d.id) AS minted
        FROM designs d WHERE d.status IN ('active', 'reward', 'frozen') ${UPCOMING_OUT(viewer)} ORDER BY d.id`
     ).all();
-    return json({ designs: results.map((d) => (hide.has(d.rarity) && !seen.has(d.id)
+    return json({ designs: results.map((d) => (hidden(d)
       ? { id: d.id, hidden: true, tier: d.tier === "archive" ? "archive" : "original" }   // a mystery: no name, picture or rarity
       : d)) });
   }
@@ -55,7 +49,7 @@ export async function onRequestGet({ request, env }) {
       image_key: design.image_key, rarity: design.rarity, status: "removed", minted: design.minted } });
   }
   if (!design) return json({ error: "No such button." }, 404);
-  if (hide.has(design.rarity) && !seen.has(design.id)) {
+  if (hidden(design)) {
     return json({ hidden: true });
   }
   const ledger = await db.prepare(

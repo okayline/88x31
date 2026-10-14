@@ -1,8 +1,11 @@
 // GET /api/summary -> the "Hi, space!" dashboard: packs left, trades waiting, latest gifts in and out,
-// new guestbook messages today.
+// new guestbook messages today. v0.30: also counts today's visit for streaks (giving that day's
+// streak pack once) and the starter quests (giving their pack once all three are done).
 import { json, currentUser } from "../../lib/auth.js";
 import { today, PULLS_PER_DAY } from "../../lib/game.js";
 import { readyCount } from "../../lib/sets.js";
+import { questStatus, touchStreak } from "../../lib/progress.js";
+import { sealSafe } from "../../lib/ledger.js";
 
 export async function onRequestGet({ request, env }) {
   const me = await currentUser(env, request);
@@ -33,7 +36,12 @@ export async function onRequestGet({ request, env }) {
     db.prepare("SELECT COUNT(*) AS n FROM guestbook_entries WHERE page_user = ? AND day LIKE ?").bind(me.id, d + "%").first(),
     db.prepare("SELECT COUNT(*) AS n FROM instances WHERE owner_id = ? AND consumed = 0").bind(me.id).first(),
   ]);
+  const streak = await touchStreak(env, me);
+  const quests = await questStatus(env, me);
+  if ((streak && streak.given) || quests.rewarded) await sealSafe(env);
   return json({
+    streak,
+    quests: quests.unavailable ? null : quests,
     sets_ready: await readyCount(env, me.id),
     packs_left: Math.max(0, PULLS_PER_DAY - (packs ? packs.n : 0)),
     pulls_per_day: PULLS_PER_DAY,

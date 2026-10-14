@@ -7,6 +7,7 @@ import { json, readJson, currentUser } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { expireBoard, boardFor, wantedOf, postRequest, cancelRequest, fillRequest } from "../../lib/board.js";
+import { markSeen, seenSet } from "../../lib/progress.js";
 
 export async function onRequestGet({ request, env }) {
   await expireBoard(env);
@@ -16,7 +17,9 @@ export async function onRequestGet({ request, env }) {
     return u ? json({ wanted: await wantedOf(env, u.id) }) : json({ error: "No player by that name." }, 404);
   }
   const me = await currentUser(env, request);
-  return json(await boardFor(env, me ? me.id : null));
+  const board = await boardFor(env, me ? me.id : null);
+  if (me) await markSeen(env, me, board.requests.map((r) => r.design_id));
+  return json(board);
 }
 
 export async function onRequestPost({ request, env }) {
@@ -26,7 +29,12 @@ export async function onRequestPost({ request, env }) {
   await expireBoard(env);
   let r;
   switch (b.action) {
-    case "request": r = await postRequest(env, me.id, Number(b.design_id), b.foil || null); break;
+    case "request": {
+      // you can only wish for buttons you've seen (hidden until seen)
+      const seen = await seenSet(env, me);
+      r = seen && !seen.has(Number(b.design_id)) ? { error: "No such button." } : await postRequest(env, me.id, Number(b.design_id), b.foil || null);
+      break;
+    }
     case "cancel_request": r = await cancelRequest(env, me.id, Number(b.id)); break;
     case "fill": r = await fillRequest(env, me.id, Number(b.id), Number(b.copy)); break;
     case "trade": case "cancel_trade": case "accept": r = { error: "Open trades are closed. Propose a trade from someone's page instead!" }; break;

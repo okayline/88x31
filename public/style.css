@@ -1000,3 +1000,13 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .fair-bar > span { display: block; height: 100%; background: linear-gradient(90deg, #00ff66, #ffff00, #ff6600); }
 @media (max-width: 600px) { .odds-table { font-size: 12px; } .odds-table td:not(:last-child) { white-space: normal; } }
 #fair-odds, #fair-packs, #fair-foils { overflow-x: auto; }
+
+/* v0.30: starter quests, trade-in, request picker */
+.quest-list { list-style: none; margin: 4px 0 0; padding-left: 8px; }
+.quest.done { color: #99ff99; text-decoration: line-through; }
+.tradein { margin-top: 8px; }
+.tradein summary { cursor: pointer; color: #ffff99; }
+.pick-grid, .design-pick-grid { display: flex; flex-wrap: wrap; gap: 4px; max-height: 260px; overflow-y: auto; margin: 6px 0; }
+.design-pick { display: flex; flex-direction: column; align-items: center; width: 104px; }
+.design-pick .small { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.design-search { width: 100%; max-width: 260px; }

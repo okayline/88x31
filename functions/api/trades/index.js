@@ -3,12 +3,14 @@
 import { json, readJson, currentUser } from "../../../lib/auth.js";
 import { userByName } from "../../../lib/game.js";
 import { expireTrades, proposeTrade, listTrades } from "../../../lib/trades.js";
+import { markSeen } from "../../../lib/progress.js";
 
 export async function onRequestGet({ request, env }) {
   const me = await currentUser(env, request);
   if (!me) return json({ error: "Not logged in." }, 401);
   await expireTrades(env);
   const all = await listTrades(env, me.id, { limit: 60 });
+  await markSeen(env, me, all.flatMap((t) => [...t.give, ...t.want].map((i) => i.design_id)));
   return json({
     incoming: all.filter((t) => t.status === "open" && t.to_user === me.id),
     outgoing: all.filter((t) => t.status === "open" && t.from_user === me.id),

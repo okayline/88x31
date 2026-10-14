@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.29">
+<link rel="stylesheet" href="style.css?v=0.30">
 </head>
 <body>
 <main>
@@ -139,18 +139,25 @@
     <div class="panel" id="ht-packs">
       <h2>&raquo; Packs &laquo;</h2>
       <p>You get <b data-n="packs.daily.per_day">2</b> <b>daily packs</b> every day. Pick 1 button to keep, and you can gift one of the others to a friend!</p>
-      <p>You can also earn <b>sealed packs</b> (keep 2 of 3) by helping people on the Request Board, finishing sets, and more. Save them for later or give them away. Look out for series packs and the numbered limited packs!</p>
+      <p>You can also earn <b>sealed packs</b> (keep 2 of 3) by helping people on the Request Board, finishing sets, your starter quests, and more. Save them for later or give them away. Look out for series packs and the numbered limited packs!</p>
+    </div>
+
+    <div class="panel" id="ht-streaks">
+      <h2>&raquo; Come Back Tomorrow! &laquo;</h2>
+      <p>Visit every day for a <b>visit streak</b>: packs on day 2, 3 and 5, and a <b>series pack</b> on day 7. Keep it going and every week brings more! Miss a day and it starts over.</p>
+      <p>Got too many commons? <b>Trade in</b> any 5 commons or uncommons for a sealed pack, right from your Packs box.</p>
     </div>
 
     <div class="panel" id="ht-buttons">
       <h2>&raquo; Buttons &laquo;</h2>
       <p>Every button is numbered, like a trading card: your Lava Lamp might be <b>#12</b>, and nobody else has #12. Buttons come in <b>common</b>, <b>uncommon</b>, <b>rare</b> (limited editions) and <b>ultra</b> (one of a kind!). Some come in a shiny <b>foil</b>, and a lucky few do strange things on screen.</p>
       <p>The cLuB's own buttons come in <b>series</b> (Alpha, Beta...), and each series only prints so many copies before it's gone for good.</p>
+      <p>Buttons you haven't come across yet are a <b>mystery</b> (?) until you see one: in a pack, or on someone's page. Go explore!</p>
     </div>
 
     <div class="panel" id="ht-friends">
       <h2>&raquo; Trading &amp; Gifting &laquo;</h2>
-      <p>Visit anyone's page to propose a <b>trade</b> or sign their guestbook with a <b>gift</b>. On the <b>Request Board</b> you can wish for a button you're missing, or fill someone else's wish and get a sealed pack as thanks!</p>
+      <p>Visit anyone's page to propose a <b>trade</b> or sign their guestbook with a <b>gift</b>. On the <b>Request Board</b> you can wish for a button you're missing, or fill someone else's wish and get a sealed pack as thanks (fill a rare wish for a series pack!). Even ultras can be traded now, if their owner wants to.</p>
     </div>
 
     <div class="panel" id="ht-more">
@@ -291,6 +298,12 @@
         <h2>&raquo; Packs &laquo;</h2>
         <div id="packs-grid" class="packs-grid"></div>
         <div id="pack-open" class="pack-open"></div>
+        <details class="tradein" id="tradein-box">
+          <summary>&#9851; Trade in buttons for a pack</summary>
+          <p class="small">Pick commons or uncommons, 5 for each sealed ~*~cLuB~*~ pack. Trade in as many as you like!</p>
+          <div id="tradein-grid" class="pick-grid"></div>
+          <p class="center"><button type="button" id="tradein-go" disabled>Trade in</button> <span class="small" id="tradein-count"></span></p>
+        </details>
         <p class="small" id="pull-odds"></p>
       </div>
       <div class="panel">
@@ -442,7 +455,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.29</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.30</span>
   </p>
 
 </main>
@@ -458,6 +471,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.29"></script>
+<script src="app.js?v=0.30"></script>
 </body>
 </html>

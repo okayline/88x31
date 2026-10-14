@@ -2,6 +2,7 @@
 // -> { owner: { id, name }, banners: [{ id, edition, design... , got_at, got_how }] }
 import { json, currentUser } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
+import { markSeen } from "../../lib/progress.js";
 
 // Sites allowed to read a player's public collection from the browser (okayline.dev shows kura's buttons).
 const SHOW_ON = ["https://okayline.dev", "https://www.okayline.dev"];
@@ -21,6 +22,11 @@ export async function onRequestGet({ request, env }) {
      ORDER BY w.slot IS NULL, w.slot, got_at DESC, i.id DESC`
   ).bind(owner.id).all();
 
+  // visiting someone's page uncovers their buttons for you (hidden until seen, v0.30)
+  if (name) {
+    const viewer = await currentUser(env, request);
+    if (viewer && viewer.id !== owner.id) await markSeen(env, viewer, results.map((b) => b.design_id));
+  }
   const origin = request.headers.get("origin");
   const cors = name && SHOW_ON.includes(origin) ? { "access-control-allow-origin": origin, vary: "Origin" } : { vary: "Origin" };
   return json({ owner: { id: owner.id, name: owner.name, is_bot: owner.is_bot || 0,

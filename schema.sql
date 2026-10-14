@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
   homepage    TEXT,                         -- player's own website (http/https), shown on their guestbook
   theme       TEXT,                         -- guestbook color theme (preset name)
   my_button   INTEGER,                      -- instance shown as their calling card in Cool Links
-  created_at  INTEGER NOT NULL
+  created_at  INTEGER NOT NULL,
+  came_from   TEXT,                         -- v0.29: site they first came from
+  joined_via  TEXT                          -- v0.29: free pack / sign-up form
 );
 
 -- A player can hold several save codes. Only a SHA-256 hash is stored.
@@ -604,4 +606,23 @@ CREATE TABLE IF NOT EXISTS passkey_challenges (
   user_id      INTEGER,                    -- set when adding a passkey to an account
   kind         TEXT NOT NULL,              -- 'register' | 'login'
   expires_at   INTEGER NOT NULL
+);
+
+-- ---------- v0.30: hidden until seen, quests, streaks (also in migrations/023_quests_streaks_seen.sql) ----------
+CREATE TABLE IF NOT EXISTS seen_designs (
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  design_id  INTEGER NOT NULL REFERENCES designs(id),
+  PRIMARY KEY (user_id, design_id)
+);
+CREATE TABLE IF NOT EXISTS rewards (
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind       TEXT NOT NULL,
+  key        TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, kind, key)
+);
+CREATE TABLE IF NOT EXISTS visits (
+  user_id    INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  last_day   TEXT NOT NULL,
+  streak     INTEGER NOT NULL DEFAULT 1
 );
