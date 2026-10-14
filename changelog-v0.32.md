@@ -1,8 +1,29 @@
-# 88x31 cLuB Changelog — v0.31
+# 88x31 cLuB Changelog — v0.32
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.32 — "Please Wait..."
+**Wed Oct 14, 2026 · 12:45 AM HST**
+
+- **Hold to open!** Packs don't pop open the second you click anymore. A little window pops up: hold **Open Pack** until the bar fills. Let go early and nothing opens!
+- Every kind of pack has its own: daily packs **dial up**, ~*~cLuB~*~ packs **download**, welcome packs and the front-page free pack run **Setup**, Alpha and limited packs **unzip in MS-DOS**, and Series Beta packs **play from a cassette tape**.
+- **Rip 'em open:** series and limited pouches can be torn open right on the pack. Drag across the top!
+
+## v0.31.2 — "Every Pack"
+**Wed Oct 14, 2026 · 12:28 AM HST**
+
+- New page: **All the Packs**, every pack ever made, sealed and opened (link on Fair Play).
+- Opened packs lose their shine.
+- The Ledger keeps your place when you click a button and come back.
+
+## v0.31.1 — "Tidy Desk"
+**Wed Oct 14, 2026 · 12:24 AM HST**
+
+- Trade-ins moved to the Trades page.
+- Your last gifts in and out now sit on the right side of your dashboard.
+- Click a » Title « to fold a box away. It stays folded!
 
 ## v0.31 — "Rough Drafts"
 **Wed Oct 14, 2026 · 12:16 AM HST**
