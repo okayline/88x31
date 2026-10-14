@@ -4,6 +4,15 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.34.6 to v0.34.10 — "Keep It Up"
+**Wed Oct 14, 2026 · 2:05 AM HST**
+
+- **New streak track!** Days 2 to 7 spread evenly across. Days behind you get crossed off, today gets circled, and the packs you got show up for real. Gray once you've opened them, and click one to visit its page!
+- Your first visit says "Start a visit streak!" The streak really starts when you come back.
+- It tells you how long to wait now: "Come back in 2 days for a Beta Series pack!"
+- Streak series packs are always the newest series still in print.
+- The Ledger only names whoever found a button when a player found it themselves ("found by...").
+
 ## v0.34.1 to v0.34.5 — "Fine Print"
 **Wed Oct 14, 2026 · 1:52 AM HST**
 
