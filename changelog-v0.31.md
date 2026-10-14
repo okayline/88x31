@@ -1,8 +1,16 @@
-# 88x31 cLuB Changelog — v0.30.2
+# 88x31 cLuB Changelog — v0.31
 
 Newest first. Times are Hawaii time (HST).
 
 ---
+
+## v0.31 — "Rough Drafts"
+**Wed Oct 14, 2026 · 12:16 AM HST**
+
+- **New rarity: PROTOTYPE!** Unfinished drafts of the ultras, and only **4 of each** will ever exist. Look for a pencil sketch, a blueprint, a color test and a 1-bit draft of the Four Kimono Ladies, plus a pink neon test, a wireframe, a low-res render and a very buggy BASIC program from Series Beta.
+- **Rares are just rare now:** no more copy limit, they're simply hard to find. (Rares from before keep their "of 25" as a first-edition quirk!)
+- **New chances:** rares turn up more often, and ultras are a little less impossible. All the numbers are on Fair Play.
+- Bots can't take ultras as guestbook gifts.
 
 ## v0.30.2 — "Little Packs"
 **Tue Oct 13, 2026 · 11:39 PM HST**
