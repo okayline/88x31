@@ -4,6 +4,14 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.34.1 to v0.34.5 — "Fine Print"
+**Wed Oct 14, 2026 · 1:52 AM HST**
+
+- **Fair Play → Print Runs** got a glow-up: each series shows its pack and its limited pack, the day it came out, how many copies and limited packs are left, what's in it, and how often its buttons turn up in packs.
+- **The Ledger names names!** Wishes, fusions, foils, pack openings and new buttons now say who. (Webmaster stuff stays hush-hush.)
+- Clicking a button on the Ledger scrolls down to its info box, so you can actually see it.
+- The **UNDER CONSTRUCTION** bar never stops blinking now. (It used to give up after about 7 minutes!)
+
 ## v0.34 — "Swap Meet"
 **Wed Oct 14, 2026 · 1:24 AM HST**
 
