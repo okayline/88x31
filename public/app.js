@@ -998,18 +998,23 @@ function dashExtras(s, list) {
 // Week 1 is days 1-7; after that it shows the current week (days 8-14, 15-21...).
 function streakChart(n) {
   const start = n <= 7 ? 1 : n - ((n - 1) % 7);
-  const PICS = { club: ["▣"], club2: ["▣", "▣"], series: ["◆"] };
+  // tiny copies of the real shelf packs: the cLuB pack, and the current series' pack for day 7
+  const mini = (p) => el("span", { class: "sk-mini" }, packTile(p, "#"));
+  const club = () => mini({ id: 0, source: "streak" });
+  const PICS = { club: () => [club()], club2: () => [club(), club()], series: () => [mini({ id: 0, source: "streak", series: STREAK_SERIES })] };
   const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
   const cells = [];
   for (let d = start; d < start + 7; d++) {
     const r = streakDay(d);
     const state = d < n ? "past" : d === n ? "today" : "future";
     cells.push(el("span", { class: `sk-day sk-${state}` + (r ? " sk-" + r : ""), title: r ? `Day ${d}: ${TIPS[r]}` : `Day ${d}` },
-      el("span", { class: "sk-pack" }, r ? PICS[r].map((x) => el("span", { class: "sk-box" }, x)) : el("span", { class: "sk-none" }, "·")),
+      el("span", { class: "sk-pack" }, r ? PICS[r]() : el("span", { class: "sk-none" }, "·")),
       el("span", { class: "sk-num" }, String(d))));
   }
   return el("div", { class: "streak-chart" }, cells);
 }
+// the series pack shown on day 7: the current series' look
+const STREAK_SERIES = "Beta";
 // same schedule as the server (lib/progress.js streakReward)
 function streakDay(d) {
   if (d <= 1) return null;
