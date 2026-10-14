@@ -1096,7 +1096,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 @media (prefers-reduced-motion: reduce) { .pack-tile.torn::after { animation: none; display: none; } }
 
 /* v0.32.1: a smaller loader window that sits over the pack; breathing room on the dashboard */
-.ho-shade { background: rgba(0, 0, 40, .25); }
+.ho-shade { background: transparent; }   /* no dimming: the page stays as it is */
 .ho-win { width: min(250px, calc(100vw - 16px)); }
 .ho-tb { font-size: 11px; padding: 2px 3px 2px 5px; }
 .ho-body { padding: 8px; gap: 6px; }
