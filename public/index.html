@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.34.5">
+<link rel="stylesheet" href="style.css?v=0.34.6">
 </head>
 <body>
 <main>
@@ -61,11 +61,6 @@
         <datalist id="player-names"></datalist>
         <!-- last gift in and out (filled by loadSummary) -->
         <div id="dash-gifts" class="dash-gifts"></div>
-        <!-- webmasters: the newest players -->
-        <div id="newplayers-box" class="givepacks" hidden>
-          <p class="admin-head"><b>☠ New Players</b></p>
-          <ol id="newplayers-list" class="newplayers"><li>Loading...</li></ol>
-        </div>
         <!-- webmasters: hand out sealed packs -->
         <form id="givepacks-form" class="givepacks" hidden>
           <p class="admin-head"><b>☠ Give packs</b></p>
@@ -476,7 +471,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.34.5</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.34.6</span>
   </p>
 
 </main>
@@ -492,6 +487,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.34.5"></script>
+<script src="app.js?v=0.34.6"></script>
 </body>
 </html>
