@@ -2653,32 +2653,40 @@ function holdToOpen(p, anchor = null) {
   });
 }
 
-// Tear a crimped pouch open: press near the top and drag sideways past ~70% of its width.
-// Let go early and the cut closes up again. onTorn runs once, when it rips.
+// Tear a crimped pouch open: press near the top and drag sideways. The rip only happens when you
+// LET GO past the line (~80% across), so you can always drag back and let go early to keep it sealed.
+// A drag never counts as a click, so it can't pop up the Open Pack window either. (v0.33.1)
 function addTear(tile, onTorn) {
   if (!tile.classList.contains("pouch")) return;
   const cut = el("span", { class: "tear-cut", "aria-hidden": "true" }), hint = el("span", { class: "tear-hint", "aria-hidden": "true" }, "✂ - - - -");
   tile.querySelector(".pack-art").append(cut, hint);
-  let x0 = null, id = null, moved = false;
-  const reset = () => { x0 = null; cut.style.width = "0"; tile.classList.remove("tearing"); };
+  const LINE = 0.8;
+  let x0 = null, id = null, moved = false, f = 0;
   tile.addEventListener("pointerdown", (e) => {
+    if (tile.dataset.tore) return;
     const r = tile.getBoundingClientRect();
     if (e.clientY - r.top > r.height * 0.3) return;   // only the top of the pack tears
-    x0 = e.clientX; id = e.pointerId; moved = false;
+    x0 = e.clientX; id = e.pointerId; moved = false; f = 0;
   });
   tile.addEventListener("pointermove", (e) => {
     if (x0 == null || e.pointerId !== id) return;
     const r = tile.getBoundingClientRect(), dx = Math.abs(e.clientX - x0);
     if (dx > 6 && !moved) { moved = true; tile.setPointerCapture(id); tile.classList.add("tearing"); }
     if (!moved) return;
-    const f = Math.min(1, dx / r.width);
+    f = Math.min(1, dx / r.width);
     cut.style.width = (f * 100) + "%";
-    if (f >= 0.7) {
-      x0 = null; tile.classList.remove("tearing"); tile.classList.add("torn"); tile.dataset.tore = "1";
-      setTimeout(() => { delete tile.dataset.tore; onTorn(); }, 450);
-    }
+    tile.classList.toggle("tear-ready", f >= LINE);   // past the line: let go to rip
   });
-  const up = () => { if (x0 != null) { if (moved) tile.dataset.tore = "skip"; reset(); setTimeout(() => { if (tile.dataset.tore === "skip") delete tile.dataset.tore; }, 0); } };
-  tile.addEventListener("pointerup", up); tile.addEventListener("pointercancel", up);
+  const up = () => {
+    if (x0 == null) return;
+    const wasDrag = moved, rip = moved && f >= LINE;
+    x0 = null; moved = false; tile.classList.remove("tearing", "tear-ready");
+    if (!wasDrag) return;                              // a plain click: the Open Pack window handles it
+    tile.dataset.tore = rip ? "1" : "skip";            // swallow the click that follows this drag
+    if (rip) { tile.classList.add("torn"); setTimeout(() => { delete tile.dataset.tore; onTorn(); }, 450); }
+    else { cut.style.width = "0"; setTimeout(() => { if (tile.dataset.tore === "skip") delete tile.dataset.tore; }, 50); }
+  };
+  tile.addEventListener("pointerup", up);
+  tile.addEventListener("pointercancel", () => { x0 = null; moved = false; cut.style.width = "0"; tile.classList.remove("tearing", "tear-ready"); });
   tile.addEventListener("dragstart", (e) => e.preventDefault());
 }

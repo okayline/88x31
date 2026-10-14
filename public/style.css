@@ -1165,3 +1165,5 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .ho-term { font-size: 12px; min-height: 4.8em; }
 .ho-modem span { width: 8px; height: 8px; }
 .dash-list li.dash-gap-after { margin-bottom: 1.1em; }
+.pack-tile.tear-ready .tear-cut { background: repeating-linear-gradient(90deg, #ffff66 0 3px, transparent 3px 5px); }
+.pack-tile.tear-ready .tear-hint { color: #ffff66; }
