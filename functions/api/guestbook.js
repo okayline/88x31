@@ -59,6 +59,11 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: true });
     }
 
+    // bots never get ultras (v0.30.3), not even as guestbook gifts
+    if (page.is_bot) {
+      const g = await env.DB.prepare("SELECT d.rarity FROM instances i JOIN designs d ON d.id = i.design_id WHERE i.id = ?").bind(giftId).first();
+      if (g && g.rarity === "ultra") return json({ error: "Bots can't take ultras!" }, 400);
+    }
     // With a gift: lock it, write the entry, log and hand it over, all in one go.
     const token = newLockToken();
     const entry = env.DB.prepare(

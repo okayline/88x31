@@ -467,7 +467,8 @@ async function showPage(name) {
     const grid = $("gift-grid");
     grid.textContent = "";
     if (!mine.banners.length) grid.append(el("p", { class: "small" }, "You don't have any buttons to give yet!"));
-    for (const b of mine.banners.filter((x) => !x.locked)) { // skip buttons tied up in a trade
+    // skip buttons tied up in a trade, and ultras when it's a bot's page (bots never get ultras)
+    for (const b of mine.banners.filter((x) => !x.locked && !(col.owner.is_bot && x.rarity === "ultra"))) {
       grid.append(el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}`,
         onclick: () => { chooseGift(b); $("gift-picker").hidden = true; } },
         bannerImg(b), el("span", { class: "small" }, edition(b))));
