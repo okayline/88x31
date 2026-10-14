@@ -2684,7 +2684,7 @@ function addTear(tile, onTorn) {
     art.style.webkitMask = art.style.mask = keep;
     flap.style.clipPath = dir === 1 ? `polygon(0 0, ${w}% 0, ${w}% ${STRIP}%, 0 ${STRIP}%)` : `polygon(${100 - w}% 0, 100% 0, 100% ${STRIP}%, ${100 - w}% ${STRIP}%)`;
     flap.style.transformOrigin = `${dir === 1 ? w : 100 - w}% ${STRIP}%`;
-    flap.style.transform = `translateY(${(-f * 4).toFixed(1)}px) rotate(${(dir * -f * 34).toFixed(1)}deg) scaleY(${(1 - f * 0.25).toFixed(2)})`;
+    flap.style.transform = `translateY(${(-f * 4).toFixed(1)}px) rotate(${(dir * f * 34).toFixed(1)}deg) scaleY(${(1 - f * 0.25).toFixed(2)})`;
   };
   const LINE = 1;   // the cut has to reach all the way across before it can rip
   let x0 = null, id = null, moved = false, f = 0, dir = 1;
