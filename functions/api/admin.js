@@ -7,6 +7,8 @@
 //     same routine as "Delete My Account" (lib/accounts.js). Webmasters and bots can't be deleted.
 //   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, special?, note? }   sealed packs (keep 2);
 //     special packs are numbered per series (#7 of 25) and never go to bots
+// GET /api/admin?view=new_players  (webmasters only) -> { players: [{ name, created_at, came_from, joined_via,
+//   buttons, signed, trades }] }  the newest 30 real players (no bots, no webmasters)
 // Every action is written to admin_actions and sealed into the ledger (no images, just what and when).
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { userByName, seriesPrinted } from "../../lib/game.js";
@@ -27,6 +29,24 @@ function removeStatements(env, adminId, designId, note, t) {
        SELECT ?, 'remove_design', ?, ?, ? WHERE changes() = 1`
     ).bind(adminId, designId, note, t),
   ];
+}
+
+export async function onRequestGet({ request, env }) {
+  const me = await currentUser(env, request);
+  if (!me || !me.is_admin) return json({ error: "Webmasters only." }, 403);
+  if (new URL(request.url).searchParams.get("view") !== "new_players") return json({ error: "Unknown view." }, 400);
+  const stats = `(SELECT COUNT(*) FROM instances i WHERE i.owner_id = u.id AND i.consumed = 0) AS buttons,
+       (SELECT COUNT(*) FROM guestbook_entries g WHERE g.author_id = u.id) AS signed,
+       (SELECT COUNT(*) FROM trades t WHERE (t.from_user = u.id OR t.to_user = u.id) AND t.status = 'accepted') AS trades`;
+  const tail = "FROM users u WHERE u.is_bot = 0 AND u.is_admin = 0 ORDER BY u.created_at DESC, u.id DESC LIMIT 30";
+  let rows;
+  try {
+    rows = (await env.DB.prepare(`SELECT u.name, u.created_at, u.came_from, u.joined_via, ${stats} ${tail}`).all()).results;
+  } catch {
+    // before migration 022: no came_from / joined_via yet
+    rows = (await env.DB.prepare(`SELECT u.name, u.created_at, NULL AS came_from, NULL AS joined_via, ${stats} ${tail}`).all()).results;
+  }
+  return json({ players: rows });
 }
 
 export async function onRequestPost({ request, env }) {

@@ -6,6 +6,27 @@ const $ = (id) => document.getElementById(id);
   Element.prototype.append = function (...kids) { return orig.apply(this, kids.filter((k) => k != null && k !== false)); };
 }
 const say = (text) => ($("msg").textContent = text || "");
+
+// Where this visitor first came from (just the site name), sent along when they make an account so
+// the webmaster can see which places bring new players. Remembered from the very first visit.
+const cameFrom = (() => {
+  let saved = null;
+  try { saved = localStorage.getItem("came_from"); } catch {}
+  if (saved) return saved;
+  let v = "direct";
+  try {
+    const ref = new URLSearchParams(location.search).get("ref");
+    const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
+    const outside = (h) => h && h !== location.hostname.replace(/^www\./, "");
+    const framed = window.top !== window.self;
+    const parent = (location.ancestorOrigins && location.ancestorOrigins.length) ? host(location.ancestorOrigins[0]) : host(document.referrer);
+    if (ref && /^[a-z0-9_.-]{1,30}$/i.test(ref)) v = "ref:" + ref.toLowerCase();
+    else if (framed && outside(parent)) v = parent + " (embedded)";
+    else if (outside(host(document.referrer))) v = host(document.referrer);
+  } catch {}
+  try { localStorage.setItem("came_from", v); } catch {}
+  return v;
+})();
 // iPhones only show :active styles (like a pack squishing when you press it) if a touch listener exists
 document.addEventListener("touchstart", () => {}, { passive: true });
 // letting go of a pack pops it bigger for a moment (see .pack-tile.pop)
@@ -287,6 +308,7 @@ async function refresh() {
   const short = me.name.length > 16 ? me.name.slice(0, 15) + "…" : me.name;
   document.querySelectorAll(".my-page-name").forEach((a) => { a.textContent = `${short}'s Page`; a.title = `${me.name}'s Page`; });
   setupGivePacks();
+  setupNewPlayers();
   document.querySelectorAll(".my-page-link").forEach((a) => (a.href = "#u/" + encodeURIComponent(me.name)));
   loadPlayers();
   await route();
@@ -1669,6 +1691,28 @@ async function openPackCards(p, box, onDone = null) {
   };
 }
 
+// Webmasters: the newest real players, how they joined and where they came from.
+async function setupNewPlayers() {
+  const box = $("newplayers-box");
+  box.hidden = !(me && me.is_admin);
+  if (box.hidden) return;
+  const list = $("newplayers-list");
+  try {
+    const { players } = await api("/api/admin?view=new_players");
+    list.textContent = "";
+    if (!players.length) { list.append(el("li", {}, "No players yet!")); return; }
+    for (const p of players) {
+      const bits = [p.joined_via || null, p.came_from ? "from " + p.came_from : "from ?",
+        `${p.buttons} button${p.buttons === 1 ? "" : "s"}`,
+        p.signed ? `signed ${p.signed}` : null, p.trades ? `${p.trades} trade${p.trades === 1 ? "" : "s"}` : null].filter(Boolean);
+      list.append(el("li", {},
+        el("a", { href: "#u/" + encodeURIComponent(p.name) }, p.name), " ",
+        el("span", { class: "small", title: new Date(p.created_at * 1000).toLocaleString() }, ago(p.created_at)),
+        el("br"), el("span", { class: "small" }, bits.join(" · "))));
+    }
+  } catch (err) { list.textContent = ""; list.append(el("li", { class: "small" }, err.message)); }
+}
+
 // Webmasters: hand out sealed packs to a player or everyone. Special packs are the limited ones:
 // numbered per series ("Beta Gold Master Pack #7 of 25"), never for bots.
 let givePacksReady = false, giveSeries = [];
@@ -2135,7 +2179,7 @@ async function renderFreePack() {
     check.disabled = true;           // greyed out while it signs, so it can't be pressed twice
     check.textContent = "…";
     try {
-      const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: name.value, turnstile: fpToken } });
+      const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: name.value, turnstile: fpToken, came_from: cameFrom } });
       me = r.user;
       afterCode = "u/" + encodeURIComponent(r.user.name); // land on your new page once the code is saved
       showCode(r.code, r.user.name);

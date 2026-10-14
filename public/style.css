@@ -678,6 +678,8 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .givepacks { margin-top: 10px; border-top: 1px dashed #ff6666; padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
 .givepacks p { margin: 0; color: #ff9999; }
 .givepacks input[type="number"] { width: 48px; }
+.newplayers { margin: 0; padding-left: 20px; max-height: 260px; overflow-y: auto; }
+.newplayers li { margin-bottom: 4px; }
 
 /* logged-out Wall: pictures only */
 .wall-tile.still { cursor: default; }
