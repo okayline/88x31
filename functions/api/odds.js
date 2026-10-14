@@ -78,6 +78,9 @@ export async function onRequestGet({ env }) {
     const rank = order.indexOf(s.id);
     return {
       name: s.name, status: s.status, print_run: s.print_run ?? null, printed: s.printed,
+      // when it came out: the day it went live, or its first copy if that's earlier (Alpha was
+      // the whole game before series existed, so its copies go back further than its release date)
+      released_at: Math.min(s.released_at ?? Infinity, s.first_copy ?? Infinity) === Infinity ? null : Math.min(s.released_at ?? Infinity, s.first_copy ?? Infinity),
       left: s.print_run != null ? Math.max(0, s.print_run - s.printed) : null, out_of_print: !!s.out_of_print,
       special_name: s.special_name || "Special", special_limit: limit, special_made: made, special_left: Math.max(0, limit - made),
       pack_share: rank >= 0 ? pct(SERIES_WEIGHTS[rank] ?? 0, wTotal) : 0,   // % of cLuB cards in daily and ~*~ cLuB ~*~ packs

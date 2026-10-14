@@ -2217,6 +2217,7 @@ async function showFair() {
     el("div", { class: "fs-info" },
       el("h3", {}, `Series ${s.name} `, s.out_of_print ? el("span", { class: "series-status st-oop" }, "out of print")
         : el("span", { class: "series-status st-active" }, "in print")),
+      s.released_at ? el("p", { class: "small fs-date" }, `Came out ${new Date(s.released_at * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`) : null,
       s.print_run != null ? el("p", {}, bar(s.printed, s.print_run), ` ${s.left} of ${s.print_run} copies left`) : el("p", {}, `${s.printed} copies printed · no print run limit`),
       el("p", {}, bar(s.special_made, s.special_limit), ` ${s.special_name} Packs: ${s.special_left} of ${s.special_limit} left`),
       Object.keys(s.buttons || {}).length ? el("p", { class: "small" }, "In this series: ", lineup(s.buttons)) : null,
