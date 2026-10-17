@@ -556,6 +556,12 @@ function renderWallGrid() {
     // each group shuffled, with its mystery tiles at the end of that group
     const group = (arr) => [...shuffled(arr.filter((d) => !d.hidden)), ...shuffled(arr.filter((d) => d.hidden))];
     tiles = [...group(list.filter((d) => d.tier !== "archive")), ...group(list.filter((d) => d.tier === "archive"))];
+    // (v0.37) logged out: the commons and about five ? tiles mixed in at random, not a wall of hundreds of ?s
+    if (!me) {
+      const known = tiles.filter((d) => !d.hidden), q = shuffled(tiles.filter((d) => d.hidden)).slice(0, 5);
+      tiles = known.slice();
+      for (const d of q) tiles.splice(Math.floor(Math.random() * (tiles.length + 1)), 0, d);
+    }
   }
   const grid = $("wall-grid");
   grid.textContent = "";
@@ -1568,9 +1574,15 @@ async function loadPlayers() {
   const dl = $("player-names");
   dl.textContent = "";
   for (const p of players) dl.append(el("option", { value: p.name }));
-  // webmasters' give-packs list: every player, then "everyone" last
+  // webmasters' give-packs list (v0.37: a drop-down, no typing): everyone, then people, then bots
   const gl = $("givepack-names");
-  if (gl) { gl.textContent = ""; for (const p of players) gl.append(el("option", { value: p.name })); gl.append(el("option", { value: "everyone" })); }
+  if (gl) {
+    const keep = gl.value;
+    gl.textContent = "";
+    gl.append(el("option", { value: "" }, "pick a player..."), el("option", { value: "everyone" }, "★ everyone ★"),
+      ...players.map((p) => el("option", { value: p.name }, p.name + (p.is_bot ? " [bot]" : ""))));
+    gl.value = keep;
+  }
 }
 
 
@@ -2007,7 +2019,7 @@ async function setupGivePacks() {
     gSay("");
     const name = form.name.value.trim(), count = Number(form.count.value) || 1;
     const everyone = name.toLowerCase() === "everyone";
-    if (!name) return gSay('Type a player\'s name, or "everyone".');
+    if (!name) return gSay("Pick a player, or everyone.");
     const special = form.special.checked;
     const x = giveSeries.find((g) => String(g.id) === form.series.value);
     const kind = form.series.value.startsWith("kind:") ? form.series.value.slice(5) : null;   // (v0.37) a Single or a Welcome pack

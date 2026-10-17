@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.35–v0.37
+# 88x31 cLuB Changelog — v0.35–v0.37.1
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.37.1 — "Five Mysteries"
+**Sat Oct 17, 2026 · 10:58 AM HST**
+
+- **Logged out, the Wall** shows ~*~ cLuB ~*~ commons with about five mystery buttons mixed in, instead of a wall of hundreds of ?s.
+- **Packs can't be selected** like text any more (and no long-press menu on phones).
+- **Webmasters** pick who gets packs from a list.
 
 ## v0.37 — "Plain Windows"
 **Sat Oct 17, 2026 · 10:25 AM HST**

@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.37">
+<link rel="stylesheet" href="style.css?v=0.37.1">
 </head>
 <body>
 <main>
@@ -64,8 +64,7 @@
         <!-- webmasters: hand out sealed packs -->
         <form id="givepacks-form" class="givepacks" hidden>
           <p class="admin-head"><b>☠ Give packs</b></p>
-          <input name="name" placeholder="player name, or everyone" autocomplete="off" list="givepack-names">
-          <datalist id="givepack-names"></datalist>
+          <select name="name" id="givepack-names"><option value="">pick a player...</option></select>
           <label>how many <input name="count" type="number" min="1" max="10" value="1"></label>
           <select name="series"><option value="">~*~cLuB~*~ pack</option></select>
           <label title="better odds, at least one real foil"><input name="special" type="checkbox"> special</label>
@@ -467,7 +466,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.37</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.37.1</span>
   </p>
 
 </main>
@@ -483,6 +482,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.37"></script>
+<script src="app.js?v=0.37.1"></script>
 </body>
 </html>

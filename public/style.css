@@ -1279,3 +1279,6 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .bottom-bar { font-size: 18px; }
 @media (max-width: 560px) { .bottom-bar { font-size: 15px; } }
 .bottom-bar a { white-space: nowrap; }
+
+/* (v0.37) packs are pictures: no selecting their words, no long-press menu on phones */
+.pack-tile, .pack-tile * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
