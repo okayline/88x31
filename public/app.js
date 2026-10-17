@@ -2653,7 +2653,7 @@ loadMarquee();   // once per page load, so it stays put while you read it
 // (v0.37.1) the line above the title changes every load
 const FOUND_LINES = ["You have found...", "You have stumbled upon...", "You have discovered...", "You have surfed onto...",
   "You have wandered into...", "You have dialed into...", "You have been linked to...", "You have arrived at...",
-  "You have uncovered...", "Welcome, traveler, to...", "Your search returned...", "You have unlocked..."];
+  "You have uncovered...", "Welcome, web surfer, to...", "Your search returned...", "You have unlocked..."];
 $("found-line").textContent = FOUND_LINES[Math.floor(Math.random() * FOUND_LINES.length)];
 
 // Visitor counter: counted once per browser visit, so refreshing doesn't bump it.
