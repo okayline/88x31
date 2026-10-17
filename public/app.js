@@ -2621,7 +2621,7 @@ const MARQUEE_90S = ["BEST VIEWED IN NETSCAPE 4.0 AT 800x600", "NO FRAMES WERE H
   // (v0.37.1) more of the old web
   "YOU'VE GOT MAIL!", "UNDER CONSTRUCTION... 4EVER", "BOOKMARK THIS PAGE!!", "OPTIMIZED 4 A 14.4K MODEM",
   "AS SEEN ON THE INFORMATION SUPERHIGHWAY", "WEBMASTER IS AWAY FROM KEYBOARD", "MADE WITH NOTEPAD AND LOVE",
-  "THIS SITE HAS NO BLINK TAGS (WE PROMISE)", "LINK 2 ME! COPY MY BUTTON", "SURF'S UP ON THE WORLD WIDE WEB"];
+  "THIS SITE HAS NO BLINK TAGS (WE PROMISE)", "1337 h4x0rZ oNLy", "LINK 2 ME! COPY MY BUTTON", "SURF'S UP ON THE WORLD WIDE WEB"];
 // (v0.37.1) about the buttons themselves
 const MARQUEE_BUTTONS = ["EVERY BUTTON IS EXACTLY 88 x 31 PIXELS", "88x31 BUTTONS: THE WEB'S TRADING CARDS SINCE THE 90s",
   "FOILS MAKE A BUTTON SHINE: HOLO, CHROME, GOLD...", "FUSE 3 COPIES 4 A SHINIER ONE", "ULTRAS ARE 1 OF 1. ONLY ONE WILL EVER EXIST",
@@ -2650,6 +2650,11 @@ async function loadMarquee() {
   t.style.animationDuration = Math.max(18, Math.round(t.textContent.length / 6)) + "s";
 }
 loadMarquee();   // once per page load, so it stays put while you read it
+// (v0.37.1) the line above the title changes every load
+const FOUND_LINES = ["You have found...", "You have stumbled upon...", "You have discovered...", "You have surfed onto...",
+  "You have wandered into...", "You have dialed into...", "You have been linked to...", "You have arrived at...",
+  "You have uncovered...", "Welcome, traveler, to...", "Your search returned...", "You have unlocked..."];
+$("found-line").textContent = FOUND_LINES[Math.floor(Math.random() * FOUND_LINES.length)];
 
 // Visitor counter: counted once per browser visit, so refreshing doesn't bump it.
 (async () => {
