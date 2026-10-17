@@ -2225,7 +2225,7 @@ async function showFair() {
     ["Daily", "3", String(P.daily.keep), `${P.daily.per_day} a day. ${pctTxt(P.daily.found_chance)} have a found button, ${pctTxt(P.daily.bonus_chance)} have a BONUS PACK card!`],
     ["Welcome & ~*~cLuB~*~", "3", String(P.sealed.keep), `${pctTxt(P.daily.found_chance)} have a found button`],
     ["Series", "3", String(P.sealed.keep), "Only that series"],
-    ["Limited" + (named.length ? ` (${named.map((s) => s.special_name).join(", ")})` : ""), "3", String(P.sealed.keep), "Only that series, 1 rare guaranteed, always at least 1 foil, numbered"],
+    [named.length ? [document.createTextNode("Limited"), el("small", {}, `(${named.map((s) => s.special_name).join(", ")})`)] : "Limited", "3", String(P.sealed.keep), "Only that series, 1 rare guaranteed, always at least 1 foil, numbered"],
     ["Free", "1", "1", "No prototypes or ultras"],
   ]));
 
@@ -2235,7 +2235,7 @@ async function showFair() {
   $("fair-foils").replaceChildren(
     table(["Finish", "Most packs", "Limited packs"], [
       tierRow("Plain, Glitter or Sheen", 0), tierRow("Tier 1 (Holo, Galaxy, Ripple)", 1),
-      tierRow("Tier 2 (Chrome, Gold, Oil Slick)", 2), tierRow("Tier 3 (Prismatic, Double Rainbow, Liquid Metal)", 3),
+      tierRow("Tier 2 (Chrome, Gold, Oil Slick)", 2), tierRow("Tier 3 (Prismatic, ???, ???)", 3),
       ["Any real foil", pctTxt(anyFoil(F.normal.tiers)), pctTxt(anyFoil(F.special.tiers))],
     ]),
     limitedNote.cloneNode(true),

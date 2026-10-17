@@ -379,11 +379,9 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 
 /* people who ask their system for less motion get a still page */
 @media (prefers-reduced-motion: reduce) {
-  .marquee span, .strip-track, .card.chosen, .ticker span { animation: none; }
-  .ticker { white-space: normal; }
-  .ticker span { padding-left: 0; }
+  /* the two scrolling text lines keep scrolling (phones often have Reduce Motion on, and then they showed the whole line) */
+  .strip-track, .card.chosen { animation: none; }
   body::before { background-image: none; }
-  .marquee span { padding-left: 0; }
 }
 
 /* phones: stack the two boxes */
@@ -1046,12 +1044,13 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .odds-table th, .odds-table td { border: 1px solid #4040a0; padding: 4px 6px; text-align: left; vertical-align: top; }
 .odds-table thead th { background: #000040; color: var(--ink); }
 .odds-table tbody th { white-space: nowrap; }
+.odds-table tbody th small { display: block; font-weight: normal; white-space: normal; }
 .odds-table td:not(:last-child) { white-space: nowrap; }
 .fair-series h3 { margin: 10px 0 4px; color: #00ffff; }
 .fair-series p { margin: 3px 0; }
 .fair-bar { display: inline-block; width: 140px; max-width: 40vw; height: 9px; border: 1px solid #c0c0c0; background: #000040; vertical-align: middle; }
 .fair-bar > span { display: block; height: 100%; background: linear-gradient(90deg, #00ff66, #ffff00, #ff6600); }
-@media (max-width: 600px) { .odds-table { font-size: 12px; } .odds-table td:not(:last-child) { white-space: normal; } }
+@media (max-width: 600px) { .odds-table { font-size: 12px; } .odds-table tbody th { white-space: normal; } .odds-table td:not(:last-child) { white-space: normal; } }
 #fair-odds, #fair-packs, #fair-foils { overflow-x: auto; }
 
 /* v0.30: starter quests, trade-in, request picker */
