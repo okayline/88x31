@@ -2115,43 +2115,70 @@ const ledName = (h, name) => h.mystery ? el("span", { class: "mystery-name" }, "
   : h.kind === "design" && h.design_id && me ? el("a", { href: "#wall/" + h.design_id }, name) : name;
 // who did it (v0.34.2): their page, or "a former player" once the account is gone
 const ledWho = (h) => h.who ? el("a", { href: "#u/" + encodeURIComponent(h.who) }, h.who) : "a former player";
+// (v0.37) Every line starts with the button or pack, then who: "LUNA.GIF #5 was pulled by kura",
+// "Sealed pack #12 was opened by kura!" The card is the main thing.
+const ledUser = (n) => (n ? el("a", { href: "#u/" + encodeURIComponent(n) }, n) : "a former player");
+// a copy changing hands: c = the copy, to = who got it, from = who gave it (if anyone)
+const MOVED = {
+  welcome: (c, to) => [c, " went to ", to, " in a welcome pack"],
+  daily: (c, to) => [c, " was pulled by ", to],
+  starter: (c, to) => [c, " went to ", to, " to start with"],
+  free_pack: (c, to) => [c, " was pulled by ", to, " from a free pack"],
+  pack: (c, to) => [c, " was opened by ", to, " from a sealed pack"],
+  set_reward: (c, to) => [c, " was earned by ", to, " for finishing a set"],
+  found: (c, to) => [c, " was found by ", to, " and added to the cLuB"],
+  admin: (c, to) => [c, " was given to ", to, " by the webmaster"],
+  fusion: (c, to) => [c, " was made by ", to, " in a fusion"],
+  away: (c, to) => [c, " was sent by ", to, " to visit 4Dungeon"],
+  home: (c, to) => [c, " came home to ", to, " from 4Dungeon"],
+  pass_on: (c, to, from) => [c, " was passed on to ", to, " by ", from],
+  guestbook: (c, to, from) => [c, " was given to ", to, " by ", from, " as a guestbook gift"],
+  gift: (c, to, from) => [c, " was given to ", to, " by ", from],
+  trade: (c, to, from) => [c, " was traded to ", to, " by ", from],
+  open_trade: (c, to, from) => [c, " went to ", to, " in an open trade with ", from],
+  request: (c, to, from) => [c, " was given to ", to, " by ", from, ", filling their request"],
+  trade_in: (c, to, from) => [c, " was traded in by ", from, " for a sealed pack"],
+};
 function ledgerItem(h) {
     // line 1 (small): when + fingerprint · line 2: what happened
     const meta = el("div", { class: "led-meta" }, fmtStamp(h.created_at), " · ",
       el("span", { class: "hash", title: h.hash }, h.hash.slice(0, 12) + "…"));
+    const line = (...kids) => el("div", { class: "led-what" }, ...kids);
+    const packName = () => (h.pack_special_no
+      ? el("a", { href: "#pack/" + h.pack_id }, `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}`)
+      : ["Sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)]);
+    const copy = () => [ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`];
     let what;
     if (h.kind === "design") {
-      what = h.mystery ? el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, ""), " joined ~*~ tHe cLuB ~*~")
-        : el("div", { class: "led-what" }, el("b", {}, "NEW DESIGN "), ledName(h, h.design || "?"), ` (${h.rarity}`
+      const info = h.mystery ? "" : ` (${h.rarity}`
         + `${h.max_editions ? ", " + h.max_editions + (h.max_editions === 1 ? " copy" : " copies") : ""}`
-        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`, h.who ? [", found by ", ledWho(h)] : null);
+        + `${h.license ? ", " + (h.license === "Original" ? "original art" : h.license) : ""})`;
+      const name = h.mystery ? ledName(h, "") : ledName(h, h.design || "?");
+      what = h.who ? line(name, info, " was found by ", ledWho(h), " and joined ~*~ tHe cLuB ~*~")
+        : line(name, info, " joined ~*~ tHe cLuB ~*~ as a new design");
     } else if (h.kind === "fusion") {
       const name = h.fused_status === "removed" ? "a removed button" : h.fused_design || "a button";
       const fin = finishName({ foil: h.fused_foil, pattern: h.fused_pattern, effect: h.fused_effect });
-      what = el("div", { class: "led-what" }, el("b", {}, "FUSION "), ledWho(h), " fused 3 copies of ", ledName(h, name), h.mystery ? "!" : ` into #${h.fused_edition ?? "?"}, now ${fin}!`);
+      what = line(ledName(h, name), h.mystery ? "" : ` #${h.fused_edition ?? "?"}`, " was fused from 3 copies by ", ledWho(h), h.mystery ? "!" : `, now ${fin}!`);
     } else if (h.kind === "foil") {
       const fin = finishName(h);
-      const f = h.foil === "clear" && !h.effect ? "no foil" : !tierOf(h.foil) && !h.pattern && !h.effect ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish!`;
-      what = el("div", { class: "led-what" }, el("b", {}, "FOIL "), ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, ` came with ${h.mystery ? "a finish" : f}`, h.who ? [" for ", ledWho(h)] : null);
+      const plain = h.foil === "clear" && !h.effect, dull = !tierOf(h.foil) && !h.pattern && !h.effect;
+      const f = plain ? "no foil" : dull ? `a ${fin.toLowerCase()} finish` : `a ${fin.toUpperCase()} finish`;
+      what = line(...copy(), ` came with ${h.mystery ? "a finish" : f}`, h.who ? [" for ", ledWho(h)] : null, !h.mystery && !plain && !dull ? "!" : "");
     } else if (h.kind === "request") {
-      what = el("div", { class: "led-what" }, el("b", {}, "REQUEST "), ledWho(h), " wished for ",
-        h.mystery ? ledName(h, "") : [h.request_foil ? `a ${foilName(h.request_foil) === "None" ? "plain" : foilName(h.request_foil)} ` : "", ledName(h, h.design || "a button")],
-        " on the request board");
+      what = line(h.mystery ? ledName(h, "") : [h.request_foil ? `A ${foilName(h.request_foil) === "None" ? "plain" : foilName(h.request_foil)} ` : "", ledName(h, h.design || "a button")],
+        " was wished for by ", ledWho(h), " on the request board");
     } else if (h.kind === "pack") {
-      const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
-      what = el("div", { class: "led-what" }, el("b", {}, "PACK "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)],
-        h.pack_reason === "made" ? ` made for ${h.pack_to || "a former player"} (${PACK_FROM[h.pack_source] || h.pack_source})`
-          : ` ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} by ${h.pack_from || "a former player"} to ${h.pack_to || "a former player"}`);
+      what = h.pack_reason === "made" ? line(packName(), " was made for ", ledUser(h.pack_to), ` (${PACK_FROM[h.pack_source] || h.pack_source})`)
+        : line(packName(), ` was ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} to `, ledUser(h.pack_to), " by ", ledUser(h.pack_from));
     } else if (h.kind === "pack_open") {
-      const lim = h.pack_special_no ? `${h.pack_series} ${h.pack_special_name || "Special"} Pack #${h.pack_special_no} of ${h.pack_special_limit || 25}` : null;
-      what = el("div", { class: "led-what" }, el("b", {}, "PACK OPENED "), lim ? el("a", { href: "#pack/" + h.pack_id }, lim) : ["sealed pack ", el("a", { href: "#pack/" + h.pack_id }, `#${h.pack_id}`)], " was opened by ", ledWho(h));
+      what = line(packName(), " was opened by ", ledWho(h), "!");
     } else if (h.kind === "admin") {
-      what = el("div", { class: "led-what" }, el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
+      what = line(el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {
-      what = el("div", { class: "led-what" },
-        ledName(h, h.design || "a button"), h.mystery ? "" : ` #${h.edition ?? "?"}`, `, ${HOW[h.reason] || h.reason}`,
-        h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
-        h.reason === "trade_in" ? " for a sealed pack" : ` → ${h.to_name || "a former player"}`);
+      const say = MOVED[h.reason];
+      what = say ? line(...say(copy(), ledUser(h.to_name), ledUser(h.from_name)).flat())
+        : line(...copy(), ` went to `, ledUser(h.to_name), ` (${h.reason})`);
     }
   return el("li", { value: h.id }, meta, what);
 }
@@ -2593,66 +2620,6 @@ loadMarquee();   // once per page load, so it stays put while you read it
 
 refresh().catch((e) => { say(e.message); showTop("out"); });
 
-// ---------- folding sections (v0.31.1, v0.32.2) ----------
-// Any heading written » Like This « folds: click it and everything under it (up to the next such
-// heading) tucks away. The leading » is the arrow: it points down while open, right while folded.
-// Remembered per heading in this browser. Works for headings drawn later too (pack pages, button pages...).
-// Webmaster boxes fold too (v0.34.5): their "☠ ..." line (.admin-head) folds the rest of its box.
-const foldKey = (h) => "fold-" + h.textContent.replace(/[»«\s]+/g, " ").trim().toLowerCase();
-const isFoldHead = (h) => h && ((h.tagName === "H2" && /^\s*»/.test(h.textContent) && /«\s*$/.test(h.textContent) && !h.closest(".ho-win"))
-  || h.classList.contains("admin-head"));
-function foldBody(h) {   // the elements this heading folds: its following siblings, up to the next fold heading
-  const out = [];
-  for (let n = h.nextElementSibling; n && !isFoldHead(n); n = n.nextElementSibling) out.push(n);
-  return out;
-}
-function setFold(h, folded) {
-  h.classList.toggle("folded", folded);
-  h.setAttribute("aria-expanded", folded ? "false" : "true");
-  for (const n of foldBody(h)) n.classList.toggle("fold-away", folded);
-}
-function prepFold(h) {
-  if (h.dataset.fold) return;
-  h.dataset.fold = "1";
-  h.classList.add("fold-head");
-  h.tabIndex = 0;
-  // turn the leading » into the arrow
-  const t = [...h.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
-  if (t && t.textContent.trimStart().startsWith("»")) {
-    t.textContent = t.textContent.replace(/^\s*»\s*/, "");
-    h.prepend(el("span", { class: "fold-arrow", "aria-hidden": "true" }, "»"), " ");
-  } else if (h.classList.contains("admin-head")) h.prepend(el("span", { class: "fold-arrow", "aria-hidden": "true" }, "»"), " ");
-  let folded = false;
-  try { folded = localStorage.getItem(foldKey(h)) === "1"; } catch {}
-  setFold(h, folded);
-}
-function applyFolds(root = document) { for (const h of root.querySelectorAll("h2, .admin-head")) if (isFoldHead(h)) prepFold(h); }
-function toggleFold(h) {
-  const folded = !h.classList.contains("folded");
-  setFold(h, folded);
-  try { folded ? localStorage.setItem(foldKey(h), "1") : localStorage.removeItem(foldKey(h)); } catch {}
-}
-document.addEventListener("click", (e) => {
-  const h = e.target.closest && e.target.closest(".fold-head");
-  if (!h || e.target.closest("a, button, input")) return;
-  toggleFold(h);
-});
-document.addEventListener("keydown", (e) => {
-  const h = e.target.closest && e.target.closest(".fold-head");
-  if (h && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleFold(h); }
-});
-// headings drawn later (pack pages, button pages, the All the Packs page...)
-let foldQueued = false;
-new MutationObserver(() => {
-  if (foldQueued) return;
-  foldQueued = true;
-  requestAnimationFrame(() => {
-    foldQueued = false;
-    applyFolds();
-    for (const h of document.querySelectorAll(".fold-head.folded")) setFold(h, true);   // re-tuck anything redrawn under a folded heading
-  });
-}).observe(document.body, { childList: true, subtree: true });
-applyFolds();
 
 // ---------- every pack ever made (v0.31.2) ----------
 async function showAllPacks() {

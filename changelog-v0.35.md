@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.35–v0.36
+# 88x31 cLuB Changelog — v0.35–v0.37
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.37 — "Plain Windows"
+**Sat Oct 17, 2026 · 10:25 AM HST**
+
+- **Windows stay open.** The » headings no longer fold their windows away; every window is just a window again.
+- **The Ledger leads with the button.** Every line now starts with the button or pack and says who after it: "LUNA.GIF #5 was pulled by kura", "Sealed pack #12 was opened by kura!"
+- **Logged out, the Wall keeps more secrets.** Visitors who aren't logged in see only the cLuB's own commons; everything else is a mystery until you join.
 
 ## v0.36 — "Visiting Hours"
 **Sat Oct 17, 2026 · 4:55 AM HST**

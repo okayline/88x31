@@ -6,13 +6,13 @@ import { seenSet } from "../../lib/progress.js";
 
 // Hidden until seen (v0.30): a logged-in player sees a button on the Wall only once they've owned
 // it, been shown it in a pull or pack, or seen it on someone's page (lib/progress.js). Logged-out
-// visitors keep the old rule: rares, ultras and set rewards are mysteries, the rest show.
-const HIDDEN_OUT = new Set(["rare", "prototype", "ultra", "special"]);
+// visitors (v0.37) see only the cLuB's own commons; everything else is a mystery, so the Wall shows a logged-out
+// visitor less than it shows a player.
 // Buttons in a series that hasn't been released yet stay off the Wall (webmasters still see them).
 const UPCOMING_OUT = (viewer) => (viewer && viewer.is_admin ? ""
   : "AND NOT EXISTS (SELECT 1 FROM series s WHERE s.id = d.series_id AND s.status = 'upcoming')");
 // is this design a mystery to this viewer?
-const mysteryFor = (seen) => (d) => (seen ? !seen.has(d.id) : HIDDEN_OUT.has(d.rarity));
+const mysteryFor = (seen) => (d) => (seen ? !seen.has(d.id) : d.rarity !== "common" || d.tier === "archive");
 
 export async function onRequestGet({ request, env }) {
   const id = Number(new URL(request.url).searchParams.get("id"));
