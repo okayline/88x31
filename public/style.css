@@ -375,12 +375,13 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .strip-track { display: flex; gap: 6px; width: max-content; animation: strip 30s linear infinite; }
 .strip-track img { display: block; image-rendering: pixelated; }
 /* 10 buttons x (88px + 6px gap) = one full set */
-@keyframes strip { to { transform: translateX(-940px); } }
+@keyframes strip { to { transform: translateX(-50%); } }   /* (v0.37) half the track: it holds every button twice, so the loop is seamless */
 
 /* people who ask their system for less motion get a still page */
 @media (prefers-reduced-motion: reduce) {
   /* the two scrolling text lines keep scrolling (phones often have Reduce Motion on, and then they showed the whole line) */
-  .strip-track, .card.chosen { animation: none; }
+  /* (v0.37) the button strip keeps moving too: with Reduce Motion on, phones showed it standing still */
+  .card.chosen { animation: none; }
   body::before { background-image: none; }
 }
 
@@ -1273,3 +1274,8 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .th-fp-a .fp-rule { margin: 0; }
 .th-fp-a .pack-sub { margin-top: 2px; }
 .th-fp-c .fp-rainbow, .th-fp-a .fp-rule, .th-fp-c .fp-hr { flex-shrink: 0; }
+
+/* (v0.37) the bottom menu, the same size as the top one */
+.bottom-bar { font-size: 18px; }
+@media (max-width: 560px) { .bottom-bar { font-size: 15px; } }
+.bottom-bar a { white-space: nowrap; }
