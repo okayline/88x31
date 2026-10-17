@@ -280,6 +280,21 @@ npx wrangler d1 execute 88x31-db --remote --file=021_print_runs_limited_passkeys
   libraries, ES256 and RS256, discoverable credentials, checked against the request's own origin and
   hostname. Save codes stay as the backup.
 
+## Updating to v0.35 (shared item registry)
+
+Already run on the live database on 2026-10-17 (additive columns only):
+```
+npx wrangler d1 execute 88x31-db --remote --file=migrations/026_shared_registry.sql
+```
+- `lib/registry.js` mirrors this game into the shared item registry (the dungeon-items Worker, through the same
+  `ACCOUNTS` binding and `ACCOUNTS_KEY` as accounts, route `/rpc/registry/*`). **This game's own ledger stays the master.**
+- What goes there: **original-tier** buttons on the shared ladder: common, uncommon, rare, prototype, ultra (1-of-1).
+  **Specials** (quest rewards) and **archive/found uploads** stay here only.
+- Every copy of those buttons is registered (the old ones backfilled, born to their first owner), trades become moves,
+  fused or used-up copies are spent, and frozen or removed designs are retired there once all their copies are in.
+- It runs in the background after page loads (at most once a minute, 30 calls a pass) and from the webmaster API:
+  `POST /api/admin { "action": "registry_sync" }` (120 calls). A refusal is logged and that copy marked `registry_copy = 0`.
+
 ## Run locally (optional)
 
 ```

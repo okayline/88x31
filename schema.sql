@@ -636,3 +636,13 @@ CREATE TABLE IF NOT EXISTS trade_packs (
   PRIMARY KEY (trade_id, pack_id)
 );
 -- (guestbook_entries.pack_id INTEGER REFERENCES packs(id) is added by migration 025)
+
+-- ---------- v0.35: mirror into the shared item registry (also in migrations/026_shared_registry.sql) ----------
+-- This game's ledger stays the master; lib/registry.js mirrors original-tier buttons (not specials, not uploads) and
+-- their copies, trades and fusions into the dungeon-items registry. These columns remember how far that has got.
+ALTER TABLE designs ADD COLUMN registry_item INTEGER;
+ALTER TABLE designs ADD COLUMN registry_retired INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE instances ADD COLUMN registry_copy INTEGER;
+ALTER TABLE instances ADD COLUMN registry_owner INTEGER;
+ALTER TABLE instances ADD COLUMN registry_spent INTEGER NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_instances_registry ON instances(registry_copy, registry_spent);

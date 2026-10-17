@@ -1,6 +1,7 @@
 // POST /api/admin  (webmasters only)
 //   { action: "remove_design",  design_id, note? }   leaves pulls now; copies become "removed by request"
 //   { action: "restore_design", design_id }           undoes a removal
+//   { action: "registry_sync" }                       mirror into the shared item registry now (lib/registry.js)
 //   { action: "block_uploader",   name, remove_uploads?: bool }   stops them adding buttons
 //   { action: "unblock_uploader", name }
 //   { action: "delete_player", name, confirm }      deletes a player's account (confirm = their name again);
@@ -15,6 +16,7 @@ import { userByName, seriesPrinted } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { givePacks, everyoneIds, specialRun } from "../../lib/packs.js";
 import { deleteAccount } from "../../lib/accounts.js";
+import { syncRegistry } from "../../lib/registry.js";
 
 const TOMBSTONE = "banners/removed.gif";
 
@@ -56,6 +58,9 @@ export async function onRequestPost({ request, env }) {
   const note = String(body.note || "").trim().slice(0, 200) || null;
   const t = now();
   const db = env.DB;
+
+  // Mirror into the shared item registry now (it also runs on its own after page loads). Bigger pass than the background one.
+  if (body.action === "registry_sync") return json(await syncRegistry(env, { budget: 120 }));
 
   if (body.action === "remove_design" || body.action === "restore_design") {
     const id = Number(body.design_id);
