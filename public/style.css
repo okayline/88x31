@@ -1265,3 +1265,11 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .th-fp-b .fp-box b { font-size: 16px; letter-spacing: .5px; }
 .th-fp-b .fp-box i { font-size: 8px; letter-spacing: 0; font-style: normal; }
 .th-fp-c .fp-link { font-size: 20px; }
+.th-fp-a .fp-club { font: bold 9px Georgia, "Times New Roman", serif; color: #1f2a5a; margin-bottom: -4px; }
+.th-fp-c .fp-club { font: bold 9px "Times New Roman", serif; color: #0000ee; margin: 6px 0 -4px; }
+.th-fp-c .fp-link { margin-top: 0; }
+.th-fp-a .fp-stamp { margin: 0; padding: 4px 3px; }
+.th-fp-a .fp-name { font-size: 20px; }
+.th-fp-a .fp-rule { margin: 0; }
+.th-fp-a .pack-sub { margin-top: 2px; }
+.th-fp-c .fp-rainbow, .th-fp-a .fp-rule, .th-fp-c .fp-hr { flex-shrink: 0; }
