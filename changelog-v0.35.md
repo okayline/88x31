@@ -10,6 +10,8 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 - **Logged out, the Wall** shows ~*~ cLuB ~*~ commons with about five mystery buttons mixed in, instead of a wall of hundreds of ?s.
 - **Packs can't be selected** like text any more (and no long-press menu on phones).
 - **Webmasters** pick who gets packs from a list.
+- **Fixed:** on a phone, foiled buttons and buttons with an effect in your collection came out cropped or stretched. They're sized like the rest now.
+- **The green scroll bar** has lots of new lines: a button spotted on the Wall, how many buttons there are, button facts, and more of the old web.
 
 ## v0.37 — "Plain Windows"
 **Sat Oct 17, 2026 · 10:25 AM HST**

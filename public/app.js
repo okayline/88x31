@@ -454,10 +454,14 @@ async function showPage(name) {
   const grid = $("page-collection");
   grid.textContent = "";
   if (!col.banners.length) grid.append(el("p", {}, "No buttons yet!"));
+  // (v0.37) twice the size; (v0.37.1) on a phone, as big as fits two to a row. A scale, not CSS stretching, so a
+  // foiled or effect button's layers (sized from the same scale) grow with it.
+  const fit = Math.floor((((grid.clientWidth || 800) - 8) / 2 - 4 - 4) / 88 * 100) / 100;
+  const scale = window.matchMedia("(max-width: 480px)").matches ? Math.max(1, Math.min(2, fit)) : 2;
   for (const b of col.banners) {
     const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
     grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
-      bannerImg(b, 2), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));   // (v0.37) twice the size, still crisp
+      bannerImg(b, scale), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
   }
   showVisitors(grid, mine, seq);
 
@@ -2613,16 +2617,32 @@ setInterval(loadTicker, 3 * 60 * 1000);
 const MARQUEE_NEWS = ["LATEST DROP:\u00a0\u00a0BETA SERIES"];
 const MARQUEE_HOME = ["WELCOME 2 MY HOMEPAGE", "COLLECT THEM ALL", "TRADE WITH FRIENDS", "SIGN MY GUESTBOOK", "THANX 4 VISITING"];
 const MARQUEE_90S = ["BEST VIEWED IN NETSCAPE 4.0 AT 800x600", "NO FRAMES WERE HARMED IN THE MAKING OF THIS SITE",
-  "DON'T 4GET 2 SIGN MY GUESTBOOK", "THIS PAGE IS Y2K COMPLIANT", "PLZ DON'T PICK UP THE PHONE, I'M ONLINE"];
-const MARQUEE_SIZE = 5;   // how many things scroll by
+  "DON'T 4GET 2 SIGN MY GUESTBOOK", "THIS PAGE IS Y2K COMPLIANT", "PLZ DON'T PICK UP THE PHONE, I'M ONLINE",
+  // (v0.37.1) more of the old web
+  "YOU'VE GOT MAIL!", "UNDER CONSTRUCTION... 4EVER", "BOOKMARK THIS PAGE!!", "OPTIMIZED 4 A 14.4K MODEM",
+  "AS SEEN ON THE INFORMATION SUPERHIGHWAY", "WEBMASTER IS AWAY FROM KEYBOARD", "MADE WITH NOTEPAD AND LOVE",
+  "THIS SITE HAS NO BLINK TAGS (WE PROMISE)", "LINK 2 ME! COPY MY BUTTON", "SURF'S UP ON THE WORLD WIDE WEB"];
+// (v0.37.1) about the buttons themselves
+const MARQUEE_BUTTONS = ["EVERY BUTTON IS EXACTLY 88 x 31 PIXELS", "88x31 BUTTONS: THE WEB'S TRADING CARDS SINCE THE 90s",
+  "FOILS MAKE A BUTTON SHINE: HOLO, CHROME, GOLD...", "FUSE 3 COPIES 4 A SHINIER ONE", "ULTRAS ARE 1 OF 1. ONLY ONE WILL EVER EXIST",
+  "FOUND A BUTTON IN THE WILD? ADD IT 2 THE WALL", "COME BACK EVERY DAY 4 YOUR VISIT STREAK", "DAY 4 + DAY 6 OF YOUR STREAK: A ~*~cLuB~*~ SINGLE",
+  "EVERY BUTTON HAS A NUMBER. YOURS IS ONE OF A KIND", "SOME BUTTONS DO STRANGE THINGS ON SCREEN..."];
+const MARQUEE_SIZE = 6;   // how many things scroll by
+
 async function loadMarquee() {
   let live = [];
   try { live = (await api("/api/news")).items || []; } catch {}
   // a short mix each page load: the news, one live line (if any), then a few random picks
   const pick = (arr) => arr.splice(Math.floor(Math.random() * arr.length), 1)[0];
-  const liveLeft = live.slice(), pool = [...MARQUEE_HOME, ...MARQUEE_90S];
+  const liveLeft = live.slice(), pool = [...MARQUEE_HOME, ...MARQUEE_90S, ...MARQUEE_BUTTONS];
   const lines = [...MARQUEE_NEWS];
   if (liveLeft.length) lines.push(pick(liveLeft));
+  // (v0.37.1) a button you can see, and how many there are
+  try {
+    const { designs } = await api("/api/designs"), seen = designs.filter((d) => !d.hidden);
+    if (seen.length) { const d = seen[Math.floor(Math.random() * seen.length)]; lines.push(`BUTTON SPOTTED: ${String(d.name).toUpperCase()} (${String(d.rarity).toUpperCase()})`); }
+    if (designs.length) pool.push(`${designs.length} BUTTONS AND COUNTING`);
+  } catch {}
   pool.push(...liveLeft);   // any other live lines can still turn up as random picks
   while (lines.length < MARQUEE_SIZE && pool.length) lines.push(pick(pool));
   const t = $("marquee-text");

@@ -1226,7 +1226,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 /* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
 @media (max-width: 480px) {
   #page-collection .tile { width: calc(50% - 4px); }
-  #page-collection .tile img.banner, #page-collection .tile .foil-wrap, #page-collection .tile .fx { width: 100% !important; height: auto !important; box-sizing: border-box; }
+  /* (v0.37.1) the size itself is worked out in showPage (bannerImg's scale), so foils and effects size with it */
 }
 
 /* (v0.37) a little more fun: stickers and doodles, all still, no shine */
