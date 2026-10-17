@@ -280,6 +280,13 @@ npx wrangler d1 execute 88x31-db --remote --file=021_print_runs_limited_passkeys
   libraries, ES256 and RS256, discoverable credentials, checked against the request's own origin and
   hostname. Save codes stay as the backup.
 
+## v0.36 (travel)
+
+No migration. `lib/travel.js` and `/api/travel`: send your button to your 4Dungeon (same shared account): it's locked with
+`AWAY` (-1) in `instances.locked`, so every trade/fusion/give/wall check that wants `locked = 0` refuses it; the registry
+holds it for your 4Dungeon player. It unlocks when the registry holds it in 88x31 again (your collection, or the background
+registry pass). Dungeon items held by you in 88x31 show as text cards and can be sent back. Ownership history reasons `away` / `home`.
+
 ## Updating to v0.35 (shared item registry)
 
 Already run on the live database on 2026-10-17 (additive columns only):
