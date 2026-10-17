@@ -14,6 +14,9 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 - **Singles have their own look:** a guestbook page with a 1 CARD stamp and a hit counter, a starry homepage with a rainbow SINGLE box and a NEW! sticker, or a plain white page with a rainbow rule and a webring. No shine.
 - **The "Buttons you can collect" strip moves on phones too,** even with Reduce Motion on, and loops without a jump.
 - **The bottom menu** is the same size as the top one, and the Trades link is gone from it.
+- **Effects are the rarest thing now.** A new button rolls a screen effect (Dial-Up, Marquee, CRT, VHS) about 1 time in 2,000, rarer than any foil. Fusion can still give one.
+- **Fair Play:** tier 2 foils read "Chrome, Gold, ???", and the line about patterns and effects is gone.
+- **Webmasters** can hand out ~*~cLuB~*~ Singles and Welcome packs.
 - **Logged out, the Wall keeps more secrets.** Visitors who aren't logged in see only ~*~ cLuB ~*~ commons; everything else is a mystery until you join.
 
 ## v0.36 — "Visiting Hours"

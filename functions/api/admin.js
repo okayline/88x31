@@ -6,7 +6,7 @@
 //   { action: "unblock_uploader", name }
 //   { action: "delete_player", name, confirm }      deletes a player's account (confirm = their name again);
 //     same routine as "Delete My Account" (lib/accounts.js). Webmasters and bots can't be deleted.
-//   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, special?, note? }   sealed packs (keep 2);
+//   { action: "give_packs", name | everyone: true, count: 1-10, series_id?, special?, kind?: "single"|"welcome", note? }   sealed packs (keep 2; a Single keeps its 1);
 //     special packs are numbered per series (#7 of 25) and never go to bots
 // GET /api/admin?view=new_players  (webmasters only) -> { players: [{ name, created_at, came_from, joined_via,
 //   buttons, signed, trades }] }  the newest 30 real players (no bots, no webmasters)
@@ -136,6 +136,9 @@ export async function onRequestPost({ request, env }) {
     }
     let series = body.series_id ? Number(body.series_id) : null;
     const special = !!body.special;
+    // (v0.37) kind: "single" (a one-card ~*~cLuB~*~ Single) or "welcome" (a Welcome pack, keep 2), never with a series
+    const kind = ["single", "welcome"].includes(body.kind) ? body.kind : null;
+    if (kind && (series || special)) return json({ error: "Singles and Welcome packs don't belong to a series." }, 400);
     if (special && !series) return json({ error: "Special packs belong to a series. Pick one!" }, 400);
     if (series) {
       const sr = (await seriesPrinted(env)).find((x) => x.id === series);
@@ -146,9 +149,14 @@ export async function onRequestPost({ request, env }) {
     if (special && who && (await db.prepare("SELECT is_bot FROM users WHERE id = ?").bind(who).first()).is_bot) return json({ error: "Limited packs are for people, not bots!" }, 400);
     if (special && body.everyone) ids = (await db.prepare("SELECT id FROM users WHERE is_bot = 0").all()).results.map((r) => r.id);
     let made, label = "";
-    try { made = await givePacks(env, ids, count, { series, source: "webmaster", note, special }); }
+    try {
+      made = await givePacks(env, ids, count, kind === "single" ? { source: "webmaster", note, cards: 1, keep: 1 }
+        : kind === "welcome" ? { source: "welcome", note: note || "welcome to the cLuB!", keep: 2 }
+        : { series, source: "webmaster", note, special });
+    }
     catch (e) { return json({ error: e.message }, 400); }
     if (special) { const run = await specialRun(env, series); label = ` ${run.series} ${run.name}`; }
+    else if (kind) label = kind === "single" ? " ~*~cLuB~*~ Single" : " Welcome";
     await db.prepare("INSERT INTO admin_actions (admin_id, action, user_id, note, created_at) VALUES (?, 'give_packs', ?, ?, ?)")
       .bind(me.id, who, `${made}${label} pack${made === 1 ? "" : "s"}${body.everyone ? " to everyone" : ""}${note ? ": " + note : ""}`, t).run();
     await sealSafe(env);

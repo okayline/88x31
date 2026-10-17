@@ -1991,6 +1991,7 @@ async function setupGivePacks() {
     const keep = form.series.value;
     form.series.textContent = "";
     form.series.append(el("option", { value: "" }, "~*~ cLuB ~*~ pack"),
+      el("option", { value: "kind:single" }, "~*~cLuB~*~ Single (1 card)"), el("option", { value: "kind:welcome" }, "Welcome pack"),
       ...giveSeries.map((x) => el("option", { value: x.id }, `Series ${x.name}` + (x.out_of_print ? " (out of print)" : x.status !== "active" ? ` (${x.status})` : ""))));
     form.series.value = keep;
   } catch {}
@@ -2009,13 +2010,14 @@ async function setupGivePacks() {
     if (!name) return gSay('Type a player\'s name, or "everyone".');
     const special = form.special.checked;
     const x = giveSeries.find((g) => String(g.id) === form.series.value);
+    const kind = form.series.value.startsWith("kind:") ? form.series.value.slice(5) : null;   // (v0.37) a Single or a Welcome pack
     if (special && !x) return gSay("Special packs belong to a series. Pick one!");
     const who = everyone ? (special ? "EVERYONE (people only)" : "EVERYONE (bots too)") : name;
-    const what = special ? `${x.name} ${x.special_name || "Special"} Pack` : "sealed pack";
+    const what = special ? `${x.name} ${x.special_name || "Special"} Pack` : kind === "single" ? "~*~cLuB~*~ Single" : kind === "welcome" ? "Welcome pack" : "sealed pack";
     if (!(await ask(`Give ${count} ${what}${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
     try {
-      const r = await api("/api/admin", { method: "POST", body: { action: "give_packs", everyone, name, count, special, series_id: form.series.value || null, note: form.note.value } });
-      gSay(`Gave out ${r.made} ${special ? what : "pack"}${r.made === 1 ? "" : "s"}!`);
+      const r = await api("/api/admin", { method: "POST", body: { action: "give_packs", everyone, name, count, special, kind, series_id: kind ? null : form.series.value || null, note: form.note.value } });
+      gSay(`Gave out ${r.made} ${special || kind ? what : "pack"}${r.made === 1 ? "" : "s"}!`);
       form.note.value = "";
       loadShelf(true);
       givePacksReady = false; setupGivePacks();
@@ -2273,11 +2275,10 @@ async function showFair() {
   $("fair-foils").replaceChildren(
     table(["Finish", "Most packs", "Limited packs"], [
       tierRow("Plain, Glitter or Sheen", 0), tierRow("Tier 1 (Holo, Galaxy, Ripple)", 1),
-      tierRow("Tier 2 (Chrome, Gold, Oil Slick)", 2), tierRow("Tier 3 (Prismatic, ???, ???)", 3),
+      tierRow("Tier 2 (Chrome, Gold, ???)", 2), tierRow("Tier 3 (Prismatic, ???, ???)", 3),
       ["Any real foil", pctTxt(anyFoil(F.normal.tiers)), pctTxt(anyFoil(F.special.tiers))],
     ]),
-    limitedNote.cloneNode(true),
-    el("p", { class: "small" }, `Some real foils also get a pattern (${pctTxt(F.pattern_chance)}), and ${pctTxt(F.effect_chance)} of new buttons do something strange on screen. Finding a button first gives you a ${pctTxt(anyFoil(F.finder.tiers))} foil chance on copy #1!`));
+    limitedNote.cloneNode(true));
 
   // print runs and limited packs, live
   const bar = (done, total) => el("span", { class: "fair-bar", title: `${done} of ${total}` }, el("span", { style: `width:${total ? Math.min(100, (done / total) * 100) : 0}%` }));
