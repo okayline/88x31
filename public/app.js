@@ -1742,9 +1742,12 @@ function packTile(p, href) {
     const look = "abc"[(Number(p.id) || 0) % 3];
     theme = "fp-" + look; cls = "still-art";
     const fsub = spanC("pack-sub", p.revealed ? "opened!" : "1 card inside");
-    parts = look === "a" ? [spanC("fp-top", "~ 88x31 cLuB ~"), spanC("fp-quill", "✒"), spanC("fp-name", "Free Pack"), spanC("fp-rule"), spanC("fp-line", "thanks 4 visiting!"), fsub]
-      : look === "b" ? [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("b", {}, "FREE"), el("i", {}, "PACK")), fsub]
-      : [spanC("fp-top", "88x31 cLuB"), el("span", { class: "fp-link" }, "Free Pack"), spanC("fp-hr"), el("span", { class: "fp-visited" }, "[ 1 card ]"), spanC("fp-ring", "« prev · ring · next »")];
+    parts = look === "a" ? [spanC("fp-top", "~ 88x31 cLuB ~"), spanC("fp-stamp", "FREE"), spanC("fp-name", "Free Pack"), spanC("fp-rule"),
+        spanC("fp-line", "thanks 4 visiting! ♥"), el("span", { class: "fp-count" }, "visitor ", el("b", {}, "000042")), fsub]
+      : look === "b" ? [spanC("fp-moon", "☾"), spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("b", {}, "FREE"), el("i", {}, "PACK")),
+        spanC("fp-burst", "NEW!"), fsub]
+      : [spanC("fp-top", "88x31 cLuB"), el("span", { class: "fp-link" }, "Free Pack"), spanC("fp-rainbow"), el("span", { class: "fp-visited" }, "[ 1 card ]"),
+        el("span", { class: "fp-mail" }, "✉ ", el("u", {}, "e-mail me!")), spanC("fp-ring", "« prev · ring · next »")];
   } else if (p.source === "welcome") {
     theme = "welcome";
     parts = [spanC("confetti"), spanC("gleam"), top(), spanC("script", "Welcome"), spanC("pack-sub", sub)];

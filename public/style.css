@@ -1227,3 +1227,30 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
   #page-collection .tile { width: calc(50% - 4px); }
   #page-collection .tile img.banner, #page-collection .tile .foil-wrap, #page-collection .tile .fx { width: 100% !important; height: auto !important; box-sizing: border-box; }
 }
+
+/* (v0.37) a little more fun: stickers and doodles, all still, no shine */
+.th-fp-a .fp-stamp { position: absolute; top: 10px; right: 6px; z-index: 4; transform: rotate(14deg); font: bold 8px Arial, sans-serif; letter-spacing: 1px;
+  color: #c4302b; border: 2px solid #c4302b; border-radius: 50%; padding: 6px 3px; opacity: .85; }
+.th-fp-a .fp-name { color: #7a2a52; }
+.th-fp-a .fp-line { color: #7a2a52; }
+.th-fp-a .fp-count { font: 7px Georgia, serif; color: #1f2a5a; }
+.th-fp-a .fp-count b { font: bold 8px "Courier New", monospace; background: #000; color: #33ff66; padding: 0 2px; letter-spacing: 1px; }
+.th-fp-b .fp-moon { position: absolute; top: 6px; left: 8px; z-index: 4; font-size: 20px; color: #ffe680; line-height: 1; }
+.th-fp-b .fp-burst { position: absolute; top: 18px; right: 2px; z-index: 4; transform: rotate(12deg); width: 34px; height: 34px; display: grid; place-items: center;
+  background: #ffef00; color: #cc0000; font: bold 9px Arial, sans-serif;
+  clip-path: polygon(50% 0, 61% 18%, 82% 10%, 80% 32%, 100% 40%, 84% 55%, 96% 75%, 74% 76%, 70% 98%, 52% 84%, 33% 100%, 28% 78%, 6% 80%, 16% 60%, 0 44%, 19% 34%, 14% 12%, 36% 18%); }
+.th-fp-b .fp-box b { background: linear-gradient(90deg, #cc0000, #ff8800, #e6c200, #00a03c, #0050d0, #7a00cc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.th-fp-b .fp-stars { font-size: 10px; color: #ffe680; letter-spacing: 3px; }
+.th-fp-c .fp-rainbow { width: 76px; height: 4px; margin: 4px 0; background: linear-gradient(90deg, #ff0000, #ff9900, #ffff00, #00cc00, #0066ff, #9900cc); }
+.th-fp-c .fp-mail { font: 8px "Times New Roman", serif; color: #0000ee; margin-top: 6px; }
+.th-fp-c .fp-ring { margin-top: 6px; }
+.th-fp-a .fp-stamp { top: 30px; right: 5px; }
+.th-fp-b .fp-top { margin-top: 12px; }
+.th-fp-b .fp-burst { top: 46px; right: 0; }
+.th-fp-a .fp-stamp { position: static; transform: rotate(-8deg); margin: 4px 0 2px; }
+.th-fp-b .fp-burst { position: static; transform: rotate(-8deg); margin: -2px 0 2px; }
+.th-fp-b .fp-burst { display: grid; flex-shrink: 0; width: 38px; height: 38px; }
+.th-fp-b .fp-moon { font-size: 15px; top: 5px; left: 7px; }
+.th-fp-b .fp-top { margin-top: 10px; }
+.th-fp-b .fp-box { margin: 4px 0 2px; }
+.th-fp-b .fp-burst { width: 30px; height: 30px; font-size: 8px; }
