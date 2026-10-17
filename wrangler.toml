@@ -7,8 +7,8 @@ binding = "DB"
 database_name = "88x31-db"
 database_id = "47bef71e-4a6f-42e7-814e-0a5a53e273dc"
 
-# Save codes and passkeys: the shared Accounts service (the dungeon-items Worker). Deploy that first.
+# Save codes and passkeys: the shared Accounts service (the dungeon-items Worker), called over HTTP (lib/shared.js).
+# Deploy that first. Both projects need the same secret ACCOUNTS_KEY (at least 16 characters).
 [[services]]
 binding = "ACCOUNTS"
 service = "dungeon-items"
-entrypoint = "Accounts"
