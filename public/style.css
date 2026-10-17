@@ -1259,3 +1259,9 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .th-fp-b .fp-box b { font-size: 19px; font-weight: 900; }
 .th-fp-b .fp-box i { font-weight: bold; color: #000066; }
 .th-fp-c .fp-link { font-size: 18px; font-weight: bold; }
+/* (v0.37) renamed: the ~*~cLuB~*~ Single */
+.th-fp-a .fp-name { font-size: 21px; }
+.th-fp-b .fp-box { padding: 6px 6px 5px; }
+.th-fp-b .fp-box b { font-size: 16px; letter-spacing: .5px; }
+.th-fp-b .fp-box i { font-size: 8px; letter-spacing: 0; font-style: normal; }
+.th-fp-c .fp-link { font-size: 20px; }

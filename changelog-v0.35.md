@@ -9,9 +9,9 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 - **Windows stay open.** The » headings no longer fold their windows away; every window is just a window again.
 - **The Ledger leads with the button.** Every line now starts with the button or pack and says who after it: "LUNA.GIF #5 was pulled by kura", "Sealed pack #12 was opened by kura!"
-- **Free Packs on your visit streak.** Day 4 and day 6 of every streak week now bring a one-card Free Pack (like the front page's).
+- **~*~cLuB~*~ Singles on your visit streak.** Day 4 and day 6 of every streak week now bring a ~*~cLuB~*~ Single: a pack with one card in it.
 - **Your collection is bigger.** Buttons on your page show at twice the size, still pixel-crisp (two to a row on a phone).
-- **Free Packs have their own look:** a guestbook page with a FREE stamp and a hit counter, a starry homepage with a rainbow FREE box and a NEW! sticker, or a plain white page with a rainbow rule and a webring. No shine.
+- **Singles have their own look:** a guestbook page with a 1 CARD stamp and a hit counter, a starry homepage with a rainbow SINGLE box and a NEW! sticker, or a plain white page with a rainbow rule and a webring. No shine.
 - **Logged out, the Wall keeps more secrets.** Visitors who aren't logged in see only ~*~ cLuB ~*~ commons; everything else is a mystery until you join.
 
 ## v0.36 — "Visiting Hours"

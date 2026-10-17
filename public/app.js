@@ -1002,7 +1002,7 @@ async function loadSummary() {
 }
 
 // v0.30: starter quests and the visit streak, at the top of the dashboard.
-const STREAK_SAYS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a Free Pack", series: "a series pack" };
+const STREAK_SAYS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single", series: "a series pack" };
 function dashExtras(s, list) {
   const top = [];
   const q = s.quests;
@@ -1039,7 +1039,7 @@ function streakChart(st) {
   const mini = (tile) => el("span", { class: "sk-mini" }, tile);
   const club = () => mini(packTile({ id: 0, source: "streak" }, "#"));
   const PICS = { club: () => [club()], club2: () => [club(), club()], free: () => [mini(packTile({ id: 0, source: "streak", cards: 1 }, "#"))], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
-  const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a Free Pack (one card)", series: "a series pack" };
+  const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single (one card)", series: "a series pack" };
   const cells = [];
   for (let d = start; d < (start === 2 ? 8 : start + 7); d++) {
     const r = streakDay(d);
@@ -1680,7 +1680,7 @@ async function showBanner(id) {
 // Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
 const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board", quest: "finishing the starter quests", streak: "a visit streak", trade_in: "a trade-in" };
-const packLabel = (p) => p.cards === 1 ? "Free Pack" : (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "~*~ cLuB ~*~") + " Pack";
+const packLabel = (p) => p.cards === 1 ? "~*~cLuB~*~ Single" : (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "~*~ cLuB ~*~") + " Pack";
 // Limited special packs are numbered per series: "Beta Gold Master Pack #7 of 25". Others use the pack's id.
 const limitedName = (p) => `${p.series} ${p.special_name || "Special"} Pack`;
 const packTitle = (p) => (p.special_no ? `${limitedName(p)} #${p.special_no} of ${p.special_limit || 25}` : `${packLabel(p)} #${p.id}`);
@@ -1705,7 +1705,7 @@ function packArt({ shape, theme, parts, title = "", cls = "", href = "#" }) {
 function packTile(p, href) {
   const s = (p.series || "").toLowerCase(), themed = PACK_THEMES.has(s);
   const sub = p.revealed ? "opened!" : p.special_no ? `#${p.special_no} of ${p.special_limit || 25}`
-    : p.special ? (p.series ? `★ series ${s} ★` : "★ foils inside! ★") : p.cards === 1 ? "free pack · 1 card" : "sealed pack";
+    : p.special ? (p.series ? `★ series ${s} ★` : "★ foils inside! ★") : p.cards === 1 ? "single · 1 card" : "sealed pack";
   const title = p.special_no ? packTitle(p) : p.note || PACK_FROM[p.source] || "";
   const top = (t = PACK_TOP) => spanC("pack-top", t);
   const name = (t) => spanC("pack-name" + (t.length > 11 ? " long" : ""), t);
@@ -1738,15 +1738,15 @@ function packTile(p, href) {
     theme = "special";
     parts = [spanC("gleam"), top(), name("SPECIAL"), spanC("pack-sub", sub)];
   } else if (p.cards === 1) {
-    // (v0.37) the visit streak's Free Pack (one card): three quiet homepage looks, picked by its number, no shine
+    // (v0.37) the visit streak's ~*~cLuB~*~ Single (one card): three quiet homepage looks, picked by its number, no shine
     const look = "abc"[(Number(p.id) || 0) % 3];
     theme = "fp-" + look; cls = "still-art";
     const fsub = spanC("pack-sub", p.revealed ? "opened!" : "1 card inside");
-    parts = look === "a" ? [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), spanC("fp-stamp", "FREE"), spanC("fp-name", "Free Pack"), spanC("fp-rule"),
+    parts = look === "a" ? [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), spanC("fp-stamp", "1 CARD"), spanC("fp-name", "Single"), spanC("fp-rule"),
         spanC("fp-line", "thanks 4 visiting! ♥"), el("span", { class: "fp-count" }, "visitor ", el("b", {}, "000042")), fsub]
-      : look === "b" ? [spanC("fp-moon", "☾"), spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("b", {}, "FREE"), el("i", {}, "PACK")),
+      : look === "b" ? [spanC("fp-moon", "☾"), spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("i", {}, "~*~cLuB~*~"), el("b", {}, "SINGLE")),
         spanC("fp-burst", "NEW!"), fsub]
-      : [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-link" }, "Free Pack"), spanC("fp-rainbow"), el("span", { class: "fp-visited" }, "[ 1 card ]"),
+      : [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-link" }, "Single"), spanC("fp-rainbow"), el("span", { class: "fp-visited" }, "[ 1 card ]"),
         el("span", { class: "fp-mail" }, "✉ ", el("u", {}, "e-mail me!")), spanC("fp-ring", "« prev · ring · next »")];
   } else if (p.source === "welcome") {
     theme = "welcome";
