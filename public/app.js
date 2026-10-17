@@ -457,7 +457,7 @@ async function showPage(name) {
   for (const b of col.banners) {
     const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
     grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
-      bannerImg(b), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
+      bannerImg(b, 2), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));   // (v0.37) twice the size, still crisp
   }
   showVisitors(grid, mine, seq);
 
@@ -1002,7 +1002,7 @@ async function loadSummary() {
 }
 
 // v0.30: starter quests and the visit streak, at the top of the dashboard.
-const STREAK_SAYS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
+const STREAK_SAYS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a Free Pack", series: "a series pack" };
 function dashExtras(s, list) {
   const top = [];
   const q = s.quests;
@@ -1038,8 +1038,8 @@ function streakChart(st) {
   const got = Object.fromEntries((st.days || []).map((x) => [x.day, x]));
   const mini = (tile) => el("span", { class: "sk-mini" }, tile);
   const club = () => mini(packTile({ id: 0, source: "streak" }, "#"));
-  const PICS = { club: () => [club()], club2: () => [club(), club()], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
-  const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", series: "a series pack" };
+  const PICS = { club: () => [club()], club2: () => [club(), club()], free: () => [mini(packTile({ id: 0, source: "streak", cards: 1 }, "#"))], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
+  const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a Free Pack (one card)", series: "a series pack" };
   const cells = [];
   for (let d = start; d < (start === 2 ? 8 : start + 7); d++) {
     const r = streakDay(d);
@@ -1065,8 +1065,8 @@ const STREAK_SERIES = "Beta";   // fallback: the server says which series is new
 // same schedule as the server (lib/progress.js streakReward)
 function streakDay(d) {
   if (d <= 1) return null;
-  if (d <= 7) return { 2: "club", 3: "club", 5: "club2", 7: "series" }[d] || null;
-  return { 3: "club", 5: "club", 7: "series" }[((d - 1) % 7) + 1] || null;
+  if (d <= 7) return { 2: "club", 3: "club", 4: "free", 5: "club2", 6: "free", 7: "series" }[d] || null;
+  return { 3: "club", 4: "free", 5: "club", 6: "free", 7: "series" }[((d - 1) % 7) + 1] || null;
 }
 
 // ---------- trade in: 5 commons/uncommons for a sealed cLuB pack ----------
@@ -1680,7 +1680,7 @@ async function showBanner(id) {
 // Earned packs (webmaster gifts, milestones, finished sets...) sit on your shelf until you open
 // them. Opening shows 3 buttons and you keep 2. Every pack has a public page with its story.
 const PACK_FROM = { welcome: "welcome to the cLuB!", webmaster: "a gift from the webmaster", milestone: "a visitor milestone", set: "finishing a set", request: "the request board", quest: "finishing the starter quests", streak: "a visit streak", trade_in: "a trade-in" };
-const packLabel = (p) => (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "~*~ cLuB ~*~") + " Pack";
+const packLabel = (p) => p.cards === 1 ? "Free Pack" : (p.special ? "Special " : "") + (p.source === "welcome" ? "Welcome" : p.series ? `Series ${p.series}` : "~*~ cLuB ~*~") + " Pack";
 // Limited special packs are numbered per series: "Beta Gold Master Pack #7 of 25". Others use the pack's id.
 const limitedName = (p) => `${p.series} ${p.special_name || "Special"} Pack`;
 const packTitle = (p) => (p.special_no ? `${limitedName(p)} #${p.special_no} of ${p.special_limit || 25}` : `${packLabel(p)} #${p.id}`);
@@ -1705,7 +1705,7 @@ function packArt({ shape, theme, parts, title = "", cls = "", href = "#" }) {
 function packTile(p, href) {
   const s = (p.series || "").toLowerCase(), themed = PACK_THEMES.has(s);
   const sub = p.revealed ? "opened!" : p.special_no ? `#${p.special_no} of ${p.special_limit || 25}`
-    : p.special ? (p.series ? `★ series ${s} ★` : "★ foils inside! ★") : "sealed pack";
+    : p.special ? (p.series ? `★ series ${s} ★` : "★ foils inside! ★") : p.cards === 1 ? "free pack · 1 card" : "sealed pack";
   const title = p.special_no ? packTitle(p) : p.note || PACK_FROM[p.source] || "";
   const top = (t = PACK_TOP) => spanC("pack-top", t);
   const name = (t) => spanC("pack-name" + (t.length > 11 ? " long" : ""), t);
@@ -1885,7 +1885,7 @@ async function showPack(id) {
   box.textContent = "";
   box.append(el("h2", {}, `» ${packTitle(p)} «`),
     el("p", { class: "center" }, packTile({ ...p, revealed: !!p.opened_at }, "#pack/" + p.id)),
-    el("p", { class: "center small" }, `Made ${fmtDate(p.created_at)} · ${p.note || PACK_FROM[p.source] || p.source} · keep ${p.keep} of 3`));
+    el("p", { class: "center small" }, `Made ${fmtDate(p.created_at)} · ${p.note || PACK_FROM[p.source] || p.source} · keep ${p.keep} of ${p.cards || 3}`));
 
   if (!p.opened_at && mine) {
     const open = el("button", { type: "button" }, "Open it!");
