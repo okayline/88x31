@@ -12,7 +12,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 - **Free Packs on your visit streak.** Day 4 and day 6 of every streak week now bring a one-card Free Pack (like the front page's).
 - **Your collection is bigger.** Buttons on your page show at twice the size, still pixel-crisp (two to a row on a phone).
 - **Free Packs have their own look:** a guestbook page with a FREE stamp and a hit counter, a starry homepage with a rainbow FREE box and a NEW! sticker, or a plain white page with a rainbow rule and a webring. No shine.
-- **Logged out, the Wall keeps more secrets.** Visitors who aren't logged in see only the cLuB's own commons; everything else is a mystery until you join.
+- **Logged out, the Wall keeps more secrets.** Visitors who aren't logged in see only ~*~ cLuB ~*~ commons; everything else is a mystery until you join.
 
 ## v0.36 — "Visiting Hours"
 **Sat Oct 17, 2026 · 4:55 AM HST**
