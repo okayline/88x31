@@ -1,40 +1,34 @@
-// Save codes for the logged-in player.
+// Save codes for the logged-in player (kept by the shared Accounts service; see lib/shared.js).
 // GET    /api/codes            -> { codes: [{ id, label, created_at, last_used_at }] }
 // POST   /api/codes { label }  -> { code }   (new extra code, shown once)
-// DELETE /api/codes?id=N       -> { ok }     (can't remove your last code)
-import { json, readJson, currentUser, newSaveCode, hashCode, now, MAX_CODES } from "../../lib/auth.js";
+// DELETE /api/codes?id=N       -> { ok }     (can't remove your last way in)
+import { json, currentUser } from "../../lib/auth.js";
+import { acc, unavailable, accountFor, refusal } from "../../lib/shared.js";
 
 export async function onRequestGet({ request, env }) {
   const user = await currentUser(env, request);
   if (!user) return json({ error: "Not logged in." }, 401);
-  const { results } = await env.DB.prepare(
-    "SELECT id, label, created_at, last_used_at FROM save_codes WHERE user_id = ? ORDER BY id"
-  ).bind(user.id).all();
-  return json({ codes: results });
+  if (!acc(env)) return unavailable();
+  const id = await accountFor(env, user.id);
+  const codes = id ? (await acc(env).info(id)).codes : [];
+  return json({ codes: codes.map((c) => ({ ...c, label: "save code" })) });
 }
 
 export async function onRequestPost({ request, env }) {
   const user = await currentUser(env, request);
   if (!user) return json({ error: "Not logged in." }, 401);
-  const { label } = await readJson(request);
-  const code = newSaveCode();
-  // Insert only if under the cap (checked in the same statement).
-  const res = await env.DB.prepare(
-    `INSERT INTO save_codes (user_id, code_hash, label, created_at)
-     SELECT ?, ?, ?, ? WHERE (SELECT COUNT(*) FROM save_codes WHERE user_id = ?) < ?`
-  ).bind(user.id, await hashCode(code), String(label || "extra code").slice(0, 40), now(), user.id, MAX_CODES).run();
-  if (!res.meta.changes) return json({ error: `You can have at most ${MAX_CODES} codes. Remove one first.` }, 400);
-  return json({ code });
+  if (!acc(env)) return unavailable();
+  const r = await acc(env).addCode(await accountFor(env, user.id, true));
+  return refusal(r) || json({ code: r.code });
 }
 
 export async function onRequestDelete({ request, env }) {
   const user = await currentUser(env, request);
   if (!user) return json({ error: "Not logged in." }, 401);
+  if (!acc(env)) return unavailable();
   const id = Number(new URL(request.url).searchParams.get("id"));
-  const res = await env.DB.prepare(
-    `DELETE FROM save_codes WHERE id = ? AND user_id = ?
-     AND (SELECT COUNT(*) FROM save_codes WHERE user_id = ?) > 1`
-  ).bind(id, user.id, user.id).run();
-  if (!res.meta.changes) return json({ error: "Can't remove that code (it may be your last one)." }, 400);
-  return json({ ok: true });
+  const account = await accountFor(env, user.id);
+  if (!account || (await acc(env).info(account)).codes.length < 2) return json({ error: "Can't remove that code (it may be your last one)." }, 400);
+  const r = await acc(env).removeCode(account, id);
+  return r.error ? json({ error: "Can't remove that code (it may be your last one)." }, 400) : json({ ok: true });
 }

@@ -6,3 +6,9 @@ compatibility_date = "2026-10-01"
 binding = "DB"
 database_name = "88x31-db"
 database_id = "47bef71e-4a6f-42e7-814e-0a5a53e273dc"
+
+# Save codes and passkeys: the shared Accounts service (the dungeon-items Worker). Deploy that first.
+[[services]]
+binding = "ACCOUNTS"
+service = "dungeon-items"
+entrypoint = "Accounts"

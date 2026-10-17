@@ -14,6 +14,7 @@ export async function onRequestDelete({ request, env }) {
   const r = await deleteAccount(env, me.id);
   if (r.error) return json(r, 400);
 
+  if (env.ACCOUNTS) { try { await env.ACCOUNTS.unlink("88x31", me.id); } catch { /* the link is harmless without its player */ } }
   const cookie = await endSession(env, request);
   return json({ ok: true }, 200, { "set-cookie": cookie });
 }
