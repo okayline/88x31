@@ -4,6 +4,12 @@ Newest first. Times are Hawaii time (HST).
 
 ---
 
+## v0.34.12 — "One Key"
+**Sat Oct 17, 2026 · 2:30 AM HST**
+
+- Save codes and passkeys now live in a **shared accounts system** with the other 88x31 games, so one passkey can work across all of them.
+- Nothing changes for you: your save code and your passkey keep working as before.
+
 ## v0.34.11 — "What's Limited?"
 **Wed Oct 14, 2026 · 3:20 AM HST**
 
