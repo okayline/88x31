@@ -560,10 +560,12 @@ function renderWallGrid() {
     // each group shuffled, with its mystery tiles at the end of that group
     const group = (arr) => [...shuffled(arr.filter((d) => !d.hidden)), ...shuffled(arr.filter((d) => d.hidden))];
     tiles = [...group(list.filter((d) => d.tier !== "archive")), ...group(list.filter((d) => d.tier === "archive"))];
-    // (v0.37) logged out: the commons and about five ? tiles mixed in at random, not a wall of hundreds of ?s
+    // (v0.37) logged out: the cLuB commons with ? tiles mixed in at random, not a wall of hundreds of ?s
+    // (v0.37.2) 25 ? tiles, and a couple of found buttons
     if (!me) {
-      const known = tiles.filter((d) => !d.hidden), q = shuffled(tiles.filter((d) => d.hidden)).slice(0, 5);
-      tiles = known.slice();
+      const known = tiles.filter((d) => !d.hidden), q = shuffled(tiles.filter((d) => d.hidden)).slice(0, 25);
+      const found = shuffled(known.filter((d) => d.tier === "archive")).slice(0, 2);
+      tiles = [...known.filter((d) => d.tier !== "archive"), ...found];
       for (const d of q) tiles.splice(Math.floor(Math.random() * (tiles.length + 1)), 0, d);
     }
   }
