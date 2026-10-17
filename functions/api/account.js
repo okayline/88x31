@@ -2,6 +2,7 @@
 // Deletes the logged-in player's account, all-or-nothing (lib/accounts.js deleteAccount says exactly what goes).
 import { json, readJson, currentUser, endSession } from "../../lib/auth.js";
 import { deleteAccount } from "../../lib/accounts.js";
+import { acc } from "../../lib/shared.js";
 
 export async function onRequestDelete({ request, env }) {
   const me = await currentUser(env, request);
@@ -14,7 +15,7 @@ export async function onRequestDelete({ request, env }) {
   const r = await deleteAccount(env, me.id);
   if (r.error) return json(r, 400);
 
-  if (env.ACCOUNTS) { try { await env.ACCOUNTS.unlink("88x31", me.id); } catch { /* the link is harmless without its player */ } }
+  if (acc(env)) { try { await acc(env).unlink("88x31", me.id); } catch { /* the link is harmless without its player */ } }
   const cookie = await endSession(env, request);
   return json({ ok: true }, 200, { "set-cookie": cookie });
 }
