@@ -137,7 +137,7 @@ function ago(t) {
 const edition = (b) => `#${b.edition}${b.max_editions ? " of " + b.max_editions : ""}`;
 const HOW = {
   welcome: "welcome pack", daily: "daily pull", pass_on: "passed on", guestbook: "guestbook gift",
-  trade: "trade", gift: "gift", fusion: "fusion", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", free_pack: "free pack", request: "request filled", open_trade: "open trade", trade_in: "traded in",
+  trade: "trade", gift: "gift", fusion: "fusion", away: "sent to visit 4Dungeon", home: "came home from 4Dungeon", starter: "starter", admin: "admin", set_reward: "set reward", found: "found & added", pack: "opened from a sealed pack", free_pack: "free pack", request: "request filled", open_trade: "open trade", trade_in: "traded in",
 };
 
 // ---------- foils, patterns, effects ----------
@@ -455,9 +455,11 @@ async function showPage(name) {
   grid.textContent = "";
   if (!col.banners.length) grid.append(el("p", {}, "No buttons yet!"));
   for (const b of col.banners) {
-    grid.append(el("a", { href: "#banner/" + b.id, class: "tile", title: `${b.name} ${edition(b)}`, "data-id": b.id },
-      bannerImg(b), el("span", { class: "small" }, edition(b))));
+    const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
+    grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
+      bannerImg(b), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
   }
+  showVisitors(grid, mine, seq);
 
   // Sign form: only on other people's pages.
   const form = $("sign-form");
@@ -1582,6 +1584,45 @@ $("visit-form").onsubmit = (e) => {
 
 // ---------- banner detail ----------
 
+// ---------- travel (v0.36) ----------
+// Your buttons can visit your 4Dungeon (AWAY here: still yours, locked until it comes home) and your dungeon items
+// can visit you here (text cards, display only for now). Same person in both games: one shared account.
+const AWAY = -1;
+function travelBox(b, reload) {
+  if (!me || b.owner !== me.name || !b.registry_item || b.consumed) return null;
+  if (b.locked === AWAY) return el("p", { class: "small" }, "✈ Away in your 4Dungeon. Still yours: it comes home when you send it back from 4Dungeon (Account → Inventory).");
+  if (b.locked) return null;
+  const go = el("button", { type: "button" }, "Send to my 4Dungeon");
+  const msg = el("span", { class: "small" });
+  go.onclick = async () => {
+    if (!(await ask(`Send ${b.name} ${edition(b)} to visit your 4Dungeon? It stays yours, but can't be traded, fused or put on your wall until it comes home.`, { ok: "Send it", cancel: "Keep it here" }))) return;
+    go.disabled = true; msg.textContent = " sending...";
+    try { await api("/api/travel", { method: "POST", body: { action: "send", instance_id: b.id } }); reload(); }
+    catch (e) { msg.textContent = " " + e.message; go.disabled = false; }
+  };
+  return el("p", {}, go, msg);
+}
+async function showVisitors(grid, mine, seq) {
+  const old = document.getElementById("travel-box"); if (old) old.remove();
+  if (!mine) return;
+  let d; try { d = await api("/api/travel"); } catch (e) { return; }
+  if (seq !== loadSeq || !d.visitors || !d.visitors.length) return;
+  const box = el("div", { id: "travel-box" }, el("h2", {}, "» Visiting from 4Dungeon «"),
+    el("p", { class: "small" }, "Dungeon items you sent here. Just visiting for now: send them back any time."));
+  for (const v of d.visitors) {
+    const back = el("button", { type: "button" }, "Send back");
+    const card = el("div", { class: "visitor-card" }, el("b", {}, v.name), " ", rarityTag(v.rarity), ` #${v.copy}`,
+      v.note ? el("div", { class: "small" }, v.note) : null, back);
+    back.onclick = async () => {
+      back.disabled = true;
+      try { await api("/api/travel", { method: "POST", body: { action: "send_back", item_id: v.item_id, copy: v.copy } }); card.remove(); }
+      catch (e) { back.disabled = false; alert(e.message); }
+    };
+    box.append(card);
+  }
+  grid.after(box);
+}
+
 async function showBanner(id) {
   const seq = ++loadSeq;
   showView("view-banner");
@@ -1603,6 +1644,7 @@ async function showBanner(id) {
     el("p", {}, b.series ? `Series ${b.series} · ` : "", `Type: ${b.type} · Rarity: `, rarityTag(b.rarity),
       b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
     ownedLine(b, history),
+    travelBox(b, () => showBanner(id)),
 
     el("h2", {}, "» Credits «"),
     b.tier === "original" && b.status !== "removed" ? useBox(b) : null,

@@ -1198,3 +1198,8 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 
 /* v0.34.11: Fair Play "LIMITED" tag under each series' limited pack */
 .limited-tag { display: inline-block; margin-top: 2px; padding: 0 4px; border: 1px solid currentColor; font-size: 10px; letter-spacing: 1px; }
+
+/* travel (v0.36): a button away in 4Dungeon, and dungeon items visiting */
+.tile.away img { opacity: .45; filter: grayscale(.6); }
+.visitor-card { display: inline-block; vertical-align: top; width: 220px; margin: 6px; padding: 8px 10px; border: 1px dashed currentColor; text-align: left; }
+.visitor-card button { display: block; margin-top: 6px; }
