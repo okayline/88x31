@@ -128,7 +128,7 @@ npx wrangler d1 execute 88x31-db --remote --file=014_foil_tiers_fusion.sql
 Each copy has three layers, rolled when it's made and sealed into the ledger:
 
 - **Foil** (the material). Base: Clear, Glitter, Sheen. Tier 1: Holo, Galaxy, Ripple. Tier 2: Chrome,
-  Gold, Oil Slick. Tier 3: Prismatic, Double Rainbow, Liquid Metal. Pack odds: base 91%, tier 1 8%,
+  Gold, Oil Slick. Tier 3: Prismatic, ???, ???. Pack odds: base 91%, tier 1 8%,
   tier 2 0.9%, tier 3 0.1% (weights in the `foils` table, kind `foil`).
 - **Pattern** (cuts a real foil's shine): Fracture, Etched, Surge. 5% of tier 1+ copies.
 - **Effect** (how the button plays): Dial-Up, Marquee, CRT, VHS; CRT+VHS only from fusion. 10% of copies.
