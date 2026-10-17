@@ -1195,3 +1195,35 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .tile.away img { opacity: .45; filter: grayscale(.6); }
 .visitor-card { display: inline-block; vertical-align: top; width: 220px; margin: 6px; padding: 8px 10px; border: 1px dashed currentColor; text-align: left; }
 .visitor-card button { display: block; margin-top: 6px; }
+
+/* ---------- the streak's Free Pack (v0.37): three quiet homepage looks, no shine ---------- */
+.pack-tile.still-art .pack-art { animation: none; }
+.th-fp-a .pack-art, .th-fp-b .pack-art, .th-fp-c .pack-art { text-shadow: none; justify-content: center; gap: 4px; }
+/* a: a guestbook page. Cream paper, a navy double rule, a serif name */
+.th-fp-a .pack-art { background: #f6efdc; border-color: #1f2a5a; color: #1f2a5a; box-shadow: inset 0 0 0 3px #f6efdc, inset 0 0 0 4px #1f2a5a, 3px 3px 0 #000; }
+.th-fp-a .fp-top { font: 7.5px Georgia, "Times New Roman", serif; letter-spacing: .5px; }
+.th-fp-a .fp-quill { font-size: 18px; line-height: 1; margin-top: 6px; }
+.th-fp-a .fp-name { font: italic bold 17px Georgia, "Times New Roman", serif; }
+.th-fp-a .fp-rule { width: 54px; border-top: 3px double #1f2a5a; margin: 2px 0; }
+.th-fp-a .fp-line { font: italic 8px Georgia, "Times New Roman", serif; }
+.th-fp-a .pack-sub { font: 8px Georgia, "Times New Roman", serif; color: #6b5a3a; margin-top: 6px; }
+/* b: a starry tiled background with one grey bevelled box in the middle */
+.th-fp-b .pack-art { background: #000033 radial-gradient(#ffffff 0.6px, transparent 1.1px) 0 0 / 13px 13px; border-color: #c0c0c0; }
+.th-fp-b .fp-top { font: 7.5px "Times New Roman", serif; color: #ccccff; }
+.th-fp-b .fp-box { margin: 10px 0 8px; padding: 7px 10px 6px; background: #c0c0c0; color: #000; text-align: center;
+  border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff; font: 15px "Times New Roman", serif; line-height: 1.05; }
+.th-fp-b .fp-box b, .th-fp-b .fp-box i { display: block; }
+.th-fp-b .fp-box i { font-size: 11px; letter-spacing: 2px; }
+.th-fp-b .pack-sub { font: italic 8px "Times New Roman", serif; color: #c0c0c0; }
+/* c: a plain white page with a link, a groove line and a webring */
+.th-fp-c .pack-art { background: #ffffff; border-color: #000; color: #000; box-shadow: 3px 3px 0 #000; }
+.th-fp-c .fp-top { font: bold 8px "Times New Roman", serif; }
+.th-fp-c .fp-link { font: 16px "Times New Roman", serif; color: #0000ee; text-decoration: underline; margin-top: 10px; }
+.th-fp-c .fp-hr { width: 70px; border-top: 2px groove #c0c0c0; margin: 4px 0; }
+.th-fp-c .fp-visited { font: 10px "Times New Roman", serif; color: #551a8b; text-decoration: underline; }
+.th-fp-c .fp-ring { font: 7px "Times New Roman", serif; color: #0000ee; margin-top: 12px; white-space: nowrap; }
+/* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
+@media (max-width: 480px) {
+  #page-collection .tile { width: calc(50% - 4px); }
+  #page-collection .tile img.banner, #page-collection .tile .foil-wrap, #page-collection .tile .fx { width: 100% !important; height: auto !important; box-sizing: border-box; }
+}

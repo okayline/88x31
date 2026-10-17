@@ -1737,6 +1737,14 @@ function packTile(p, href) {
   } else if (p.special) {
     theme = "special";
     parts = [spanC("gleam"), top(), name("SPECIAL"), spanC("pack-sub", sub)];
+  } else if (p.cards === 1) {
+    // (v0.37) the visit streak's Free Pack (one card): three quiet homepage looks, picked by its number, no shine
+    const look = "abc"[(Number(p.id) || 0) % 3];
+    theme = "fp-" + look; cls = "still-art";
+    const fsub = spanC("pack-sub", p.revealed ? "opened!" : "1 card inside");
+    parts = look === "a" ? [spanC("fp-top", "~ 88x31 cLuB ~"), spanC("fp-quill", "✒"), spanC("fp-name", "Free Pack"), spanC("fp-rule"), spanC("fp-line", "thanks 4 visiting!"), fsub]
+      : look === "b" ? [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("b", {}, "FREE"), el("i", {}, "PACK")), fsub]
+      : [spanC("fp-top", "88x31 cLuB"), el("span", { class: "fp-link" }, "Free Pack"), spanC("fp-hr"), el("span", { class: "fp-visited" }, "[ 1 card ]"), spanC("fp-ring", "« prev · ring · next »")];
   } else if (p.source === "welcome") {
     theme = "welcome";
     parts = [spanC("confetti"), spanC("gleam"), top(), spanC("script", "Welcome"), spanC("pack-sub", sub)];
