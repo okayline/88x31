@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.41
+# 88x31 cLuB Changelog — v0.35–v0.42
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.42 — "Right Where You Are"
+**Sat Oct 17, 2026 · 11:18 PM HST**
+
+- Opening a pack now takes you straight to its cards, which show up above the Packs panel (no more hunting for them, on phones too). Buttons stamped in guestbooks are bigger, and your button collection is centered in its panel.
 
 ## v0.41 — "Stay Put"
 **Sat Oct 17, 2026 · 11:05 PM HST**
