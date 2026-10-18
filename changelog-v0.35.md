@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.42
+# 88x31 cLuB Changelog — v0.35–v0.43
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.43 — "Click Here to Enter"
+**Sat Oct 17, 2026 · 11:30 PM HST**
+
+- The box of buttons under the wall shows all of your buttons now (it scrolls if you have a lot). The line above the title has new 90s ones, like "*dial-up noises* Connecting..." and "You've got buttons!".
 
 ## v0.42 — "Right Where You Are"
 **Sat Oct 17, 2026 · 11:18 PM HST**
