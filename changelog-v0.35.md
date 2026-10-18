@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.40
+# 88x31 cLuB Changelog — v0.35–v0.41
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.41 — "Stay Put"
+**Sat Oct 17, 2026 · 11:05 PM HST**
+
+- The box of buttons under the wall is now a fixed size with no scrolling; if you have more than fit, the ones that match this week's theme come first. Hopping to another ring with the webring's Prev / Next keeps you where you are on the page instead of jumping to the top.
 
 ## v0.40 — "Drag It Over"
 **Sat Oct 17, 2026 · 10:58 PM HST**
