@@ -1308,7 +1308,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .tw-none { position: absolute; inset: 0; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #aaa; }
 .tw-controls button.mini { margin: 0 1px; }
 .tw-tray { margin: 8px 0; padding: 8px; border: 2px dashed var(--edge); background: #000033; }
-.tw-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-height: 320px; overflow-y: auto; }
+.tw-grid { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; justify-content: center; position: relative; height: 130px; overflow: hidden; }   /* fixed height, no scrolling */
 .tw-pick { position: relative; }
 .tw-pick.tw-off { opacity: 0.4; cursor: not-allowed; }
 .tw-roster { list-style: none; padding: 0; margin: 0; }
@@ -1326,9 +1326,10 @@ table.webring td { padding: 12px 6px; }
 #wr-rings a { display: inline-block; margin: 2px 6px; }
 .tw-carried { position: fixed; left: 0; top: 0; z-index: 9999; pointer-events: none; transform-origin: 0 0; opacity: .85; filter: drop-shadow(3px 3px 3px #000); }
 .tw-preview { position: absolute; border: 2px dashed #ffff00; background: rgba(255,255,0,.12); pointer-events: none; box-sizing: border-box; }
-.tw-tray { max-height: 230px; overflow-y: auto; margin-top: 10px; }
+.tw-tray { margin-top: 10px; }
 .tw-tray.over { outline: 3px dashed #ff6666; }
 .tw-tray-hint { text-align: center; margin: 4px 0; }
 .tw-pick, .tw-pin { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
 body.tw-carrying { cursor: grabbing; user-select: none; -webkit-user-select: none; }
 body.tw-carrying * { cursor: grabbing !important; }
+.tw-lock { margin-bottom: 1.6em; }

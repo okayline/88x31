@@ -248,7 +248,7 @@ function webringTo(afterEl) {
 
 async function route(clicked = false) {
   say("");
-  webringTo(null);
+  if (!/^#themewall(\/|$)/.test(decodeURIComponent(location.hash))) webringTo(null);   // hopping between rings keeps the panel (and your place) where it is
   if (me && !wrRings.length) api("/api/themewall?list=1").then((r) => webringFooter(r.rings, null)).catch(() => {});
   setPageMode();
   const hash = decodeURIComponent(location.hash.slice(1));
@@ -306,7 +306,9 @@ window.addEventListener("hashchange", (e) => {
   if (onWall && /^wall\/\d+(\/c\/\d+)?$/.test(now) && wallLoaded) { openWallHash(now.slice(5), true).catch((err) => say(err.message)); return; }
   if (onWall && now === "wall" && wallLoaded) { closeInfo(); return; }
   if (/^fair(\/|$)/.test(was)) fairScroll = window.scrollY;   // remember where you were on Fair Play
-  window.scrollTo(0, 0); route(true);
+  // ring to ring (the footer webring's Prev / Next / Random): stay where you are while the next ring loads
+  if (!(/^themewall(\/|$)/.test(was) && /^themewall(\/|$)/.test(now))) window.scrollTo(0, 0);
+  route(true);
 });
 
 // Player pages are pared down: no marquee, ticker, button strip, counter or webring,
@@ -2945,7 +2947,7 @@ function twDraw(D) {
     const last = D.week_end - D.now < 86400;
     body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
         el("span", { class: "small tw-flavor" }, twFlavor(W.theme))));
-    lockLine = el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
+    lockLine = el("p", { class: "center small tw-lock" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
       `The wall locks ${endText}, then resets for next week's theme!`);
   } else {
     body.append(el("p", { class: "center" }, "Theme: ", el("b", { class: "tw-theme" }, theme), ` · week of ${new Date(twWeekStart(W.week)).toLocaleDateString([], { month: "short", day: "numeric" })}`));
@@ -3071,7 +3073,7 @@ function twDraw(D) {
       try {
         const { banners } = await api("/api/collection");
         const grid = el("div", { class: "tw-grid" });
-        const list = banners;
+        const list = banners.slice().sort((a, b) => (a.locked ? 1 : 0) - (b.locked ? 1 : 0) || Math.random() - 0.5).slice(0, 150);   // a fresh handful each time
         for (const b of list) {
           const ok = !b.locked;
           const tile = el("div", { class: "pick-tile tw-pick" + (ok ? "" : " tw-off"), title: `${b.name} #${b.edition}${ok ? "" : b.locked < 0 ? " (away)" : " (in a trade)"}` },
@@ -3085,6 +3087,9 @@ function twDraw(D) {
         }
         if (!list.length) grid.append(el("p", { class: "small" }, "You don't have any buttons yet! Open a pack first."));
         tray.append(grid);
+        // fixed height, no scrolling: keep only the buttons that fit in the box
+        const room = grid.clientHeight;
+        for (const t of [...grid.children]) if (t.offsetTop + t.offsetHeight > room) t.remove();
       } catch (e) { status(e.message); }
     })();
     if (mineP && mineP.empty) body.append(el("p", { class: "center small" }, "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."));
