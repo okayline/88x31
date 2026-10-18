@@ -2772,19 +2772,20 @@ function twDraw(D) {
     for (const r of D.rings) sel.append(el("option", { value: r.id }, r.name));
     sel.value = D.ring.id;
     sel.onchange = () => { location.hash = "#themewall/" + sel.value; };
-    ringBar.append("Ring: ", sel);
-  } else ringBar.append("Ring: ", el("b", {}, D.ring.name));
+    ringBar.append(sel);
+  } else ringBar.append(el("b", {}, D.ring.name));
   ringBar.append(` · ${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
   body.append(ringBar);
 
   const theme = W.theme.toUpperCase();
+  let lockLine = null;   // when the wall locks: shown under the wall (this week's wall only)
   if (can) {
     const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
     const last = D.week_end - D.now < 86400;
     body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
-        el("span", { class: "small tw-flavor" }, twFlavor(W.theme))),
-      el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
-        `The wall locks ${endText}, then resets for next week's theme!`));
+        el("span", { class: "small tw-flavor" }, twFlavor(W.theme))));
+    lockLine = el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
+      `The wall locks ${endText}, then resets for next week's theme!`);
   } else {
     body.append(el("p", { class: "center" }, "Theme: ", el("b", { class: "tw-theme" }, theme), ` · week of ${new Date(twWeekStart(W.week)).toLocaleDateString([], { month: "short", day: "numeric" })} · locked`));
   }
@@ -2909,7 +2910,7 @@ function twDraw(D) {
   } else body.append(msg);
 
   // under the wall: what the stars mean, and the other weeks
-  body.append(el("p", { class: "center small tw-rule" }, `Every button of the ${W.theme} type adds a ★!`), nav);
+  body.append(...[lockLine, el("p", { class: "center small tw-rule" }, `Every button of the ${W.theme} type adds a ★!`), nav].filter(Boolean));
 
   // who's up
   const roster = el("ul", { class: "tw-roster small" });
