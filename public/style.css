@@ -1318,3 +1318,4 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .ring-box { margin: 10px 0; padding: 8px; border: 2px ridge var(--edge); background: #000033; }
 .ring-box h3 { margin-top: 0; }
 .rings-make input, .ring-box input { max-width: 200px; }
+.tw-head{margin-top:1.6em}

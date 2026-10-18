@@ -2773,11 +2773,14 @@ function twDraw(D) {
     sel.value = D.ring.id;
     sel.onchange = () => { location.hash = "#themewall/" + sel.value; };
     ringBar.append(sel);
-  } else ringBar.append(el("b", {}, D.ring.name));
-  ringBar.append(el("br"), `${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
+  }
+  $("tw-title").textContent = `~*~ ${D.ring.name}'s Webring ~*~`;
+  if (D.rings.length > 1) ringBar.append(el("br"));
+  ringBar.append(`${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
   body.append(ringBar);
 
   const theme = W.theme.toUpperCase();
+  body.append(el("p", { class: "center tw-head" }, el("b", {}, "~*~ Theme Wall ~*~")));
   let lockLine = null;   // when the wall locks: shown under the wall (this week's wall only)
   if (can) {
     const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
