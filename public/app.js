@@ -2740,6 +2740,25 @@ function twPinBox(p, scale) {
   return box;
 }
 
+// Short flavor lines under this week's theme (one picked each time the wall is drawn)
+const TW_FLAVOR = {
+  construction: ["This page is under construction. It has been since 1997.", "Please pardon our dust. And our blinking text.", "Our webmaster is busy hammering GIFs into place.",
+    "Hard hats required. Comic Sans provided.", "Best viewed while wearing a tiny yellow helmet.", "Coming soon! (Not soon.)",
+    "Caution: animated barricades ahead.", "The little man with the shovel is working as fast as he can."],
+  neon: ["Bright enough to read by. Not great for your eyes.", "Turn the lights down. Everything here glows.", "Buzzzzz. That's the sound of 1996 being cool.",
+    "Warning: may cause squinting at 800x600.", "Glow harder."],
+  webring: ["Next site! Next site! Next site!", "One ring to link them all.", "Please do not break the ring.",
+    "Previous | Random | Next | Why did the ring break?", "You are on site 5 of 5 in this ring. Keep clicking."],
+  guestbook: ["Sign my guestbook! (Please. Anyone.)", "Thanx 4 visiting!!1!", "Leave a message after the midi.",
+    "Entries 1 to 10 of 10. Mostly from my cousin.", "Remember to say hi. Nobody ever says hi."],
+  counter: ["You are visitor number 000042. And so is everyone else.", "Hits: 12. Eleven of them were me.", "Refresh to feel popular.",
+    "Now with 100% more digits.", "This counter has been reset by the webmaster. Sorry."],
+  divider: ["Rainbow bars: the original paragraph break.", "Dividing the content since 1996.", "Horizontal rules are a lifestyle.",
+    "Please keep all hands and elbows behind the line.", "Scroll down. There's a line. It's pretty."],
+};
+
+const twFlavor = (theme) => { const l = TW_FLAVOR[theme] || [""]; return l[Math.floor(Math.random() * l.length)]; };
+
 function twDraw(D) {
   const body = $("tw-body"), W = D.wall, can = W.editable;
   body.textContent = "";
@@ -2763,7 +2782,7 @@ function twDraw(D) {
     const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
     const last = D.week_end - D.now < 86400;
     body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
-        el("span", { class: "small" }, `Every button of the ${W.theme} type adds a ★!`)),
+        el("span", { class: "small tw-flavor" }, twFlavor(W.theme))),
       el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
         `The wall locks ${endText}, then resets for next week's theme!`));
   } else {
@@ -2772,7 +2791,6 @@ function twDraw(D) {
   const nav = el("p", { class: "center small" }, el("a", { href: `#themewall/${D.ring.id}/${W.week - 1}` }, "« earlier week"));
   if (!can) nav.append(" · ", W.week + 1 < D.week ? el("a", { href: `#themewall/${D.ring.id}/${W.week + 1}` }, "later week »")
     : el("a", { href: `#themewall/${D.ring.id}` }, "this week »"));
-  body.append(nav);
 
   // one ★ for every button on the wall that fits the theme, right-justified over the canvas so they grow from right to left
   const onTheme = W.pins.filter((p) => p.match).length;
@@ -2889,6 +2907,9 @@ function twDraw(D) {
     }
     body.append(bar, msg, tray);
   } else body.append(msg);
+
+  // under the wall: what the stars mean, and the other weeks
+  body.append(el("p", { class: "center small tw-rule" }, `Every button of the ${W.theme} type adds a ★!`), nav);
 
   // who's up
   const roster = el("ul", { class: "tw-roster small" });
