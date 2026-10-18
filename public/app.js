@@ -3016,7 +3016,7 @@ function twDraw(D) {
 
   // your buttons (this week's wall only): long-press one, drag it onto the wall, let go
   if (can) {
-    const tray = el("div", { class: "tw-tray" }, el("p", { class: "small tw-tray-hint" }, "Hold a button, then drag it onto the wall!"));
+    const tray = el("div", { class: "tw-tray" });
     const reload = () => showThemeWall(String(D.ring.id)).catch((e) => status(e.message));
     const prev = el("div", { class: "tw-preview", hidden: "" });
     cv.append(prev);
@@ -3075,7 +3075,8 @@ function twDraw(D) {
   } else body.append(msg);
 
   // under the wall: what the stars mean, and the other weeks
-  body.append(...[lockLine, el("p", { class: "center small tw-rule" }, `Every button of the ${W.theme} type adds a ★!`), nav].filter(Boolean));
+  // (earlier / later week links are off for now)
+  if (lockLine) body.append(lockLine);
 
   // who's up
   const roster = el("ul", { class: "tw-roster small" });
