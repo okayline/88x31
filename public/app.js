@@ -549,7 +549,7 @@ async function showPage(name) {
         el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtWhen(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
-        el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect })),
+        el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect }, 2)),   // stamped buttons at 2x
         el("span", { class: "small" }, ` stamped ${g.gift_name} #${g.gift_edition}${g.gift_max ? " of " + g.gift_max : ""}`)) : null,
       g.gift_pack ? el("p", { class: "stamp" }, ...(() => {
         const p = { id: g.gift_pack, source: g.pack_source, note: g.pack_note, keep: g.pack_keep, special: g.pack_special, special_no: g.pack_special_no,
