@@ -3047,7 +3047,7 @@ async function showRings() {
     el("button", { type: "submit" }, "Make it"));
   make.onsubmit = (e) => { e.preventDefault(); act({ action: "create", name: make.elements.name.value }); };
   body.append(make, msg, list,
-    el("p", { class: "small center" }, `${D.rings.length} ring${D.rings.length === 1 ? "" : "s"}. A wall's size is fixed when someone first opens it for the week (members + 2 spare spots), so add everyone before then.`));
+    el("p", { class: "small center" }, `${D.rings.length} ring${D.rings.length === 1 ? "" : "s"}. Every wall is the same size (room for about 10 buttons), so rings bigger than that get crowded.`));
   if (!D.rings.length) body.append(el("p", { class: "center small" }, "No rings yet. Make one above, or players get an automatic one the first time they open the Theme Wall."));
 
   for (const r of D.rings) {
