@@ -22,6 +22,7 @@ export async function onRequestGet({ request, env }) {
   if (!me) return json({ error: "Log in to see your ring's Theme Wall." }, 401);
   if (me.is_bot) return json({ error: "Bots don't build Theme Walls yet." }, 403);
   const params = new URL(request.url).searchParams;
+  if (params.get("list")) return json({ rings: await myRings(env, me.id) });   // footer webring links: no side effects
   const t = now(), cur = weekOf(t);
   await lockEndedWalls(env, t);
   await ensureDefaultRing(env, me);

@@ -241,6 +241,7 @@ let fairScroll = 0;   // where you were on Fair Play, for coming back to it
 // clicked: got here from a link (not a page load), so a button's info box can scroll into view
 async function route(clicked = false) {
   say("");
+  if (me && !wrRings.length) api("/api/themewall?list=1").then((r) => webringFooter(r.rings, null)).catch(() => {});
   setPageMode();
   const hash = decodeURIComponent(location.hash.slice(1));
   // How to Play and Fair Play are open to everyone; "#howto/faq" jumps to a section ("#about" is the old name)
@@ -2759,7 +2760,29 @@ const TW_FLAVOR = {
 
 const twFlavor = (theme) => { const l = TW_FLAVOR[theme] || [""]; return l[Math.floor(Math.random() * l.length)]; };
 
+// Footer webring (v0.38): surf your own rings. Prev/Next step through them, Random jumps to another, List Rings shows them all.
+let wrRings = [];
+function webringFooter(rings, currentId) {
+  if (rings) wrRings = rings;
+  const R = wrRings;
+  if (!me || !R.length) return;
+  const i = Math.max(0, R.findIndex((r) => r.id === Number(currentId)));
+  const go = (r) => "#themewall/" + r.id;
+  $("wr-name").textContent = R[i].name;
+  $("wr-name").href = go(R[i]);
+  $("wr-prev").href = go(R[(i - 1 + R.length) % R.length]);
+  $("wr-next").href = go(R[(i + 1) % R.length]);
+  const others = R.length > 1 ? R.filter((_, k) => k !== i) : R;
+  $("wr-random").onclick = (e) => { e.preventDefault(); location.hash = go(others[Math.floor(Math.random() * others.length)]); };
+  $("wr-random").href = go(others[0]);
+  const box = $("wr-rings");
+  box.textContent = "";
+  for (const r of R) box.append(el("a", { href: go(r) }, r.name));
+  $("wr-list").onclick = (e) => { e.preventDefault(); box.hidden = !box.hidden; };
+}
+
 function twDraw(D) {
+  webringFooter(D.rings, D.ring.id);
   const body = $("tw-body"), W = D.wall, can = W.editable;
   body.textContent = "";
   const msg = el("p", { class: "center small add-status", id: "tw-msg", "aria-live": "polite" });
