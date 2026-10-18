@@ -239,8 +239,16 @@ let fairScroll = 0;   // where you were on Fair Play, for coming back to it
 // ---------- routing ----------
 
 // clicked: got here from a link (not a page load), so a button's info box can scroll into view
+// The footer webring sits under the ring's wall panel on the Theme Wall page and back in the footer everywhere else.
+const wrHome = { parent: $("webring").parentNode, next: $("webring").nextSibling };
+function webringTo(afterEl) {
+  const w = $("webring");
+  if (afterEl) afterEl.after(w); else if (w.parentNode !== wrHome.parent) wrHome.parent.insertBefore(w, wrHome.next);
+}
+
 async function route(clicked = false) {
   say("");
+  webringTo(null);
   if (me && !wrRings.length) api("/api/themewall?list=1").then((r) => webringFooter(r.rings, null)).catch(() => {});
   setPageMode();
   const hash = decodeURIComponent(location.hash.slice(1));
@@ -2842,6 +2850,7 @@ function webringFooter(rings, currentId) {
 }
 
 function twDraw(D) {
+  webringTo(document.querySelector("#themewall .tw-panel"));
   webringFooter(D.all_rings || D.rings, D.ring.id);
   const body = $("tw-body"), W = D.wall, can = W.editable;
   body.textContent = "";
