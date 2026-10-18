@@ -36,7 +36,7 @@ document.addEventListener("pointerup", (e) => {
   t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop");
 });
 document.addEventListener("animationend", (e) => { if (e.animationName === "pack-pop") e.target.classList.remove("pop"); });
-const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall", "packs", "themewall"];
+const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall", "packs", "themewall", "rings"];
 const showTop = (id) => {
   TOP.forEach((s) => ($(s).hidden = s !== id));
   $("top-nav").hidden = id === "code-card"; // one-line menu at the very top (members get more links)
@@ -255,6 +255,11 @@ async function route(clicked = false) {
   }
   if (hash === "check") { showTop("check"); return; }
   if (hash === "packs") { showTop("packs"); return showAllPacks().catch((e) => say(e.message)); }
+  if (hash === "rings") {   // v0.38: webmasters only
+    if (!me || !me.is_admin) { location.replace("#themewall"); return; }
+    showTop("rings");
+    return showRings().catch((e) => say(e.message));
+  }
   if (hash === "themewall" || hash.startsWith("themewall/")) {   // v0.38: members only, so logged out it is the front page
     if (!me) { showFront(); return showWall().catch((e) => say(e.message)); }
     showTop("themewall");
@@ -2142,6 +2147,11 @@ const ADMIN_SAYS = {
   restore_design: "a removed button came back",
   block_uploader: "someone's button finding was paused",
   unblock_uploader: "someone's button finding was switched back on",
+  ring_create: "started a new ring",
+  ring_rename: "renamed a ring",
+  ring_delete: "closed a ring",
+  ring_add: "moved someone into a ring",
+  ring_remove: "took someone out of a ring",
 };
 
 // One ledger entry. Button names link to the copy's page (or the button's info on the Wall);
@@ -2727,7 +2737,6 @@ function twPinBox(p, scale) {
     style: `left:${p.x * scale}px;top:${p.y * scale}px;width:${TW_W * scale}px;height:${TW_H * scale}px` });
   if (p.copy) {
     box.append(bannerImg(p.copy, scale));
-    if (p.match) box.append(el("span", { class: "tw-star", title: "Fits this week's theme" }, "★"));
     box.title = `${p.copy.name} #${p.copy.edition} · ${p.name}${p.match ? " · fits the theme" : ""}`;
   } else {
     box.title = `${p.name}'s spot`;
@@ -2759,7 +2768,7 @@ function twDraw(D) {
     const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
     const last = D.week_end - D.now < 86400;
     body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
-        el("span", { class: "small" }, `Buttons of the ${W.theme} type (and found buttons) get a ★. Any button can go up, and it stays yours.`)),
+        el("span", { class: "small" }, `Every button of the ${W.theme} type (and every found button) on the wall adds a ★ to the row below. Any button can go up, and it stays yours.`)),
       el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
         `The wall locks ${endText} your time (Monday 00:00 UTC), then it's sealed in the ledger.`));
   } else {
@@ -2769,6 +2778,12 @@ function twDraw(D) {
   if (!can) nav.append(" · ", W.week + 1 < D.week ? el("a", { href: `#themewall/${D.ring.id}/${W.week + 1}` }, "later week »")
     : el("a", { href: `#themewall/${D.ring.id}` }, "this week »"));
   body.append(nav);
+
+  // one ★ for every button on the wall that fits the theme
+  const onTheme = W.pins.filter((p) => p.match).length;
+  body.append(el("p", { class: "center tw-stars", title: `${onTheme} on theme` },
+    onTheme ? el("span", { class: "tw-starrow", "aria-hidden": "true" }, "★".repeat(onTheme)) : el("span", { class: "tw-starrow dim", "aria-hidden": "true" }, "☆"),
+    el("span", { class: "small" }, onTheme ? ` ${onTheme} on theme` : " no on-theme buttons yet")));
 
   // the canvas, drawn to fit
   const scale = Math.max(0.5, Math.min(2, (Math.max(240, Math.min(body.clientWidth || 360, 720)) - 8) / W.size));
@@ -2891,6 +2906,56 @@ function twDraw(D) {
   if (can) for (const m of D.members) roster.append(row(m.name, W.pins.find((p) => p.user_id === m.id)));
   else for (const p of W.pins) roster.append(row(p.name, p));
   body.append(el("h3", {}, "» Who's up «"), roster);
+  if (me && me.is_admin) body.append(el("p", { class: "center small" }, "[ ", el("a", { href: "#rings" }, "Manage rings (webmaster)"), " ]"));
+}
+
+// ---------- Ring admin (v0.38; webmasters only) ----------
+// Webmasters make the rings and choose who is in them. Players in no ring still get a default "cLuB Ring" on their first look.
+async function showRings() {
+  const body = $("rings-body");
+  const D = await api("/api/rings");
+  let players = [];
+  try { players = (await api("/api/players")).players.filter((p) => !p.is_bot).map((p) => p.name); } catch {}
+  body.textContent = "";
+  const msg = el("p", { class: "center small add-status", "aria-live": "polite" });
+  const act = async (payload, ok) => {
+    try { await api("/api/rings", { method: "POST", body: payload }); await showRings(); } catch (e) { msg.textContent = e.message; }
+  };
+  const list = el("datalist", { id: "rings-players" });
+  for (const n of players) list.append(el("option", { value: n }));
+
+  const make = el("form", { class: "center rings-make" }, "New ring: ", el("input", { name: "name", maxlength: "40", placeholder: "Ring name", autocomplete: "off", "aria-label": "New ring name" }), " ",
+    el("button", { type: "submit" }, "Make it"));
+  make.onsubmit = (e) => { e.preventDefault(); act({ action: "create", name: make.elements.name.value }); };
+  body.append(make, msg, list,
+    el("p", { class: "small center" }, `${D.rings.length} ring${D.rings.length === 1 ? "" : "s"}. A wall's size is fixed when someone first opens it for the week (members + 2 spare spots), so add everyone before then.`));
+  if (!D.rings.length) body.append(el("p", { class: "center small" }, "No rings yet. Make one above, or players get an automatic one the first time they open the Theme Wall."));
+
+  for (const r of D.rings) {
+    const box = el("div", { class: "ring-box" });
+    const title = el("h3", {}, r.name, r.is_default ? el("span", { class: "small" }, " (auto)") : null,
+      el("span", { class: "small" }, ` · ${r.members.length} member${r.members.length === 1 ? "" : "s"}`));
+    const wall = r.wall ? `This week's wall is open: ${r.wall.pins} of ${r.wall.slots} spots up${r.members.length > r.wall.slots ? " (more members than spots!)" : ""}.`
+      : "No wall yet this week.";
+    const tools = el("p", { class: "small" },
+      el("button", { type: "button", class: "mini", onclick: () => {
+        const name = prompt("New name for this ring:", r.name);
+        if (name !== null && name.trim()) act({ action: "rename", ring: r.id, name });
+      } }, "Rename"), " ",
+      el("button", { type: "button", class: "mini", onclick: () => {
+        const c = prompt(`Close this ring and its walls? Type its name to confirm:\n${r.name}`);
+        if (c !== null) act({ action: "delete", ring: r.id, confirm: c });
+      } }, "Close ring"));
+    const ul = el("ul", { class: "tw-roster" });
+    for (const m of r.members) ul.append(el("li", {}, el("a", { href: "#u/" + encodeURIComponent(m.name) }, m.name), " ",
+      el("button", { type: "button", class: "mini", onclick: () => act({ action: "remove", ring: r.id, name: m.name }) }, "Remove")));
+    if (!r.members.length) ul.append(el("li", { class: "small" }, "Nobody yet."));
+    const add = el("form", { class: "small" }, el("input", { name: "name", list: "rings-players", placeholder: "Player name", autocomplete: "off", "aria-label": "Player to add" }), " ",
+      el("button", { type: "submit", class: "mini" }, "Add"));
+    add.onsubmit = (e) => { e.preventDefault(); if (add.elements.name.value.trim()) act({ action: "add", ring: r.id, name: add.elements.name.value }); };
+    box.append(title, el("p", { class: "small" }, wall), ul, add, tools);
+    body.append(box);
+  }
 }
 
 // ---------- hold to open, and tearing pouches (v0.32) ----------
