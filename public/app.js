@@ -3073,8 +3073,9 @@ function twDraw(D) {
       try {
         const { banners } = await api("/api/collection");
         const grid = el("div", { class: "tw-grid" });
-        const list = banners.slice().sort((a, b) => (a.locked ? 1 : 0) - (b.locked ? 1 : 0) || Math.random() - 0.5).slice(0, 150);   // a fresh handful each time
-        for (const b of list) {
+        const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
+        const free = (b) => (b.locked ? 1 : 0);
+        const makeTile = (b) => {
           const ok = !b.locked;
           const tile = el("div", { class: "pick-tile tw-pick" + (ok ? "" : " tw-off"), title: `${b.name} #${b.edition}${ok ? "" : b.locked < 0 ? " (away)" : " (in a trade)"}` },
             bannerImg(b, 1));
@@ -3083,13 +3084,22 @@ function twDraw(D) {
             tile.addEventListener("contextmenu", (e) => e.preventDefault());
             tile.addEventListener("dragstart", (e) => e.preventDefault());
           }
-          grid.append(tile);
-        }
-        if (!list.length) grid.append(el("p", { class: "small" }, "You don't have any buttons yet! Open a pack first."));
+          return tile;
+        };
         tray.append(grid);
-        // fixed height, no scrolling: keep only the buttons that fit in the box
-        const room = grid.clientHeight;
-        for (const t of [...grid.children]) if (t.offsetTop + t.offsetHeight > room) t.remove();
+        // fixed height, no scrolling: only the buttons that fit are shown. A fresh handful each time, unless you have more than fit:
+        // then the ones that fit the week's theme come first
+        const fill = (list) => {
+          grid.textContent = "";
+          for (const b of list.slice(0, 150)) grid.append(makeTile(b));
+          const room = grid.clientHeight;
+          let cut = false;
+          for (const t of [...grid.children]) if (t.offsetTop + t.offsetHeight > room) { t.remove(); cut = true; }
+          return cut;
+        };
+        const all = shuffle(banners).sort((a, b) => free(a) - free(b));
+        if (fill(all)) fill(all.slice().sort((a, b) => free(a) - free(b) || twMatch(b.type, W.theme) - twMatch(a.type, W.theme)));
+        if (!banners.length) grid.append(el("p", { class: "small" }, "You don't have any buttons yet! Open a pack first."));
       } catch (e) { status(e.message); }
     })();
     if (mineP && mineP.empty) body.append(el("p", { class: "center small" }, "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."));
