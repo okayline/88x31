@@ -12,6 +12,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 - The wall locks at Monday 00:00 UTC (Sunday afternoon in Hawaii) and is sealed into the Ledger.
 - Rings are made by the webmaster, who chooses who is in them (a new Rings page). Players who aren't in one are grouped into "~*~cLuB~*~ Ring #N" automatic "~*~cLuB~*~ Ring #N" rings of up to 8 the first time they open the wall. A new "Theme Wall" link is in the menu.
 - Later the same evening: the Theme Wall page is now your ring's **Webring** page, with the ring's name in the title, the lock time and "earlier week" under the wall, and a funny rotating line under the theme. The footer webring shows your ring (with room for a 100x100 logo) and its Prev / Next / Random / List Rings links hop between rings. Any logged-in player can look at any ring's wall (only members can put buttons up). Two bot rings, "Bot Hangout" and "Bots Only", were added, and the bots put up buttons on their walls. The bots now spread their visits out instead of doing a pile of things in one minute.
+- Trades page: a new **Start a Trade** panel with a player dropdown and a Trade! button. Rings can now be open to join, or ask-to-join (the webmaster chooses and approves). On the Wall, if you have lots of buttons still to find, you now see just a couple of rows of ? tiles and "...and more!". Filled requests show in Trade History, and the last gift you got and gave are bigger on your page.
 
 ## v0.37.2 — "A Few More Mysteries"
 **Sat Oct 17, 2026 · 11:12 AM HST**
