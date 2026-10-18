@@ -2763,9 +2763,9 @@ function twDraw(D) {
     const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
     const last = D.week_end - D.now < 86400;
     body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
-        el("span", { class: "small" }, `Every button of the ${W.theme} type (and every found button) on the wall adds a ★ to the row below. Any button can go up, and it stays yours.`)),
+        el("span", { class: "small" }, `Every button of the ${W.theme} type adds a ★!`)),
       el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
-        `The wall locks ${endText} your time (Monday 00:00 UTC), then it's sealed in the ledger.`));
+        `The wall locks ${endText}, then resets for next week's theme!`));
   } else {
     body.append(el("p", { class: "center" }, "Theme: ", el("b", { class: "tw-theme" }, theme), ` · week of ${new Date(twWeekStart(W.week)).toLocaleDateString([], { month: "short", day: "numeric" })} · locked`));
   }
@@ -2774,11 +2774,10 @@ function twDraw(D) {
     : el("a", { href: `#themewall/${D.ring.id}` }, "this week »"));
   body.append(nav);
 
-  // one ★ for every button on the wall that fits the theme
+  // one ★ for every button on the wall that fits the theme, right-justified over the canvas so they grow from right to left
   const onTheme = W.pins.filter((p) => p.match).length;
-  body.append(el("p", { class: "center tw-stars", title: `${onTheme} on theme` },
-    onTheme ? el("span", { class: "tw-starrow", "aria-hidden": "true" }, "★".repeat(onTheme)) : el("span", { class: "tw-starrow dim", "aria-hidden": "true" }, "☆"),
-    el("span", { class: "small" }, onTheme ? ` ${onTheme} on theme` : " no on-theme buttons yet")));
+  const starRow = el("div", { class: "tw-stars", title: `${onTheme} on theme` },
+    el("span", { class: "tw-starrow" + (onTheme ? "" : " dim"), "aria-hidden": "true" }, onTheme ? "★".repeat(onTheme) : "☆"));
 
   // the canvas, drawn to fit
   const scale = Math.max(0.5, Math.min(2, (Math.max(240, Math.min(body.clientWidth || 360, 720)) - 8) / W.size));
@@ -2792,7 +2791,8 @@ function twDraw(D) {
     cv.append(box);
   }
   if (!W.pins.length && !can) cv.append(el("p", { class: "tw-none" }, "Nobody put a button up that week."));
-  body.append(el("div", { class: "tw-scroll" }, cv));
+  starRow.style.width = W.size * scale + "px";
+  body.append(el("div", { class: "tw-scroll" }, starRow, cv));
 
   // moving your own pin
   const others = () => W.pins.filter((p) => !p.mine);
@@ -2857,7 +2857,6 @@ function twDraw(D) {
       try {
         const { banners } = await api("/api/collection");
         tray.textContent = "";
-        tray.append(el("p", { class: "small center" }, "Pick a button to put up. It stays in your collection. ★ = fits this week's theme."));
         const grid = el("div", { class: "tw-grid" });
         const list = banners.slice().sort((a, b) => twMatch(b.type, W.theme) - twMatch(a.type, W.theme));
         for (const b of list) {
@@ -2883,9 +2882,7 @@ function twDraw(D) {
         el("button", { type: "button", onclick: async () => {
           try { await api("/api/themewall", { method: "POST", body: { action: "unpin", ring: D.ring.id } }); reload(); } catch (e) { status(e.message); }
         } }, "Take it down"));
-      bar.append(el("br"), el("span", { class: "small" }, mineP.empty
-        ? "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."
-        : "Drag your button anywhere (or use the arrows). Everything snaps to a 5 pixel grid, and flush against its neighbours."));
+      if (mineP.empty) bar.append(el("br"), el("span", { class: "small" }, "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."));
     } else {
       bar.append(el("button", { type: "button", onclick: openTray }, "Put up a button"));
       openTray();

@@ -1312,7 +1312,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .tw-pick.tw-off { opacity: 0.4; cursor: not-allowed; }
 .tw-roster { list-style: none; padding: 0; margin: 0; }
 .tw-roster li { padding: 2px 0; }
-.tw-stars { margin: 4px 0; }
+.tw-stars { margin: 4px auto; text-align: right; }
 .tw-starrow { color: var(--ink); font-size: 22px; letter-spacing: 3px; line-height: 1.2; overflow-wrap: anywhere; }
 .tw-starrow.dim { color: #8888aa; }
 .ring-box { margin: 10px 0; padding: 8px; border: 2px ridge var(--edge); background: #000033; }
