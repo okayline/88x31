@@ -2782,7 +2782,7 @@ function webringFooter(rings, currentId) {
 }
 
 function twDraw(D) {
-  webringFooter(D.rings, D.ring.id);
+  webringFooter(D.all_rings || D.rings, D.ring.id);
   const body = $("tw-body"), W = D.wall, can = W.editable;
   body.textContent = "";
   const msg = el("p", { class: "center small add-status", id: "tw-msg", "aria-live": "polite" });
@@ -2790,7 +2790,7 @@ function twDraw(D) {
 
   // ring and theme
   const ringBar = el("p", { class: "center tw-ring" });
-  if (D.rings.length > 1) {
+  if (D.rings.length > 1 && !D.guest) {
     const sel = el("select", { "aria-label": "Your rings" });
     for (const r of D.rings) sel.append(el("option", { value: r.id }, r.name));
     sel.value = D.ring.id;
@@ -2798,9 +2798,11 @@ function twDraw(D) {
     ringBar.append(sel);
   }
   $("tw-title").textContent = `~*~ ${D.ring.name}'s Webring ~*~`;
-  if (D.rings.length > 1) ringBar.append(el("br"));
+  if (D.rings.length > 1 && !D.guest) ringBar.append(el("br"));
   ringBar.append(`${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
   body.append(ringBar);
+  if (D.guest) body.append(el("p", { class: "center small" }, "You're visiting this ring, so you can look but not pin. ",
+    D.rings[0] ? el("a", { href: "#themewall/" + D.rings[0].id }, "« back to my ring") : ""));
 
   const theme = W.theme.toUpperCase();
   body.append(el("p", { class: "center tw-head" }, el("b", {}, "~*~ Theme Wall ~*~")));

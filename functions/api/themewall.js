@@ -14,7 +14,7 @@
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { markSeen } from "../../lib/progress.js";
 import {
-  weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, wallPins, lockEndedWalls, placePin, BTN_W, BTN_H,
+  weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, allRings, ringById, wallPins, lockEndedWalls, placePin, BTN_W, BTN_H,
 } from "../../lib/themewall.js";
 
 export async function onRequestGet({ request, env }) {
@@ -22,12 +22,15 @@ export async function onRequestGet({ request, env }) {
   if (!me) return json({ error: "Log in to see your ring's Theme Wall." }, 401);
   if (me.is_bot) return json({ error: "Bots don't build Theme Walls yet." }, 403);
   const params = new URL(request.url).searchParams;
-  if (params.get("list")) return json({ rings: await myRings(env, me.id) });   // footer webring links: no side effects
+  if (params.get("list")) return json({ rings: await allRings(env, me.id) });   // footer webring links: no side effects
   const t = now(), cur = weekOf(t);
   await lockEndedWalls(env, t);
   await ensureDefaultRing(env, me);
-  const { rings, ring } = await pickRing(env, me.id, params.get("ring"));
-  if (!ring) return json({ error: "You're not in that ring." }, 403);
+  let { rings, ring } = await pickRing(env, me.id, params.get("ring"));
+  // Rings are public: any player can look at any ring's wall, they just can't pin on it unless they're in it.
+  let guest = false;
+  if (!ring && params.get("ring")) { ring = await ringById(env, params.get("ring")); guest = !!ring; }
+  if (!ring) return json({ error: "No such ring." }, 404);
 
   const week = params.get("week") === null ? cur : Number(params.get("week"));
   if (!Number.isInteger(week) || week > cur) return json({ error: "That week hasn't happened yet." }, 400);
@@ -36,16 +39,16 @@ export async function onRequestGet({ request, env }) {
   if (!wall) return json({ error: "That ring had no wall that week." }, 404);
 
   const pins = await wallPins(env, wall, me.id);
-  await markSeen(env, me, pins.map((p) => p.copy && p.copy.design_id));
+  if (!guest) await markSeen(env, me, pins.map((p) => p.copy && p.copy.design_id));
   const { results: members } = await env.DB.prepare(
     `SELECT u.id, u.name FROM ring_members m JOIN users u ON u.id = m.user_id WHERE m.ring_id = ? ORDER BY m.position`
   ).bind(ring.id).all();
   const pinnedBy = new Set(pins.map((p) => p.user_id));
   return json({
     week: cur, week_start: weekStart(cur), week_end: weekEnd(cur), theme: themeFor(cur), now: t,
-    rings, ring,
+    rings, ring, guest, all_rings: await allRings(env, me.id),
     wall: { id: wall.id, week: wall.week, theme: wall.theme, size: wall.size, slots: wall.slots,
-      locked: !!wall.locked_at, locked_at: wall.locked_at, editable: !wall.locked_at && wall.week === cur, pins },
+      locked: !!wall.locked_at, locked_at: wall.locked_at, editable: !guest && !wall.locked_at && wall.week === cur, pins },
     members: members.map((m) => ({ id: m.id, name: m.name, pinned: pinnedBy.has(m.id) })),
   });
 }

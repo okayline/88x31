@@ -7,7 +7,7 @@
 // POST /api/rings { action: "create", name }
 //      { action: "rename", ring, name }
 //      { action: "delete", ring, confirm }      confirm = the ring's name again; its walls go (locked ones are sealed in the ledger first)
-//      { action: "add", ring, name }            a player by name (bots can't be in rings yet); a player can be in any number of rings
+//      { action: "add", ring, name }            a player by name (bots too); a player can be in any number of rings
 //      { action: "remove", ring, name }         their seat empties and their button comes down from this week's open wall
 // Ring upkeep is NOT written to the ledger (webmaster's choice); only a locked wall's snapshot is sealed there.
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
@@ -76,7 +76,6 @@ export async function onRequestPost({ request, env }) {
     if (!u) return json({ error: "No player by that name." }, 404);
     const seated = await db.prepare("SELECT position FROM ring_members WHERE ring_id = ? AND user_id = ?").bind(ring.id, u.id).first();
     if (body.action === "add") {
-      if (u.is_bot) return json({ error: "Bots aren't in rings yet." }, 400);
       if (seated) return json({ error: `${u.name} is already in that ring.` }, 400);
       await db.prepare(
         `INSERT INTO ring_members (ring_id, position, user_id)
