@@ -1308,7 +1308,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .tw-none { position: absolute; inset: 0; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #aaa; }
 .tw-controls button.mini { margin: 0 1px; }
 .tw-tray { margin: 8px 0; padding: 8px; border: 2px dashed var(--edge); background: #000033; }
-.tw-grid { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; justify-content: center; position: relative; height: 130px; overflow: hidden; }   /* fixed height, no scrolling */
+.tw-grid { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; justify-content: center; position: relative; height: 130px; overflow-y: auto; overscroll-behavior: contain; }   /* fixed height; scrolls if you have more buttons than fit */
 .tw-pick { position: relative; }
 .tw-pick.tw-off { opacity: 0.4; cursor: not-allowed; }
 .tw-roster { list-style: none; padding: 0; margin: 0; }

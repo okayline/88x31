@@ -3087,18 +3087,12 @@ function twDraw(D) {
           return tile;
         };
         tray.append(grid);
-        // fixed height, no scrolling: only the buttons that fit are shown. A fresh handful each time, unless you have more than fit:
-        // then the ones that fit the week's theme come first
-        const fill = (list) => {
-          grid.textContent = "";
-          for (const b of list.slice(0, 150)) grid.append(makeTile(b));
-          const room = grid.clientHeight;
-          let cut = false;
-          for (const t of [...grid.children]) if (t.offsetTop + t.offsetHeight > room) { t.remove(); cut = true; }
-          return cut;
-        };
+        // fixed height, all your buttons: the box scrolls if you have more than fit. Random order, unless it has to scroll:
+        // then the ones that fit the week's theme come first (buttons in a trade or away are always last)
+        const fill = (list) => { grid.textContent = ""; for (const b of list) grid.append(makeTile(b)); };
         const all = shuffle(banners).sort((a, b) => free(a) - free(b));
-        if (fill(all)) fill(all.slice().sort((a, b) => free(a) - free(b) || twMatch(b.type, W.theme) - twMatch(a.type, W.theme)));
+        fill(all);
+        if (grid.scrollHeight > grid.clientHeight + 1) fill(all.slice().sort((a, b) => free(a) - free(b) || twMatch(b.type, W.theme) - twMatch(a.type, W.theme)));
         if (!banners.length) grid.append(el("p", { class: "small" }, "You don't have any buttons yet! Open a pack first."));
       } catch (e) { status(e.message); }
     })();
