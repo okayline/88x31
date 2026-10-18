@@ -2738,9 +2738,10 @@ async function loadMarquee() {
 }
 loadMarquee();   // once per page load, so it stays put while you read it
 // (v0.37.1) the line above the title changes every load
-const FOUND_LINES = ["You have found...", "You have stumbled upon...", "You have discovered...", "You have surfed onto...",
-  "You have wandered into...", "You have dialed into...", "You have been linked to...", "You have arrived at...",
-  "You have uncovered...", "Welcome, web surfer, to...", "Your search returned...", "You have unlocked..."];
+const FOUND_LINES = ["You have found...", "You have dialed into...", "You have unlocked...", "You have surfed onto...",
+  "Welcome, web surfer, to...", "*dial-up noises* Connecting...", "Buffering... buffering... buffering...", "Loading... 97%...",
+  "Surfin' the information superhighway", "Click here to enter...", "Your search returned...", "Greetings from...",
+  "Now entering...", "This site is best viewed at...", "Transmission received from...", "You've got buttons!"];
 $("found-line").textContent = FOUND_LINES[Math.floor(Math.random() * FOUND_LINES.length)];
 
 // Visitor counter: counted once per browser visit, so refreshing doesn't bump it.
