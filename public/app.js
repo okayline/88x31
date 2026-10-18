@@ -2785,7 +2785,15 @@ async function showThemeWall(arg) {
   const q = new URLSearchParams();
   if (ring) q.set("ring", ring);
   if (week) q.set("week", week);
-  twDraw(await api("/api/themewall" + (q.toString() ? "?" + q : "")));
+  try { twDraw(await api("/api/themewall" + (q.toString() ? "?" + q : ""))); }
+  catch (e) {
+    if (!week) throw e;
+    // an old week with nothing on it: say so and give the way back (never leave the page stuck)
+    const body = $("tw-body");
+    body.textContent = "";
+    body.append(el("p", { class: "center" }, "Nothing was on the wall that week."),
+      el("p", { class: "center" }, el("a", { href: `#themewall/${ring}` }, "this week »")));
+  }
 }
 
 function twPinBox(p, scale) {
@@ -2876,8 +2884,7 @@ function twDraw(D) {
         ? el("span", {}, "Request sent ✓ ", el("button", { type: "button", class: "mini", onclick: () => joinPost("cancel_request") }, "Cancel"))
         : el("button", { type: "button", onclick: () => joinPost("join") }, "Request to join"))
       : null;
-    body.append(el("p", { class: "center small" }, "You're visiting this ring, so you can look but not pin. ",
-      D.rings[0] ? el("a", { href: "#themewall/" + D.rings[0].id }, "« back to my ring") : ""));
+    body.append(el("p", { class: "center small" }, "You're visiting this ring, so you can look but not pin."));
     if (join) body.append(el("p", { class: "center" }, join));
   }
 
@@ -2892,10 +2899,11 @@ function twDraw(D) {
     lockLine = el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
       `The wall locks ${endText}, then resets for next week's theme!`);
   } else {
-    body.append(el("p", { class: "center" }, "Theme: ", el("b", { class: "tw-theme" }, theme), ` · week of ${new Date(twWeekStart(W.week)).toLocaleDateString([], { month: "short", day: "numeric" })} · locked`));
+    body.append(el("p", { class: "center" }, "Theme: ", el("b", { class: "tw-theme" }, theme), ` · week of ${new Date(twWeekStart(W.week)).toLocaleDateString([], { month: "short", day: "numeric" })}`));
   }
-  const nav = el("p", { class: "center small" }, el("a", { href: `#themewall/${D.ring.id}/${W.week - 1}` }, "« earlier week"));
-  if (!can) nav.append(" · ", W.week + 1 < D.week ? el("a", { href: `#themewall/${D.ring.id}/${W.week + 1}` }, "later week »")
+  const hasEarlier = D.first_week === null || D.first_week === undefined || W.week > D.first_week;
+  const nav = el("p", { class: "center small" }, hasEarlier ? el("a", { href: `#themewall/${D.ring.id}/${W.week - 1}` }, "« earlier week") : "");
+  if (!can) nav.append(hasEarlier ? " · " : "", W.week + 1 < D.week ? el("a", { href: `#themewall/${D.ring.id}/${W.week + 1}` }, "later week »")
     : el("a", { href: `#themewall/${D.ring.id}` }, "this week »"));
 
   // one ★ for every button on the wall that fits the theme, right-justified over the canvas so they grow from right to left

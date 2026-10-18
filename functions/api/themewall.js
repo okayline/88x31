@@ -18,6 +18,12 @@ import {
   weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, allRings, ringById, privateIds, joinInfo, addRequest, dropRequest, seatMember, wallPins, lockEndedWalls, placePin, BTN_W, BTN_H,
 } from "../../lib/themewall.js";
 
+// the oldest week this ring has a wall for (so the page doesn't offer an "earlier week" with nothing behind it)
+async function db_first(env, ringId) {
+  const r = await env.DB.prepare("SELECT MIN(week) AS w FROM ring_walls WHERE ring_id = ?").bind(ringId).first();
+  return r && r.w !== null ? r.w : null;
+}
+
 export async function onRequestGet({ request, env }) {
   const me = await currentUser(env, request);
   if (!me) return json({ error: "Log in to see your ring's Theme Wall." }, 401);
@@ -40,6 +46,7 @@ export async function onRequestGet({ request, env }) {
     : await env.DB.prepare("SELECT * FROM ring_walls WHERE ring_id = ? AND week = ?").bind(ring.id, week).first();
   if (!wall) return json({ error: "That ring had no wall that week." }, 404);
 
+  const first = await db_first(env, ring.id);
   const pins = await wallPins(env, wall, me.id);
   if (!guest) await markSeen(env, me, pins.map((p) => p.copy && p.copy.design_id));
   const { results: members } = await env.DB.prepare(
@@ -48,7 +55,7 @@ export async function onRequestGet({ request, env }) {
   const pinnedBy = new Set(pins.map((p) => p.user_id));
   return json({
     week: cur, week_start: weekStart(cur), week_end: weekEnd(cur), theme: themeFor(cur), now: t,
-    rings, ring: { ...ring, ...(guest ? await joinInfo(env, ring.id, me.id) : {}) }, guest, all_rings: await allRings(env, me.id, !!me.is_admin),
+    first_week: first, rings, ring: { ...ring, ...(guest ? await joinInfo(env, ring.id, me.id) : {}) }, guest, all_rings: await allRings(env, me.id, !!me.is_admin),
     wall: { id: wall.id, week: wall.week, theme: wall.theme, size: wall.size, slots: wall.slots,
       locked: !!wall.locked_at, locked_at: wall.locked_at, editable: !guest && !wall.locked_at && wall.week === cur, pins },
     members: members.map((m) => ({ id: m.id, name: m.name, pinned: pinnedBy.has(m.id) })),
