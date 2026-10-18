@@ -7,6 +7,8 @@
 // POST /api/rings { action: "create", name }
 //      { action: "rename", ring, name }
 //      { action: "visibility", ring, private }   hide a ring from everyone who isn't in it (the bot rings start hidden)
+//      { action: "join_type", ring, type }       "open" (anyone joins), "request" (they ask, you approve) or "closed" (default)
+//      { action: "approve" | "decline", ring, name }   a player's request to join
 //      { action: "delete", ring, confirm }      confirm = the ring's name again; its walls go (locked ones are sealed in the ledger first)
 //      { action: "add", ring, name }            a player by name (bots too); a player can be in any number of rings
 //      { action: "remove", ring, name }         their seat empties and their button comes down from this week's open wall
@@ -14,7 +16,7 @@
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
-import { weekOf, lockEndedWalls, privateIds, setPrivate } from "../../lib/themewall.js";
+import { weekOf, lockEndedWalls, privateIds, setPrivate, joinInfo, setJoinType, ringRequests, dropRequest, seatMember } from "../../lib/themewall.js";
 
 const NAME_MAX = 40;
 
@@ -32,13 +34,18 @@ export async function onRequestGet({ request, env }) {
      FROM ring_walls w WHERE w.week = ?`
   ).bind(week).all();
   const hidden = await privateIds(env);
+  const reqs = await ringRequests(env);
+  const { results: reqUsers } = reqs.length
+    ? await env.DB.prepare(`SELECT id, name FROM users WHERE id IN (${reqs.map(() => "?").join(",")})`).bind(...reqs.map((r) => r.user)).all()
+    : { results: [] };
   return json({
     week,
-    rings: rings.map((r) => ({
-      ...r, private: hidden.includes(r.id),
+    rings: await Promise.all(rings.map(async (r) => ({
+      ...r, private: hidden.includes(r.id), join_type: (await joinInfo(env, r.id, 0)).join_type,
+      requests: reqs.filter((q) => q.ring === r.id).map((q) => ({ id: q.user, name: (reqUsers.find((u) => u.id === q.user) || {}).name || "?" })),
       members: seats.filter((s) => s.ring_id === r.id).map(({ id, name }) => ({ id, name })),
       wall: walls.find((w) => w.ring_id === r.id) || null,
-    })),
+    }))),
   });
 }
 
@@ -71,10 +78,26 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true });
   }
 
+  if (body.action === "join_type") {   // { ring, type: "open" | "request" | "closed" }
+    if (!["open", "request", "closed"].includes(body.type)) return json({ error: "Unknown join type." }, 400);
+    await setJoinType(env, ring.id, body.type);
+    return json({ ok: true });
+  }
+
+  if (body.action === "approve" || body.action === "decline") {   // a player's request to join { ring, name }
+    const u = await userByName(env, body.name);
+    if (!u) return json({ error: "No player by that name." }, 404);
+    if (body.action === "approve") await seatMember(env, ring.id, u.id);
+    await dropRequest(env, ring.id, u.id);
+    return json({ ok: true });
+  }
+
   if (body.action === "delete") {
     if (String(body.confirm || "").trim() !== ring.name) return json({ error: "Type the ring's name exactly to confirm." }, 400);
     await sealSafe(env);   // locks and seals any finished walls first, so their snapshots are in the ledger before the ring goes
-    await db.prepare("DELETE FROM rings WHERE id = ?").bind(ring.id).run();   // seats, walls and pins go with it
+    await db.prepare("DELETE FROM rings WHERE id = ?").bind(ring.id).run();
+    await dropRequest(env, ring.id, null);   // its join type and requests go too (ids can be reused)
+    await setPrivate(env, ring.id, false);   // seats, walls and pins go with it
     return json({ ok: true });
   }
 

@@ -7,14 +7,15 @@
 //   Your ring (a default "cLuB Ring" is made for you the first time) and its wall for this week, or an earlier locked week.
 //   Everyone in a ring sees every pin on its wall, whether or not they have met the button (looking uncovers it, like
 //   visiting someone's page). Members only.
-// POST /api/themewall { action: "pin", ring, instance?, x?, y? }  put your button up, or move it (keeps its button if no instance)
+// POST /api/themewall { action: "join", ring }   join an open ring, or ask to join a request ring ({ ok, joined | requested }); "cancel_request" withdraws
+//      /api/themewall { action: "pin", ring, instance?, x?, y? }  put your button up, or move it (keeps its button if no instance)
 //      /api/themewall { action: "unpin", ring }                    take your button down and free your spot
 //   -> { ok, x, y, instance_id }   x/y are where it really landed (a drop on top of someone else lands in the nearest free spot).
 //   Only on this week's wall, only your own pin, only a button you own that isn't in a trade or away.
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { markSeen } from "../../lib/progress.js";
 import {
-  weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, allRings, ringById, privateIds, wallPins, lockEndedWalls, placePin, BTN_W, BTN_H,
+  weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, allRings, ringById, privateIds, joinInfo, addRequest, dropRequest, seatMember, wallPins, lockEndedWalls, placePin, BTN_W, BTN_H,
 } from "../../lib/themewall.js";
 
 export async function onRequestGet({ request, env }) {
@@ -47,7 +48,7 @@ export async function onRequestGet({ request, env }) {
   const pinnedBy = new Set(pins.map((p) => p.user_id));
   return json({
     week: cur, week_start: weekStart(cur), week_end: weekEnd(cur), theme: themeFor(cur), now: t,
-    rings, ring, guest, all_rings: await allRings(env, me.id, !!me.is_admin),
+    rings, ring: { ...ring, ...(guest ? await joinInfo(env, ring.id, me.id) : {}) }, guest, all_rings: await allRings(env, me.id, !!me.is_admin),
     wall: { id: wall.id, week: wall.week, theme: wall.theme, size: wall.size, slots: wall.slots,
       locked: !!wall.locked_at, locked_at: wall.locked_at, editable: !guest && !wall.locked_at && wall.week === cur, pins },
     members: members.map((m) => ({ id: m.id, name: m.name, pinned: pinnedBy.has(m.id) })),
@@ -61,6 +62,17 @@ export async function onRequestPost({ request, env }) {
   const body = await readJson(request);
   const t = now();
   await lockEndedWalls(env, t);
+  if (body.action === "join" || body.action === "cancel_request") {
+    const target = await ringById(env, body.ring);
+    if (!target || (await privateIds(env)).includes(target.id)) return json({ error: "No such ring." }, 404);
+    if (body.action === "cancel_request") { await dropRequest(env, target.id, me.id); return json({ ok: true }); }
+    const seated = await env.DB.prepare("SELECT 1 AS x FROM ring_members WHERE ring_id = ? AND user_id = ?").bind(target.id, me.id).first();
+    if (seated) return json({ error: "You're already in that ring." }, 400);
+    const { join_type } = await joinInfo(env, target.id, me.id);
+    if (join_type === "open") { await seatMember(env, target.id, me.id); return json({ ok: true, joined: true }); }
+    if (join_type === "request") { await addRequest(env, target.id, me.id); return json({ ok: true, requested: true }); }
+    return json({ error: "That ring isn't taking new members." }, 403);
+  }
   const { ring } = await pickRing(env, me.id, body.ring);
   if (!ring) return json({ error: "You're not in that ring." }, 403);
   const wall = await ensureWall(env, ring, weekOf(t));

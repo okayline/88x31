@@ -1149,11 +1149,19 @@ let tradeTheirs = [];
 // The trade window lives on people's pages; the Trades page borrows it (moved into #tp-slot, moved back when a page is drawn).
 const tradeHome = { parent: $("trade-panel").parentNode, next: $("trade-panel").nextSibling };
 function tradeHomeBack() { const tp = $("trade-panel"); if (tp.parentNode !== tradeHome.parent) tradeHome.parent.insertBefore(tp, tradeHome.next); }
+async function fillTradeNames() {
+  const sel = $("tp-name"), keep = sel.value;
+  let list = [];
+  try { list = (await api("/api/players")).players; } catch {}
+  sel.textContent = "";
+  sel.append(el("option", { value: "" }, "Pick a player..."));
+  for (const p of list) if (!me || p.name.toLowerCase() !== me.name.toLowerCase()) sel.append(el("option", { value: p.name }, p.name + (p.is_bot ? " [bot]" : "")));
+  sel.value = keep;
+}
 $("tp-form").onsubmit = async (e) => {
   e.preventDefault();
-  const name = $("tp-name").value.trim();
-  if (!name) return say("Type the name of the player you want to trade with.");
-  if (me && name.toLowerCase() === me.name.toLowerCase()) return say("You can't trade with yourself!");
+  const name = $("tp-name").value;
+  if (!name) return say("Pick the player you want to trade with.");
   try {
     const col = await api("/api/collection?user=" + encodeURIComponent(name));
     const tp = $("trade-panel");
@@ -1265,6 +1273,7 @@ $("tb-send").onclick = async () => {
 async function showTrades() {
   showView("view-trades");
   if ($("trade-panel").parentNode === $("tp-slot")) $("trade-panel").hidden = true;   // pick a player first
+  fillTradeNames();
   setupTradeIn();
   const { incoming, outgoing, history } = await api("/api/trades");
   setTradeCount(incoming.length);
@@ -2838,8 +2847,25 @@ function twDraw(D) {
   if (D.rings.length > 1 && !D.guest) ringBar.append(el("br"));
   ringBar.append(`${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
   body.append(ringBar);
-  if (D.guest) body.append(el("p", { class: "center small" }, "You're visiting this ring, so you can look but not pin. ",
-    D.rings[0] ? el("a", { href: "#themewall/" + D.rings[0].id }, "« back to my ring") : ""));
+  if (D.guest) {
+    const jt = D.ring.join_type;
+    const joinPost = async (action) => {
+      try {
+        const r = await api("/api/themewall", { method: "POST", body: { action, ring: D.ring.id } });
+        if (r.joined) say("Welcome to the ring!");
+        else say(r.requested ? "Request sent! The webmaster will let you in." : "");
+        await showThemeWall(String(D.ring.id));
+      } catch (e) { say(e.message); }
+    };
+    const join = jt === "open" ? el("button", { type: "button", onclick: () => joinPost("join") }, "Join this ring!")
+      : jt === "request" ? (D.ring.requested
+        ? el("span", {}, "Request sent ✓ ", el("button", { type: "button", class: "mini", onclick: () => joinPost("cancel_request") }, "Cancel"))
+        : el("button", { type: "button", onclick: () => joinPost("join") }, "Request to join"))
+      : null;
+    body.append(el("p", { class: "center small" }, "You're visiting this ring, so you can look but not pin. ",
+      D.rings[0] ? el("a", { href: "#themewall/" + D.rings[0].id }, "« back to my ring") : ""));
+    if (join) body.append(el("p", { class: "center" }, join));
+  }
 
   const theme = W.theme.toUpperCase();
   body.append(el("p", { class: "center tw-head" }, el("b", {}, "~*~ Theme Wall ~*~")));
@@ -3021,6 +3047,9 @@ async function showRings() {
         const name = prompt("New name for this ring:", r.name);
         if (name !== null && name.trim()) act({ action: "rename", ring: r.id, name });
       } }, "Rename"), " ",
+      el("select", { class: "mini", "aria-label": "Who can join", onchange: (e) => act({ action: "join_type", ring: r.id, type: e.target.value }) },
+        ...[["closed", "Joining: closed (webmaster adds)"], ["open", "Joining: open (anyone)"], ["request", "Joining: by request"]]
+          .map(([v, l]) => el("option", { value: v, ...(v === r.join_type ? { selected: "" } : {}) }, l))), " ",
       el("button", { type: "button", class: "mini", title: "Private rings are only seen by their members", onclick: () => act({ action: "visibility", ring: r.id, private: !r.private }) },
         r.private ? "Make public" : "Make private"), " ",
       el("button", { type: "button", class: "mini", onclick: () => {
@@ -3034,7 +3063,11 @@ async function showRings() {
     const add = el("form", { class: "small" }, el("input", { name: "name", list: "rings-players", placeholder: "Player name", autocomplete: "off", "aria-label": "Player to add" }), " ",
       el("button", { type: "submit", class: "mini" }, "Add"));
     add.onsubmit = (e) => { e.preventDefault(); if (add.elements.name.value.trim()) act({ action: "add", ring: r.id, name: add.elements.name.value }); };
-    box.append(title, el("p", { class: "small" }, wall), ul, add, tools);
+    const asks = el("ul", { class: "tw-roster" });
+    for (const q of r.requests || []) asks.append(el("li", {}, el("a", { href: "#u/" + encodeURIComponent(q.name) }, q.name), " wants to join ",
+      el("button", { type: "button", class: "mini", onclick: () => act({ action: "approve", ring: r.id, name: q.name }) }, "Approve"), " ",
+      el("button", { type: "button", class: "mini", onclick: () => act({ action: "decline", ring: r.id, name: q.name }) }, "Decline")));
+    box.append(title, el("p", { class: "small" }, wall), ...(r.requests && r.requests.length ? [asks] : []), ul, add, tools);
     body.append(box);
   }
 }
