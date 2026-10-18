@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.39
+# 88x31 cLuB Changelog — v0.35–v0.40
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.40 — "Drag It Over"
+**Sat Oct 17, 2026 · 10:58 PM HST**
+
+- **Drag and drop on the wall.** Your buttons sit under the wall: hold one (or just click and drag on a PC), drag it onto the wall and let go. Move it the same way, or drop it back on your buttons to take it down. No more little buttons or arrows.
+- Every wall is now the same size, new players are put into a ring the moment they sign up, the ring's webring panel sits under its wall, and the wall page is tidier (no explainer text, no earlier / later week links for now).
 
 ## v0.39 — "Everybody Gets One"
 **Sat Oct 17, 2026 · 10:40 PM HST**
