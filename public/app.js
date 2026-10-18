@@ -507,6 +507,7 @@ async function showPage(name) {
 
   // Trade panel: only on other people's pages.
   const tp = $("trade-panel");
+  tradeHomeBack();
   tp.hidden = !me || owner.toLowerCase() === me.name.toLowerCase();
   $("trade-builder").hidden = true;
   if (!tp.hidden) {
@@ -585,8 +586,21 @@ function renderWallGrid() {
   // logged out: just the pictures, nothing to click
   const tile = (d, inner) => (me ? el("a", { href: "#wall/" + d.id, class: "wall-tile", title: d.hidden ? "???" : d.name }, inner)
     : el("span", { class: "wall-tile still", title: d.hidden ? "???" : d.name }, inner));
-  for (const d of tiles) grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
-  $("wall-count").textContent = `${list.length} buttons${show === "all" ? " and counting!" : ""}`;
+  const draw = (d) => grid.append(tile(d, d.hidden ? el("span", { class: "mystery-tile" }, "?") : bannerImg(d)));
+  let more = false;
+  if (me && !admin) {
+    // (v0.38.1) a player with hundreds of unmet buttons doesn't get hundreds of ? tiles: the ones they have uncovered, then
+    // two rows of ?s and a couple more on the third, then "...and more!"
+    const known = tiles.filter((d) => !d.hidden), q = tiles.filter((d) => d.hidden);
+    known.forEach(draw);
+    const first = grid.firstElementChild;
+    const cols = first ? Math.max(1, Math.floor((grid.clientWidth + 6) / (first.offsetWidth + 6))) : 6;
+    const cap = 2 * cols + 2;
+    more = q.length > cap;
+    shuffled(q).slice(0, cap).forEach(draw);
+  } else tiles.forEach(draw);
+  $("wall-count").textContent = more ? `...and more! We have ${list.length} buttons and counting!`
+    : `${list.length} buttons${show === "all" ? " and counting!" : ""}`;
   document.querySelectorAll("#wall-controls button").forEach((b) => b.classList.toggle("on", wallPref(b.dataset.k, b.dataset.k === "show" ? "all" : "shuffle") === b.dataset.v));
 }
 function wallControls() {
@@ -1132,6 +1146,28 @@ async function setupTradeIn() {
 // ---------- trading ----------
 
 let tradeTheirs = [];
+// The trade window lives on people's pages; the Trades page borrows it (moved into #tp-slot, moved back when a page is drawn).
+const tradeHome = { parent: $("trade-panel").parentNode, next: $("trade-panel").nextSibling };
+function tradeHomeBack() { const tp = $("trade-panel"); if (tp.parentNode !== tradeHome.parent) tradeHome.parent.insertBefore(tp, tradeHome.next); }
+$("tp-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const name = $("tp-name").value.trim();
+  if (!name) return say("Type the name of the player you want to trade with.");
+  if (me && name.toLowerCase() === me.name.toLowerCase()) return say("You can't trade with yourself!");
+  try {
+    const col = await api("/api/collection?user=" + encodeURIComponent(name));
+    const tp = $("trade-panel");
+    $("tp-slot").append(tp);
+    document.querySelectorAll(".tb-name").forEach((n) => (n.textContent = col.owner.name));
+    tp.dataset.user = col.owner.name;
+    tp.dataset.bot = col.owner.is_bot ? "1" : "";
+    tradeTheirs = col.banners;
+    tp.hidden = false;
+    $("trade-builder").hidden = true;
+    say("");
+    $("trade-open").onclick();
+  } catch (err) { say(err.message); }
+};
 const pickedGive = new Set(), pickedWant = new Set();
 
 function setTradeCount(n) {
@@ -1228,6 +1264,7 @@ $("tb-send").onclick = async () => {
 
 async function showTrades() {
   showView("view-trades");
+  if ($("trade-panel").parentNode === $("tp-slot")) $("trade-panel").hidden = true;   // pick a player first
   setupTradeIn();
   const { incoming, outgoing, history } = await api("/api/trades");
   setTradeCount(incoming.length);

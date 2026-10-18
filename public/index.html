@@ -390,6 +390,14 @@
     <!-- trades -->
     <div id="view-trades" class="view" hidden>
       <div class="panel">
+        <h2>&raquo; Propose a Trade &laquo;</h2>
+        <form id="tp-form" class="center">
+          <label>Trade with: <input id="tp-name" list="player-names" maxlength="40" autocomplete="off" placeholder="Player name" aria-label="Player to trade with"></label>
+          <button type="submit">Start a trade!</button>
+        </form>
+        <div id="tp-slot"></div>
+      </div>
+      <div class="panel">
         <h2>&raquo; Offers 4 You &laquo;</h2>
         <div id="tr-in"></div>
       </div>
