@@ -2774,7 +2774,7 @@ function twDraw(D) {
     sel.onchange = () => { location.hash = "#themewall/" + sel.value; };
     ringBar.append(sel);
   } else ringBar.append(el("b", {}, D.ring.name));
-  ringBar.append(` · ${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
+  ringBar.append(el("br"), `${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
   body.append(ringBar);
 
   const theme = W.theme.toUpperCase();
