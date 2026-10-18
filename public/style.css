@@ -1098,7 +1098,8 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 
 /* v0.31.1: gifts in the dashboard's right column, folding panels */
 .dash-gifts { margin-top: 8px; font-weight: normal; }
-.dash-gift { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; max-width: 170px; }
+.dash-gift { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; max-width: 190px; }
+.dash-gift .dash-pic { zoom: 2; image-rendering: pixelated; }   /* the last gift you got / gave, twice the size */
 .dash-gift .dash-pic { margin-left: 0; }
 
 /* v0.31.2: opened packs lose their shine and color; the All the Packs page */

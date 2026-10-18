@@ -1304,6 +1304,14 @@ async function showTrades() {
   past.textContent = "";
   if (!history.length) past.append(el("p", { class: "small" }, "No trades yet."));
   for (const t of history) {
+    if (t.request) {   // a Request Board wish that was filled
+      const who = (n) => el("a", { href: "#u/" + encodeURIComponent(n) }, n);
+      const what = (t.foil ? `${foilName(t.foil) === "None" ? "plain" : foilName(t.foil)} ` : "") + t.design;
+      past.append(el("p", { class: "small" }, `${fmtDate(t.resolved_at || t.created_at)}: `,
+        t.i_filled ? ["you filled ", who(t.requester), `'s request for ${what}`] : [who(t.filler || "a former player"), ` filled your request for ${what}`],
+        " · FILLED"));
+      continue;
+    }
     const other = t.to_user === me.id ? t.from_name : t.to_name;
     past.append(el("p", { class: "small" }, `${fmtDate(t.resolved_at || t.created_at)}: with `,
       el("a", { href: "#u/" + encodeURIComponent(other) }, other), ` · ${t.status.toUpperCase()}`));

@@ -11,10 +11,21 @@ export async function onRequestGet({ request, env }) {
   await expireTrades(env);
   const all = await listTrades(env, me.id, { limit: 60 });
   await markSeen(env, me, all.flatMap((t) => [...t.give, ...t.want].map((i) => i.design_id)));
+  // Request Board fills (you filled someone's wish, or someone filled yours) belong in the history too
+  const { results: fills } = await env.DB.prepare(
+    `SELECT r.id, r.user_id, r.filled_by, r.foil, r.created_at, r.resolved_at, d.name AS design, rq.name AS requester, fl.name AS filler
+     FROM requests r JOIN designs d ON d.id = r.design_id JOIN users rq ON rq.id = r.user_id LEFT JOIN users fl ON fl.id = r.filled_by
+     WHERE r.status = 'filled' AND (r.user_id = ? OR r.filled_by = ?) ORDER BY r.resolved_at DESC LIMIT 25`
+  ).bind(me.id, me.id).all();
+  const history = [
+    ...all.filter((t) => t.status !== "open"),
+    ...fills.map((f) => ({ request: true, id: "r" + f.id, status: "filled", created_at: f.created_at, resolved_at: f.resolved_at,
+      design: f.design, foil: f.foil, requester: f.requester, filler: f.filler, i_filled: f.filled_by === me.id })),
+  ].sort((a, b) => (b.resolved_at || b.created_at) - (a.resolved_at || a.created_at)).slice(0, 25);
   return json({
     incoming: all.filter((t) => t.status === "open" && t.to_user === me.id),
     outgoing: all.filter((t) => t.status === "open" && t.from_user === me.id),
-    history: all.filter((t) => t.status !== "open").slice(0, 25),
+    history,
   });
 }
 
