@@ -6,6 +6,7 @@
 //      wall = this week's wall if someone has opened it yet (its size is fixed then: members + 2 spare spots)
 // POST /api/rings { action: "create", name }
 //      { action: "rename", ring, name }
+//      { action: "visibility", ring, private }   hide a ring from everyone who isn't in it (the bot rings start hidden)
 //      { action: "delete", ring, confirm }      confirm = the ring's name again; its walls go (locked ones are sealed in the ledger first)
 //      { action: "add", ring, name }            a player by name (bots too); a player can be in any number of rings
 //      { action: "remove", ring, name }         their seat empties and their button comes down from this week's open wall
@@ -13,7 +14,7 @@
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
-import { weekOf, lockEndedWalls } from "../../lib/themewall.js";
+import { weekOf, lockEndedWalls, privateIds, setPrivate } from "../../lib/themewall.js";
 
 const NAME_MAX = 40;
 
@@ -30,10 +31,11 @@ export async function onRequestGet({ request, env }) {
     `SELECT w.ring_id, w.slots, w.size, (SELECT COUNT(*) FROM wall_pins p WHERE p.wall_id = w.id) AS pins
      FROM ring_walls w WHERE w.week = ?`
   ).bind(week).all();
+  const hidden = await privateIds(env);
   return json({
     week,
     rings: rings.map((r) => ({
-      ...r,
+      ...r, private: hidden.includes(r.id),
       members: seats.filter((s) => s.ring_id === r.id).map(({ id, name }) => ({ id, name })),
       wall: walls.find((w) => w.ring_id === r.id) || null,
     })),
@@ -61,6 +63,11 @@ export async function onRequestPost({ request, env }) {
     const name = cleanName();
     if (!name) return json({ error: "Give the ring a name." }, 400);
     await db.prepare("UPDATE rings SET name = ? WHERE id = ?").bind(name, ring.id).run();
+    return json({ ok: true });
+  }
+
+  if (body.action === "visibility") {   // { ring, private: true|false }: private rings are seen only by their members and webmasters
+    await setPrivate(env, ring.id, !!body.private);
     return json({ ok: true });
   }
 

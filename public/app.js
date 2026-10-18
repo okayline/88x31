@@ -2975,7 +2975,7 @@ async function showRings() {
 
   for (const r of D.rings) {
     const box = el("div", { class: "ring-box" });
-    const title = el("h3", {}, r.name, r.is_default ? el("span", { class: "small" }, " (auto)") : null,
+    const title = el("h3", {}, r.name, r.is_default ? el("span", { class: "small" }, " (auto)") : null, r.private ? el("span", { class: "small" }, " 🔒 private") : null,
       el("span", { class: "small" }, ` · ${r.members.length} member${r.members.length === 1 ? "" : "s"}`));
     const wall = r.wall ? `This week's wall is open: ${r.wall.pins} of ${r.wall.slots} spots up${r.members.length > r.wall.slots ? " (more members than spots!)" : ""}.`
       : "No wall yet this week.";
@@ -2984,6 +2984,8 @@ async function showRings() {
         const name = prompt("New name for this ring:", r.name);
         if (name !== null && name.trim()) act({ action: "rename", ring: r.id, name });
       } }, "Rename"), " ",
+      el("button", { type: "button", class: "mini", title: "Private rings are only seen by their members", onclick: () => act({ action: "visibility", ring: r.id, private: !r.private }) },
+        r.private ? "Make public" : "Make private"), " ",
       el("button", { type: "button", class: "mini", onclick: () => {
         const c = prompt(`Close this ring and its walls? Type its name to confirm:\n${r.name}`);
         if (c !== null) act({ action: "delete", ring: r.id, confirm: c });
