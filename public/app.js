@@ -2764,7 +2764,7 @@ async function showAllPacks() {
 
 // ---------- Theme Wall (v0.38) ----------
 // Your ring's wall for the week; everyone in the ring sees every pin. Your own pin drags (5 px grid, then edge snapping, no
-// overlap) and nudges with the arrow buttons or keys. The wall is stored in its own pixels (the server never sees the zoom) and is
+// overlap) and nudges with the arrow keys. The wall is stored in its own pixels (the server never sees the zoom) and is
 // only DRAWN scaled to fit the screen. The same geometry is in lib/themewall.js, which has the last word on where a pin lands.
 const TW_W = 88, TW_H = 31, TW_GRID = 5, TW_SNAP = 6;
 const twOverlap = (a, b) => Math.abs(a.x - b.x) < TW_W && Math.abs(a.y - b.y) < TW_H;
@@ -2839,6 +2839,46 @@ function webringFooter(rings, currentId) {
   box.textContent = "";
   for (const r of R) box.append(el("a", { href: go(r) }, r.name));
   $("wr-list").onclick = (e) => { e.preventDefault(); box.hidden = !box.hidden; };
+}
+
+// Long-press to pick something up (a mouse picks up as soon as it moves). `begin(event)` runs once it counts as picked up.
+// Moving a finger first means the person is scrolling, so nothing is picked up.
+function twHold(e, begin) {
+  if (e.button) return;
+  const touch = e.pointerType !== "mouse";
+  if (!touch) e.preventDefault();   // a mouse press must not start the browser's own picture-drag or text selection
+  const sx = e.clientX, sy = e.clientY;
+  let last = e, fired = false, timer = 0;
+  const stop = () => { clearTimeout(timer); window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", stop); window.removeEventListener("pointercancel", stop); };
+  const fire = () => {
+    if (fired) return;
+    fired = true; stop();
+    try { if (navigator.vibrate) navigator.vibrate(15); } catch {}
+    begin(last);
+  };
+  const mv = (ev) => {
+    last = ev;
+    const d = Math.hypot(ev.clientX - sx, ev.clientY - sy);
+    if (!touch && d > 3) fire(); else if (touch && d > 10) { fired = true; stop(); }
+  };
+  if (touch) timer = setTimeout(fire, 350);
+  window.addEventListener("pointermove", mv);
+  window.addEventListener("pointerup", stop);
+  window.addEventListener("pointercancel", stop);
+}
+// While something is carried: every move and the final drop go to the callbacks; the page doesn't scroll under a finger.
+function twCarry(start, { move, drop, cancel }) {
+  const block = (ev) => ev.preventDefault();
+  const end = () => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", cx); document.removeEventListener("touchmove", block); document.body.classList.remove("tw-carrying"); };
+  const mv = (ev) => move(ev);
+  const up = (ev) => { end(); drop(ev); };
+  const cx = () => { end(); cancel(); };
+  document.body.classList.add("tw-carrying");
+  document.addEventListener("touchmove", block, { passive: false });
+  window.addEventListener("pointermove", mv);
+  window.addEventListener("pointerup", up);
+  window.addEventListener("pointercancel", cx);
+  move(start);
 }
 
 function twDraw(D) {
@@ -2945,73 +2985,93 @@ function twDraw(D) {
       const step = e.shiftKey ? 1 : TW_GRID;
       nudge(d[0] * step, d[1] * step);
     });
-    mineBox.addEventListener("pointerdown", (e) => {
-      if (e.button) return;
-      e.preventDefault();
-      mineBox.setPointerCapture(e.pointerId);
+    // long-press (a mouse starts at once) to pick your button up, drag it, let go to drop it; drop it on the tray to take it down
+    mineBox.addEventListener("dragstart", (e) => e.preventDefault());
+    mineBox.addEventListener("pointerdown", (e) => twHold(e, (ev) => {
       mineBox.focus({ preventScroll: true });   // so the arrow keys work right after a drag
       mineBox.classList.add("tw-drag");
       const r = cv.getBoundingClientRect();
-      const off = { x: (e.clientX - r.left) / scale - mineP.x, y: (e.clientY - r.top) / scale - mineP.y };
+      const off = { x: (ev.clientX - r.left) / scale - mineP.x, y: (ev.clientY - r.top) / scale - mineP.y };
       let moved = false;
-      const move = (ev) => {
-        const s = twSnap({ x: (ev.clientX - r.left) / scale - off.x, y: (ev.clientY - r.top) / scale - off.y }, others(), W.size);
-        if (others().some((o) => twOverlap(s, o))) return;   // can't land on somebody: stay at the last free spot
-        if (s.x !== mineP.x || s.y !== mineP.y) { moved = true; place(s.x, s.y); }
-      };
-      const up = () => {
-        mineBox.classList.remove("tw-drag");
-        mineBox.removeEventListener("pointermove", move);
-        mineBox.removeEventListener("pointerup", up);
-        mineBox.removeEventListener("pointercancel", up);
-        if (moved) { clearTimeout(timer); commit(); }
-      };
-      mineBox.addEventListener("pointermove", move);
-      mineBox.addEventListener("pointerup", up);
-      mineBox.addEventListener("pointercancel", up);
-    });
+      const trayEl = () => document.querySelector("#tw-body .tw-tray");
+      const overTray = (x, y) => { const t = trayEl(); if (!t) return false; const q = t.getBoundingClientRect(); return x >= q.left && x <= q.right && y >= q.top && y <= q.bottom; };
+      twCarry(ev, {
+        move: (m) => {
+          const t = trayEl(); if (t) t.classList.toggle("over", overTray(m.clientX, m.clientY));
+          const sn = twSnap({ x: (m.clientX - r.left) / scale - off.x, y: (m.clientY - r.top) / scale - off.y }, others(), W.size);
+          if (others().some((o) => twOverlap(sn, o))) return;   // can't land on somebody: stay at the last free spot
+          if (sn.x !== mineP.x || sn.y !== mineP.y) { moved = true; place(sn.x, sn.y); }
+        },
+        drop: async (m) => {
+          mineBox.classList.remove("tw-drag");
+          const t = trayEl(); if (t) t.classList.remove("over");
+          if (overTray(m.clientX, m.clientY)) {
+            try { await api("/api/themewall", { method: "POST", body: { action: "unpin", ring: D.ring.id } }); await showThemeWall(String(D.ring.id)); } catch (er) { status(er.message); }
+          } else if (moved) { clearTimeout(timer); commit(); }
+        },
+        cancel: () => { mineBox.classList.remove("tw-drag"); },
+      });
+    }));
   }
 
-  // controls and the button picker (this week's wall only)
+  // your buttons (this week's wall only): long-press one, drag it onto the wall, let go
   if (can) {
-    const tray = el("div", { class: "tw-tray", hidden: "" });
+    const tray = el("div", { class: "tw-tray" }, el("p", { class: "small tw-tray-hint" }, "Hold a button, then drag it onto the wall!"));
     const reload = () => showThemeWall(String(D.ring.id)).catch((e) => status(e.message));
-    const openTray = async () => {
-      tray.hidden = false; tray.textContent = "Loading your buttons...";
+    const prev = el("div", { class: "tw-preview", hidden: "" });
+    cv.append(prev);
+    const dropSpot = (m, r) => twSnap({ x: (m.clientX - r.left) / scale - TW_W / 2, y: (m.clientY - r.top) / scale - TW_H / 2 }, others(), W.size);
+    const inside = (m, r) => m.clientX >= r.left && m.clientX <= r.right && m.clientY >= r.top && m.clientY <= r.bottom;
+    const carryFrom = (ev, b) => {
+      const r = cv.getBoundingClientRect();
+      const ghost = el("div", { class: "tw-carried" }, bannerImg(b, 1));
+      ghost.style.transform = "scale(" + scale + ")";
+      document.body.append(ghost);
+      const at = (m) => { ghost.style.left = m.clientX - TW_W * scale / 2 + "px"; ghost.style.top = m.clientY - TW_H * scale / 2 + "px"; };
+      at(ev);
+      twCarry(ev, {
+        move: (m) => {
+          at(m);
+          const rr = cv.getBoundingClientRect();
+          if (!inside(m, rr)) { prev.hidden = true; return; }
+          const sn = dropSpot(m, rr);
+          if (others().some((o) => twOverlap(sn, o))) return;
+          prev.hidden = false; prev.style.left = sn.x * scale + "px"; prev.style.top = sn.y * scale + "px";
+          prev.style.width = TW_W * scale + "px"; prev.style.height = TW_H * scale + "px";
+        },
+        drop: async (m) => {
+          ghost.remove(); prev.hidden = true;
+          const rr = cv.getBoundingClientRect();
+          if (!inside(m, rr)) return;
+          const sn = dropSpot(m, rr);
+          try { await api("/api/themewall", { method: "POST", body: { action: "pin", ring: D.ring.id, instance: b.id, x: sn.x, y: sn.y } }); await reload(); }
+          catch (e) { status(e.message); }
+        },
+        cancel: () => { ghost.remove(); prev.hidden = true; },
+      });
+    };
+    (async () => {
       try {
         const { banners } = await api("/api/collection");
-        tray.textContent = "";
         const grid = el("div", { class: "tw-grid" });
-        const list = banners.slice().sort((a, b) => twMatch(b.type, W.theme) - twMatch(a.type, W.theme));
+        const list = banners;
         for (const b of list) {
-          const ok = !b.locked, star = twMatch(b.type, W.theme);
-          const btn = el("button", { type: "button", class: "pick-tile tw-pick" + (ok ? "" : " tw-off"), title: `${b.name} #${b.edition}${ok ? "" : b.locked < 0 ? " (away)" : " (in a trade)"}` },
-            bannerImg(b, 1), star ? el("span", { class: "tw-star" }, "★") : null);
-          if (!ok) btn.disabled = true;
-          btn.onclick = async () => {
-            try { await api("/api/themewall", { method: "POST", body: { action: "pin", ring: D.ring.id, instance: b.id } }); reload(); }
-            catch (e) { status(e.message); }
-          };
-          grid.append(btn);
+          const ok = !b.locked;
+          const tile = el("div", { class: "pick-tile tw-pick" + (ok ? "" : " tw-off"), title: `${b.name} #${b.edition}${ok ? "" : b.locked < 0 ? " (away)" : " (in a trade)"}` },
+            bannerImg(b, 1));
+          if (ok) {
+            tile.addEventListener("pointerdown", (e) => twHold(e, (ev) => carryFrom(ev, b)));
+            tile.addEventListener("contextmenu", (e) => e.preventDefault());
+            tile.addEventListener("dragstart", (e) => e.preventDefault());
+          }
+          grid.append(tile);
         }
         if (!list.length) grid.append(el("p", { class: "small" }, "You don't have any buttons yet! Open a pack first."));
         tray.append(grid);
-      } catch (e) { tray.textContent = ""; status(e.message); }
-    };
-    const bar = el("p", { class: "center tw-controls" });
-    if (mineP) {
-      const arrow = (label, dx, dy, name) => el("button", { type: "button", class: "mini", "aria-label": name, onclick: () => nudge(dx * TW_GRID, dy * TW_GRID) }, label);
-      bar.append("Move: ", arrow("←", -1, 0, "Left"), arrow("↑", 0, -1, "Up"), arrow("↓", 0, 1, "Down"), arrow("→", 1, 0, "Right"), " ",
-        el("button", { type: "button", onclick: openTray }, "Change button"), " ",
-        el("button", { type: "button", onclick: async () => {
-          try { await api("/api/themewall", { method: "POST", body: { action: "unpin", ring: D.ring.id } }); reload(); } catch (e) { status(e.message); }
-        } }, "Take it down"));
-      if (mineP.empty) bar.append(el("br"), el("span", { class: "small" }, "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."));
-    } else {
-      bar.append(el("button", { type: "button", onclick: openTray }, "Put up a button"));
-      openTray();
-    }
-    body.append(bar, msg, tray);
+      } catch (e) { status(e.message); }
+    })();
+    if (mineP && mineP.empty) body.append(el("p", { class: "center small" }, "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."));
+    body.append(msg, tray);
   } else body.append(msg);
 
   // under the wall: what the stars mean, and the other weeks
