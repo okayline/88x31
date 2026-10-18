@@ -344,7 +344,6 @@ async function refresh() {
 // Today's daily pack, opened inside the Packs section on your page (keep 1, send one on).
 async function showPull() {
   const box = $("pack-open");
-  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   box.textContent = "Loading...";
   const pull = await api("/api/pull");
   const o = pull.odds;
@@ -419,6 +418,7 @@ async function showPull() {
     } catch (err) { say(err.message); }
   };
   box.append(form);
+  box.scrollIntoView({ behavior: "smooth", block: "start" });   // the cards are above the Packs panel: take the player to them
 }
 
 function card(d, i, pull, onPick) {
@@ -1972,7 +1972,7 @@ async function loadPacksPanel(mine) {
 // opening it all over again; the tile shows "opened!" while you pick.
 let openingKey = null;
 function startOpening(key, tile) {
-  if (openingKey === key && $("pack-open").childElementCount) { $("pack-open").scrollIntoView({ behavior: "smooth", block: "nearest" }); return false; }
+  if (openingKey === key && $("pack-open").childElementCount) { $("pack-open").scrollIntoView({ behavior: "smooth", block: "start" }); return false; }
   openingKey = key;
   tile.classList.add("revealed");
   const sub = tile.querySelector(".pack-sub");
@@ -2044,7 +2044,6 @@ async function openPackCards(p, box, onDone = null) {
   try { o = await api("/api/packs", { method: "POST", body: { action: "open", id: p.id } }); }
   catch (err) { return say(err.message); }
   box.textContent = "";
-  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
   box.append(el("h3", { class: "center" }, packTitle(p)),
     o.special ? el("p", { class: "center small" }, "★ A special pack: better odds and real foils, already on the cards! ★") : null,
     el("p", { class: "center" }, el("b", {}, o.keep >= o.options.length ? "They're all yours!" : `Pick ${o.keep} to keep!`)));
@@ -2064,6 +2063,7 @@ async function openPackCards(p, box, onDone = null) {
   const stage = openingStage(packTile(p, "#"), cards, openKind(p));
   box.append(stage.node, el("p", { class: "center" }, go));
   stage.play();
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
   go.onclick = async () => {
     go.disabled = true;
     try {

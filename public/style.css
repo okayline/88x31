@@ -694,7 +694,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 
 /* Packs section (v0.23.1): daily packs look different from sealed ones; used ones go grey */
 .pack-open:empty { display: none; }
-.pack-open { margin-top: 10px; }
+.pack-open { margin-top: 0; scroll-margin-top: 8px; }
 
 /* ---------- front-page free pack (v0.24) ---------- */
 .freepack-box .pull-row { margin: 6px 0; }

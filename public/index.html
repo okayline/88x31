@@ -322,10 +322,11 @@
     <!-- a player's page: collection + guestbook -->
     <div id="view-page" class="view" hidden>
       <!-- your packs: today's daily packs + sealed packs, opened right here (own page only) -->
+      <!-- the pack you are opening: its cards come up here, above the Packs panel, and the page scrolls to it -->
+      <div id="pack-open" class="panel pack-open"></div>
       <div class="panel packs-panel" id="packs-panel" hidden>
         <h2>&raquo; Packs &laquo;</h2>
         <div id="packs-grid" class="packs-grid"></div>
-        <div id="pack-open" class="pack-open"></div>
         <p class="small" id="pull-odds"></p>
       </div>
       <div class="panel">
