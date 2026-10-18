@@ -2147,11 +2147,6 @@ const ADMIN_SAYS = {
   restore_design: "a removed button came back",
   block_uploader: "someone's button finding was paused",
   unblock_uploader: "someone's button finding was switched back on",
-  ring_create: "started a new ring",
-  ring_rename: "renamed a ring",
-  ring_delete: "closed a ring",
-  ring_add: "moved someone into a ring",
-  ring_remove: "took someone out of a ring",
 };
 
 // One ledger entry. Button names link to the copy's page (or the button's info on the Wall);

@@ -9,7 +9,7 @@
 //      { action: "delete", ring, confirm }      confirm = the ring's name again; its walls go (locked ones are sealed in the ledger first)
 //      { action: "add", ring, name }            a player by name (bots can't be in rings yet); a player can be in any number of rings
 //      { action: "remove", ring, name }         their seat empties and their button comes down from this week's open wall
-// Every action is written to admin_actions and sealed into the ledger, vaguely (no names), like the rest of the webmaster's upkeep.
+// Ring upkeep is NOT written to the ledger (webmaster's choice); only a locked wall's snapshot is sealed there.
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
@@ -45,16 +45,12 @@ export async function onRequestPost({ request, env }) {
   if (!me || !me.is_admin) return json({ error: "Webmasters only." }, 403);
   const body = await readJson(request);
   const db = env.DB, t = now();
-  const log = (action, userId) => db.prepare("INSERT INTO admin_actions (admin_id, action, user_id, note, created_at) VALUES (?, ?, ?, NULL, ?)")
-    .bind(me.id, action, userId || null, t).run();
   const cleanName = () => String(body.name || "").replace(/\s+/g, " ").trim().slice(0, NAME_MAX);
 
   if (body.action === "create") {
     const name = cleanName();
     if (!name) return json({ error: "Give the ring a name." }, 400);
     const made = await db.prepare("INSERT INTO rings (name, owner_id, created_at, is_default) VALUES (?, ?, ?, 0)").bind(name, me.id, t).run();
-    await log("ring_create");
-    await sealSafe(env);
     return json({ ok: true, id: made.meta.last_row_id });
   }
 
@@ -65,8 +61,6 @@ export async function onRequestPost({ request, env }) {
     const name = cleanName();
     if (!name) return json({ error: "Give the ring a name." }, 400);
     await db.prepare("UPDATE rings SET name = ? WHERE id = ?").bind(name, ring.id).run();
-    await log("ring_rename");
-    await sealSafe(env);
     return json({ ok: true });
   }
 
@@ -74,8 +68,6 @@ export async function onRequestPost({ request, env }) {
     if (String(body.confirm || "").trim() !== ring.name) return json({ error: "Type the ring's name exactly to confirm." }, 400);
     await sealSafe(env);   // locks and seals any finished walls first, so their snapshots are in the ledger before the ring goes
     await db.prepare("DELETE FROM rings WHERE id = ?").bind(ring.id).run();   // seats, walls and pins go with it
-    await log("ring_delete");
-    await sealSafe(env);
     return json({ ok: true });
   }
 
@@ -90,7 +82,6 @@ export async function onRequestPost({ request, env }) {
         `INSERT INTO ring_members (ring_id, position, user_id)
          SELECT ?, COALESCE(MAX(position), 0) + 1, ? FROM ring_members WHERE ring_id = ?`
       ).bind(ring.id, u.id, ring.id).run();
-      await log("ring_add", u.id);
     } else {
       if (!seated) return json({ error: `${u.name} isn't in that ring.` }, 400);
       await lockEndedWalls(env, t);
@@ -98,9 +89,7 @@ export async function onRequestPost({ request, env }) {
         db.prepare("UPDATE ring_members SET user_id = NULL WHERE ring_id = ? AND user_id = ?").bind(ring.id, u.id),
         db.prepare("DELETE FROM wall_pins WHERE user_id = ? AND wall_id IN (SELECT id FROM ring_walls WHERE ring_id = ? AND locked_at IS NULL)").bind(u.id, ring.id),
       ]);
-      await log("ring_remove", u.id);
     }
-    await sealSafe(env);
     return json({ ok: true });
   }
   return json({ error: "Unknown action." }, 400);
