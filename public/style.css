@@ -1282,3 +1282,33 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 
 /* (v0.37) packs are pictures: no selecting their words, no long-press menu on phones */
 .pack-tile, .pack-tile * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
+/* --- Theme Wall (v0.38): your ring's wall for the week --- */
+.tw-theme { color: var(--ink); font-size: 20px; letter-spacing: 1px; }
+.tw-warn { color: var(--ink); font-weight: bold; }
+.tw-scroll { overflow-x: auto; padding: 4px 0; }
+.tw-canvas {
+  position: relative; margin: 0 auto; background-color: #000044; border: 3px inset var(--edge);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1.6px);
+  background-size: var(--g) var(--g);
+}
+.tw-pin { position: absolute; display: flex; align-items: center; justify-content: center; }
+.tw-pin > img, .tw-pin > .foil-wrap, .tw-pin > .fx { flex: none; }
+.tw-pin.tw-link { cursor: pointer; }
+.tw-pin.tw-link:hover { outline: 2px solid var(--ink); z-index: 2; }
+.tw-pin.tw-empty { border: 2px dashed #666; background: rgba(255, 255, 255, 0.04); }
+.tw-pin.tw-empty.tw-mine { border-color: var(--ink); }
+.tw-ghost { font: 11px Arial, Helvetica, sans-serif; color: var(--ink); text-align: center; }
+.tw-mine { cursor: grab; touch-action: none; user-select: none; outline: 2px dashed var(--ink); outline-offset: 1px; z-index: 3; }
+.tw-mine.tw-drag { cursor: grabbing; opacity: 0.85; z-index: 4; }
+.tw-mine:focus-visible { outline-style: solid; }
+.tw-star { position: absolute; top: -7px; right: -5px; z-index: 5; font: bold 13px Arial, Helvetica, sans-serif; color: #000; background: var(--ink);
+  border: 1px solid #000; border-radius: 50%; width: 16px; height: 16px; line-height: 14px; text-align: center; pointer-events: none; }
+.tw-none { position: absolute; inset: 0; margin: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: #aaa; }
+.tw-controls button.mini { margin: 0 1px; }
+.tw-tray { margin: 8px 0; padding: 8px; border: 2px dashed var(--edge); background: #000033; }
+.tw-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-height: 320px; overflow-y: auto; }
+.tw-pick { position: relative; }
+.tw-pick.tw-off { opacity: 0.4; cursor: not-allowed; }
+.tw-roster { list-style: none; padding: 0; margin: 0; }
+.tw-roster li { padding: 2px 0; }

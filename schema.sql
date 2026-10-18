@@ -134,7 +134,8 @@ CREATE TABLE IF NOT EXISTS rings (
   id          INTEGER PRIMARY KEY,
   name        TEXT NOT NULL,
   owner_id    INTEGER NOT NULL REFERENCES users(id),
-  created_at  INTEGER NOT NULL
+  created_at  INTEGER NOT NULL,
+  is_default  INTEGER NOT NULL DEFAULT 0   -- v0.38: a "cLuB Ring #N" new players are grouped into (owned by the webmaster)
 );
 
 CREATE TABLE IF NOT EXISTS ring_members (
@@ -144,6 +145,32 @@ CREATE TABLE IF NOT EXISTS ring_members (
   instance_id INTEGER REFERENCES instances(id),
   PRIMARY KEY (ring_id, position)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ring_members_user ON ring_members(ring_id, user_id) WHERE user_id IS NOT NULL;
+
+-- ---------- Theme Wall (v0.38; also migrations/028_theme_walls.sql) ----------
+-- One wall per ring per week; pins are pointers to copies (see lib/themewall.js).
+CREATE TABLE IF NOT EXISTS ring_walls (
+  id          INTEGER PRIMARY KEY,
+  ring_id     INTEGER NOT NULL REFERENCES rings(id) ON DELETE CASCADE,
+  week        INTEGER NOT NULL,
+  theme       TEXT NOT NULL,
+  size        INTEGER NOT NULL,
+  slots       INTEGER NOT NULL,
+  created_at  INTEGER NOT NULL,
+  locked_at   INTEGER,
+  snapshot    TEXT,
+  UNIQUE (ring_id, week)
+);
+CREATE TABLE IF NOT EXISTS wall_pins (
+  wall_id     INTEGER NOT NULL REFERENCES ring_walls(id) ON DELETE CASCADE,
+  user_id     INTEGER NOT NULL REFERENCES users(id),
+  instance_id INTEGER REFERENCES instances(id),
+  x           INTEGER NOT NULL,
+  y           INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL,
+  PRIMARY KEY (wall_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_wall_pins_instance ON wall_pins(instance_id);
 
 -- ---------- sets ----------
 

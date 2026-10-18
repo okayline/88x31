@@ -1,8 +1,16 @@
-# 88x31 cLuB Changelog — v0.35–v0.37.2
+# 88x31 cLuB Changelog — v0.35–v0.38
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.38 — "Theme Wall"
+**Sat Oct 17, 2026 · 9:30 PM HST** (migration `028_theme_walls.sql`)
+
+- **Theme Wall.** Every week has a theme (a type of button, like neon). You're grouped into a small ring of players, and the ring builds one wall together: put up one of your buttons and drag it anywhere. Buttons that fit the theme (and found buttons) get a ★. Putting a button up is only a display, so it never leaves your collection. Everyone in the ring sees every button on its wall, even ones they haven't met yet.
+- If a button leaves your collection (trade, gift, fusion, going away to another game) your spot on the wall goes empty but stays yours, so you can put up another one in the same place.
+- The wall locks at Monday 00:00 UTC (Sunday afternoon in Hawaii) and is sealed into the Ledger.
+- New players are grouped into "~*~cLuB~*~ Ring #N" rings of up to 8. A new "Theme Wall" link is in the menu.
 
 ## v0.37.2 — "A Few More Mysteries"
 **Sat Oct 17, 2026 · 11:12 AM HST**

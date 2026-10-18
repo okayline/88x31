@@ -28,6 +28,8 @@ export async function onRequestGet({ request, env }) {
             COALESCE(d1.id, d2.id, d3.id, d4.id, d5.id) AS design_id, COALESCE(i.id, fi.id, fo.id) AS copy_id,
             COALESCE(d1.rarity, d2.rarity, d3.rarity, d4.rarity, d5.rarity) AS design_rarity, COALESCE(d1.series_id, d2.series_id, d3.series_id, d4.series_id, d5.series_id) AS design_series,
             rq.foil AS request_foil,
+            rw.theme AS wall_theme, rw.week AS wall_week, rw.ring_id AS wall_ring_id, rg.name AS wall_ring,
+            CASE WHEN l.kind = 'wall' THEN (SELECT COUNT(*) FROM json_each(json_extract(l.record, '$[6]')) WHERE json_extract(value, '$[1]') IS NOT NULL) END AS wall_buttons,
             CASE l.kind
               WHEN 'request' THEN (SELECT name FROM users WHERE id = rq.user_id)
               WHEN 'fusion' THEN (SELECT name FROM users WHERE id = fu.user_id)
@@ -55,6 +57,8 @@ export async function onRequestGet({ request, env }) {
      LEFT JOIN designs d4 ON d4.id = fo.design_id
      LEFT JOIN requests rq ON l.kind = 'request' AND rq.id = l.ref_id
      LEFT JOIN designs d5 ON d5.id = rq.design_id
+     LEFT JOIN ring_walls rw ON l.kind = 'wall' AND rw.id = l.ref_id
+     LEFT JOIN rings rg ON rg.id = rw.ring_id
      WHERE (? = 0 OR l.id < ?) ORDER BY l.id DESC LIMIT ?`
   ).bind(before, before, limit).all();
   // hide spoilers: the same rule as the Wall of Buttons

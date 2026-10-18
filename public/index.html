@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.37.2">
+<link rel="stylesheet" href="style.css?v=0.38">
 </head>
 <body>
 <main>
@@ -17,6 +17,7 @@
     <span class="only-in">[ <a href="#" id="nav-mine" class="my-page-link my-page-name">My Page</a> ] -</span>
     <span class="only-out">[ <a href="#">Home</a> ] -</span>
     <span class="only-in">[ <a href="#wall">Buttons</a> ] -</span>
+    <span class="only-in">[ <a href="#themewall">Theme Wall</a> ] -</span>
     [ <a href="#howto">How To</a> ] -
     [ <a href="#fair">Fair Play</a> ]
     <span class="only-in">- [ <a href="#" id="logout" class="logout-link">Log Out</a> ]</span>
@@ -157,6 +158,11 @@
       <p>We have Trading, we have Gifting (stamp a button or pack in a friend's guestbook!).  You can trade buttons, you can trade packs! On the <b>Request Board</b> you can wish for things you want, fulfill someone else's wish and get a Reward!</p>
     </div>
 
+    <div class="panel" id="ht-wall">
+      <h2>&raquo; The Theme Wall &laquo;</h2>
+      <p>Every week has a <b>theme</b> (a type of button, like neon). You're in a ring with a few other players, and the ring builds one <b>Theme Wall</b> together: put up one of your buttons and drag it wherever you like. Buttons that fit the theme get a &#9733;. Putting a button up is just a display, so it never leaves your collection! The wall locks on Sunday (Monday 00:00 UTC) and gets sealed in the ledger.</p>
+    </div>
+
     <div class="panel" id="ht-more">
       <h2>&raquo; More Fun Ways to Play &laquo;</h2>
       <ul>
@@ -216,6 +222,14 @@
 </ol>
     </div>
     <p class="center"><a href="#">&laquo; Back to the homepage</a></p>
+  </section>
+
+  <!-- Theme Wall (v0.38): your ring's wall for the week; members only -->
+  <section id="themewall" hidden>
+    <div class="panel tw-panel">
+      <h2 class="center">~*~ Theme Wall ~*~</h2>
+      <div id="tw-body" class="tw-body">Loading...</div>
+    </div>
   </section>
 
   <!-- Every pack ever made (open to everyone, v0.31.2) -->
@@ -466,7 +480,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.37.2</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.38</span>
   </p>
 
 </main>
@@ -482,6 +496,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.37.2"></script>
+<script src="app.js?v=0.38"></script>
 </body>
 </html>

@@ -3,11 +3,13 @@
 import { json, currentUser } from "../../lib/auth.js";
 import { runBotsIfDue } from "../../lib/bots.js";
 import { syncIfDue } from "../../lib/registry.js";
+import { lockEndedWalls } from "../../lib/themewall.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
   context.waitUntil(runBotsIfDue(env).catch((e) => console.log("bots failed", e)));
   context.waitUntil(syncIfDue(env).catch((e) => console.log("registry sync failed", e)));   // mirror into the shared registry (lib/registry.js)
+  context.waitUntil(lockEndedWalls(env).catch((e) => console.log("wall lock failed", e)));   // lock the Theme Walls whose week is over (lib/themewall.js)
   const user = await currentUser(env, request);
   if (!user) return json({ user: null });
   const row = await env.DB.prepare(

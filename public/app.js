@@ -36,7 +36,7 @@ document.addEventListener("pointerup", (e) => {
   t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop");
 });
 document.addEventListener("animationend", (e) => { if (e.animationName === "pack-pop") e.target.classList.remove("pop"); });
-const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall", "packs"];
+const TOP = ["loading", "out", "in", "code-card", "howto", "fair", "check", "wall", "packs", "themewall"];
 const showTop = (id) => {
   TOP.forEach((s) => ($(s).hidden = s !== id));
   $("top-nav").hidden = id === "code-card"; // one-line menu at the very top (members get more links)
@@ -255,6 +255,11 @@ async function route(clicked = false) {
   }
   if (hash === "check") { showTop("check"); return; }
   if (hash === "packs") { showTop("packs"); return showAllPacks().catch((e) => say(e.message)); }
+  if (hash === "themewall" || hash.startsWith("themewall/")) {   // v0.38: members only, so logged out it is the front page
+    if (!me) { showFront(); return showWall().catch((e) => say(e.message)); }
+    showTop("themewall");
+    return showThemeWall(hash.slice(10)).catch((e) => { $("tw-body").textContent = ""; say(e.message); });
+  }
   if (hash === "wall" || hash.startsWith("wall/")) {
     if (!me) { showFront(); return showWall(hash.slice(5)).catch((e) => say(e.message)); }
     showTop("wall");
@@ -2204,6 +2209,10 @@ function ledgerItem(h) {
         : line(packName(), ` was ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} to `, ledUser(h.pack_to), " by ", ledUser(h.pack_from));
     } else if (h.kind === "pack_open") {
       what = line(packName(), " was opened by ", ledWho(h), "!");
+    } else if (h.kind === "wall") {
+      const n = h.wall_buttons || 0;
+      what = line(el("a", { href: `#themewall/${h.wall_ring_id}/${h.wall_week}` }, `${h.wall_ring || "A ring"}'s Theme Wall`),
+        ` (${String(h.wall_theme || "").toUpperCase()}) was locked with ${n} button${n === 1 ? "" : "s"} on it`);
     } else if (h.kind === "admin") {
       what = line(el("b", {}, "WEBMASTER "), ADMIN_SAYS[h.admin_action] || "did some upkeep");
     } else {
@@ -2685,6 +2694,203 @@ async function showAllPacks() {
   }
   if (!sealed.childElementCount) sealed.append(el("p", { class: "small" }, "No sealed packs right now."));
   if (!opened.childElementCount) opened.append(el("p", { class: "small" }, "None opened yet."));
+}
+
+// ---------- Theme Wall (v0.38) ----------
+// Your ring's wall for the week; everyone in the ring sees every pin. Your own pin drags (5 px grid, then edge snapping, no
+// overlap) and nudges with the arrow buttons or keys. The wall is stored in its own pixels (the server never sees the zoom) and is
+// only DRAWN scaled to fit the screen. The same geometry is in lib/themewall.js, which has the last word on where a pin lands.
+const TW_W = 88, TW_H = 31, TW_GRID = 5, TW_SNAP = 6;
+const twOverlap = (a, b) => Math.abs(a.x - b.x) < TW_W && Math.abs(a.y - b.y) < TW_H;
+const twMatch = (type, theme) => type === theme || type === "found";
+const twWeekStart = (w) => (w * 604800 + 345600) * 1000;
+// Onto the grid first, then flush against a nearby pin's edge (edge snapping beats the grid, so it can land off-grid: that is how shapes get clean).
+function twSnap(want, others, size) {
+  let x = Math.round(want.x / TW_GRID) * TW_GRID, y = Math.round(want.y / TW_GRID) * TW_GRID;
+  for (const o of others) {
+    if (Math.abs(y - o.y) < TW_H + TW_SNAP) for (const c of [o.x + TW_W, o.x - TW_W, o.x]) if (Math.abs(x - c) <= TW_SNAP) { x = c; break; }
+    if (Math.abs(x - o.x) < TW_W + TW_SNAP) for (const c of [o.y + TW_H, o.y - TW_H, o.y]) if (Math.abs(y - c) <= TW_SNAP) { y = c; break; }
+  }
+  return { x: Math.min(size - TW_W, Math.max(0, x)), y: Math.min(size - TW_H, Math.max(0, y)) };
+}
+
+async function showThemeWall(arg) {
+  const [ring, week] = (arg || "").split("/");
+  const q = new URLSearchParams();
+  if (ring) q.set("ring", ring);
+  if (week) q.set("week", week);
+  twDraw(await api("/api/themewall" + (q.toString() ? "?" + q : "")));
+}
+
+function twPinBox(p, scale) {
+  const box = el("div", { class: "tw-pin" + (p.empty ? " tw-empty" : "") + (p.mine ? " tw-mine" : ""),
+    style: `left:${p.x * scale}px;top:${p.y * scale}px;width:${TW_W * scale}px;height:${TW_H * scale}px` });
+  if (p.copy) {
+    box.append(bannerImg(p.copy, scale));
+    if (p.match) box.append(el("span", { class: "tw-star", title: "Fits this week's theme" }, "★"));
+    box.title = `${p.copy.name} #${p.copy.edition} · ${p.name}${p.match ? " · fits the theme" : ""}`;
+  } else {
+    box.title = `${p.name}'s spot`;
+    box.append(el("span", { class: "tw-ghost" }, p.mine ? "your spot" : ""));
+  }
+  return box;
+}
+
+function twDraw(D) {
+  const body = $("tw-body"), W = D.wall, can = W.editable;
+  body.textContent = "";
+  const msg = el("p", { class: "center small add-status", id: "tw-msg", "aria-live": "polite" });
+  const status = (t) => { msg.textContent = t || ""; };
+
+  // ring and theme
+  const ringBar = el("p", { class: "center tw-ring" });
+  if (D.rings.length > 1) {
+    const sel = el("select", { "aria-label": "Your rings" });
+    for (const r of D.rings) sel.append(el("option", { value: r.id }, r.name));
+    sel.value = D.ring.id;
+    sel.onchange = () => { location.hash = "#themewall/" + sel.value; };
+    ringBar.append("Ring: ", sel);
+  } else ringBar.append("Ring: ", el("b", {}, D.ring.name));
+  ringBar.append(` · ${D.ring.members} member${D.ring.members === 1 ? "" : "s"}`);
+  body.append(ringBar);
+
+  const theme = W.theme.toUpperCase();
+  if (can) {
+    const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
+    const last = D.week_end - D.now < 86400;
+    body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
+        el("span", { class: "small" }, `Buttons of the ${W.theme} type (and found buttons) get a ★. Any button can go up, and it stays yours.`)),
+      el("p", { class: "center small" + (last ? " tw-warn" : "") }, last ? "★ LAST DAY! ★ " : "",
+        `The wall locks ${endText} your time (Monday 00:00 UTC), then it's sealed in the ledger.`));
+  } else {
+    body.append(el("p", { class: "center" }, "Theme: ", el("b", { class: "tw-theme" }, theme), ` · week of ${new Date(twWeekStart(W.week)).toLocaleDateString([], { month: "short", day: "numeric" })} · locked`));
+  }
+  const nav = el("p", { class: "center small" }, el("a", { href: `#themewall/${D.ring.id}/${W.week - 1}` }, "« earlier week"));
+  if (!can) nav.append(" · ", W.week + 1 < D.week ? el("a", { href: `#themewall/${D.ring.id}/${W.week + 1}` }, "later week »")
+    : el("a", { href: `#themewall/${D.ring.id}` }, "this week »"));
+  body.append(nav);
+
+  // the canvas, drawn to fit
+  const scale = Math.max(0.5, Math.min(2, (Math.max(240, Math.min(body.clientWidth || 360, 720)) - 8) / W.size));
+  const cv = el("div", { class: "tw-canvas", style: `width:${W.size * scale}px;height:${W.size * scale}px;--g:${TW_GRID * scale}px` });
+  const mineP = W.pins.find((p) => p.mine);
+  let mineBox = null;
+  for (const p of W.pins) {
+    const box = twPinBox(p, scale);
+    if (p.mine) mineBox = box;
+    else if (p.copy) { box.classList.add("tw-link"); box.onclick = () => { location.hash = "#banner/" + p.copy.id; }; }
+    cv.append(box);
+  }
+  if (!W.pins.length && !can) cv.append(el("p", { class: "tw-none" }, "Nobody put a button up that week."));
+  body.append(el("div", { class: "tw-scroll" }, cv));
+
+  // moving your own pin
+  const others = () => W.pins.filter((p) => !p.mine);
+  let timer = null;
+  const place = (x, y) => { mineP.x = x; mineP.y = y; mineBox.style.left = x * scale + "px"; mineBox.style.top = y * scale + "px"; };
+  const commit = async () => {
+    try {
+      const r = await api("/api/themewall", { method: "POST", body: { action: "pin", ring: D.ring.id, x: mineP.x, y: mineP.y } });
+      if (r.x !== mineP.x || r.y !== mineP.y) place(r.x, r.y);
+      status("");
+    } catch (e) { status(e.message); }
+  };
+  const queue = () => { clearTimeout(timer); timer = setTimeout(commit, 250); };
+  const nudge = (dx, dy) => {
+    const x = Math.min(W.size - TW_W, Math.max(0, mineP.x + dx)), y = Math.min(W.size - TW_H, Math.max(0, mineP.y + dy));
+    if (others().some((o) => twOverlap({ x, y }, o))) { status("Somebody's button is in the way."); return; }
+    status(""); place(x, y); queue();
+  };
+  if (can && mineP && mineBox) {
+    mineBox.tabIndex = 0;
+    mineBox.setAttribute("aria-label", "Your button on the wall. Arrow keys move it.");
+    mineBox.addEventListener("keydown", (e) => {
+      const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+      if (!d) return;
+      e.preventDefault();
+      const step = e.shiftKey ? 1 : TW_GRID;
+      nudge(d[0] * step, d[1] * step);
+    });
+    mineBox.addEventListener("pointerdown", (e) => {
+      if (e.button) return;
+      e.preventDefault();
+      mineBox.setPointerCapture(e.pointerId);
+      mineBox.focus({ preventScroll: true });   // so the arrow keys work right after a drag
+      mineBox.classList.add("tw-drag");
+      const r = cv.getBoundingClientRect();
+      const off = { x: (e.clientX - r.left) / scale - mineP.x, y: (e.clientY - r.top) / scale - mineP.y };
+      let moved = false;
+      const move = (ev) => {
+        const s = twSnap({ x: (ev.clientX - r.left) / scale - off.x, y: (ev.clientY - r.top) / scale - off.y }, others(), W.size);
+        if (others().some((o) => twOverlap(s, o))) return;   // can't land on somebody: stay at the last free spot
+        if (s.x !== mineP.x || s.y !== mineP.y) { moved = true; place(s.x, s.y); }
+      };
+      const up = () => {
+        mineBox.classList.remove("tw-drag");
+        mineBox.removeEventListener("pointermove", move);
+        mineBox.removeEventListener("pointerup", up);
+        mineBox.removeEventListener("pointercancel", up);
+        if (moved) { clearTimeout(timer); commit(); }
+      };
+      mineBox.addEventListener("pointermove", move);
+      mineBox.addEventListener("pointerup", up);
+      mineBox.addEventListener("pointercancel", up);
+    });
+  }
+
+  // controls and the button picker (this week's wall only)
+  if (can) {
+    const tray = el("div", { class: "tw-tray", hidden: "" });
+    const reload = () => showThemeWall(String(D.ring.id)).catch((e) => status(e.message));
+    const openTray = async () => {
+      tray.hidden = false; tray.textContent = "Loading your buttons...";
+      try {
+        const { banners } = await api("/api/collection");
+        tray.textContent = "";
+        tray.append(el("p", { class: "small center" }, "Pick a button to put up. It stays in your collection. ★ = fits this week's theme."));
+        const grid = el("div", { class: "tw-grid" });
+        const list = banners.slice().sort((a, b) => twMatch(b.type, W.theme) - twMatch(a.type, W.theme));
+        for (const b of list) {
+          const ok = !b.locked, star = twMatch(b.type, W.theme);
+          const btn = el("button", { type: "button", class: "pick-tile tw-pick" + (ok ? "" : " tw-off"), title: `${b.name} #${b.edition}${ok ? "" : b.locked < 0 ? " (away)" : " (in a trade)"}` },
+            bannerImg(b, 1), star ? el("span", { class: "tw-star" }, "★") : null);
+          if (!ok) btn.disabled = true;
+          btn.onclick = async () => {
+            try { await api("/api/themewall", { method: "POST", body: { action: "pin", ring: D.ring.id, instance: b.id } }); reload(); }
+            catch (e) { status(e.message); }
+          };
+          grid.append(btn);
+        }
+        if (!list.length) grid.append(el("p", { class: "small" }, "You don't have any buttons yet! Open a pack first."));
+        tray.append(grid);
+      } catch (e) { tray.textContent = ""; status(e.message); }
+    };
+    const bar = el("p", { class: "center tw-controls" });
+    if (mineP) {
+      const arrow = (label, dx, dy, name) => el("button", { type: "button", class: "mini", "aria-label": name, onclick: () => nudge(dx * TW_GRID, dy * TW_GRID) }, label);
+      bar.append("Move: ", arrow("←", -1, 0, "Left"), arrow("↑", 0, -1, "Up"), arrow("↓", 0, 1, "Down"), arrow("→", 1, 0, "Right"), " ",
+        el("button", { type: "button", onclick: openTray }, "Change button"), " ",
+        el("button", { type: "button", onclick: async () => {
+          try { await api("/api/themewall", { method: "POST", body: { action: "unpin", ring: D.ring.id } }); reload(); } catch (e) { status(e.message); }
+        } }, "Take it down"));
+      bar.append(el("br"), el("span", { class: "small" }, mineP.empty
+        ? "Your button is gone from your collection, so your spot is empty. It's kept for you: put up another one."
+        : "Drag your button anywhere (or use the arrows). Everything snaps to a 5 pixel grid, and flush against its neighbours."));
+    } else {
+      bar.append(el("button", { type: "button", onclick: openTray }, "Put up a button"));
+      openTray();
+    }
+    body.append(bar, msg, tray);
+  } else body.append(msg);
+
+  // who's up
+  const roster = el("ul", { class: "tw-roster small" });
+  const row = (name, p) => el("li", {}, name === "a former player" ? name : el("a", { href: "#u/" + encodeURIComponent(name) }, name), ": ",
+    p && p.copy ? [el("a", { href: "#banner/" + p.copy.id }, `${p.copy.name} #${p.copy.edition}`), p.match ? " ★" : ""]
+      : p ? "spot kept, button gone" : "not up yet");
+  if (can) for (const m of D.members) roster.append(row(m.name, W.pins.find((p) => p.user_id === m.id)));
+  else for (const p of W.pins) roster.append(row(p.name, p));
+  body.append(el("h3", {}, "» Who's up «"), roster);
 }
 
 // ---------- hold to open, and tearing pouches (v0.32) ----------
