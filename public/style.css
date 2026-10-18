@@ -1333,3 +1333,5 @@ table.webring td { padding: 12px 6px; }
 body.tw-carrying { cursor: grabbing; user-select: none; -webkit-user-select: none; }
 body.tw-carrying * { cursor: grabbing !important; }
 .tw-lock { margin-bottom: 1.6em; }
+#page-collection { justify-content: center; }   /* the collection sits in the middle of its panel */
+.stamp img.banner { image-rendering: pixelated; }
