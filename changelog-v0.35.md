@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.38
+# 88x31 cLuB Changelog — v0.35–v0.39
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.39 — "Everybody Gets One"
+**Sat Oct 17, 2026 · 10:40 PM HST**
+
+- **Daily packs now send one on.** After you pick the button to keep, one of the other two goes to somebody: you choose who from a drop-down, or pick "Random person" (the default, so it's just one click). The "no thanks" choice is gone, so twice as many buttons come out of every daily pack. Ultras only go to real players.
 
 ## v0.38 — "Theme Wall"
 **Sat Oct 17, 2026 · 9:30 PM HST** (migration `028_theme_walls.sql`)
