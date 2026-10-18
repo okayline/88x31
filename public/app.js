@@ -331,7 +331,7 @@ async function refresh() {
 
 // ---------- daily pull ----------
 
-// Today's daily pack, opened inside the Packs section on your page (keep 1, pass one on if you like).
+// Today's daily pack, opened inside the Packs section on your page (keep 1, send one on).
 async function showPull() {
   const box = $("pack-open");
   box.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -346,7 +346,14 @@ async function showPull() {
   if (pull.status === "done") { box.textContent = ""; openingKey = null; loadPacksPanel(true); return; } // all used up today
   let keep = null;
   const giftBox = el("div", { class: "gift-choices" });
-  const toInput = el("input", { name: "to", placeholder: "friend's name", autocomplete: "off", list: "player-names" });
+  // who gets it: a drop-down (no typing), "Random person" first
+  const toInput = el("select", { name: "to", "aria-label": "Who gets the gift" }, el("option", { value: "__random__" }, "🎲 Random person"));
+  (async () => {
+    if (!players.length) { try { players = (await api("/api/players")).players; } catch {} }
+    const mine = me ? me.name.toLowerCase() : "";
+    const list = players.filter((p) => p.name.toLowerCase() !== mine);
+    for (const p of [...list.filter((p) => !p.is_bot), ...list.filter((p) => p.is_bot)]) toInput.append(el("option", { value: p.name }, p.name + (p.is_bot ? " [bot]" : "")));
+  })();
   const toRow = el("label", { class: "to-row" }, "Send it to: ", toInput);
   const giftChoice = () => (giftBox.querySelector("input:checked") || {}).value || "";
 
@@ -363,18 +370,18 @@ async function showPull() {
     };
     const radio = (value, ...label) => {
       const input = el("input", { type: "radio", name: "gift", value });
-      input.onchange = () => { toRow.hidden = giftChoice() === ""; updateBtn(); };
+      input.onchange = () => updateBtn();
       return el("label", { class: "radio" }, input, ...label);
     };
     pull.options.forEach((d2, j) => {
       if (j !== i && d2 && !d2.bonus) giftBox.append(radio(String(j), "Gift ", bannerImg(d2), " ", el("b", {}, d2.name)));
     });
-    giftBox.append(radio("", "No thanks, let the other two go"));
-    giftBox.querySelector('input[value=""]').checked = true;
-    toRow.hidden = true;
+    const first = giftBox.querySelector("input");
+    if (first) first.checked = true;   // no "send nobody": one of the other two always goes
+    toRow.hidden = false;
     // taking the bonus pack: no gifting, just open the new pack
     const isBonus = !!(pull.options[i] && pull.options[i].bonus);
-    giftHead.hidden = giftBox.hidden = isBonus;
+    giftHead.hidden = giftBox.hidden = toRow.hidden = isBonus;
     if (isBonus) keepBtn.textContent = "Open the bonus pack!"; else updateBtn();
     form.hidden = false;
   }));
@@ -383,7 +390,7 @@ async function showPull() {
   box.append(el("p", { class: "center small" }, "Click the one you want to keep."));
   stage.play();
 
-  const giftHead = el("p", {}, el("b", {}, "Gift one of the other two to a friend?"));
+  const giftHead = el("p", {}, el("b", {}, "Send one of the other two to a friend!"));
   const keepBtn = el("button", {}, "Keep it!");
   const form = el("form", { class: "pull-form" }, giftHead, giftBox, toRow, el("p", { class: "center" }, keepBtn));
   form.hidden = true;
@@ -391,13 +398,12 @@ async function showPull() {
     e.preventDefault();
     say("");
     const pass = giftChoice();
-    if (pass !== "" && !toInput.value.trim()) return say("Type who to send it to, or choose \"No thanks\".");
     try {
       const takingBonus = !!(pull.options[keep] && pull.options[keep].bonus);
-      const r = await api("/api/pull", { method: "POST", body: { keep, pass: takingBonus || pass === "" ? null : Number(pass), to: toInput.value } });
+      const r = await api("/api/pull", { method: "POST", body: { keep, pass: takingBonus || pass === "" ? null : Number(pass), to: takingBonus ? null : toInput.value } });
       if (r.bonus) { say("★ BONUS PACK! ★ Here's a fresh one!"); return await showPull(); }
       loadSummary();
-      say(pass !== "" && !r.passed ? "Kept! (The one you gifted sold out, sorry.)" : pass !== "" ? "Kept, and your gift is on its way!" : "Added to your collection!");
+      say(!r.passed ? "Kept! (The one you sent sold out, sorry.)" : `Kept, and ${r.to} got your gift!`);
       box.textContent = "";
       afterOpening();
     } catch (err) { say(err.message); }

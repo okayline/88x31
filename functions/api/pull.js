@@ -5,10 +5,13 @@
 // toward the daily limit. A bonus pack never contains another bonus card.
 // GET  /api/pull -> { day, status, options: [design...], kept_index, passed_index, passed_to, odds,
 //                     pull_number, pulls_per_day }
-// POST /api/pull { keep: 0-2, pass?: 0-2, to?: NAME } -> { ok, kept, passed }
+// POST /api/pull { keep: 0-2, pass?: 0-2, to?: NAME | "__random__" } -> { ok, kept, passed, to }
+//   One of the other two is always sent (pass defaults to the first, to defaults to a random real player).
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { ODDS, PULLS_PER_DAY, BONUS_CHANCE, BONUS, today, rollDesigns, mintStatements, userByName } from "../../lib/game.js";
+
+const RANDOM = "__random__";   // the "random person" choice
 
 async function loadPull(env, userId, day) {
   return env.DB.prepare(
@@ -92,13 +95,24 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true, bonus: true });
   }
 
-  let pass = null, recipient = null;
-  if (body.pass !== undefined && body.pass !== null && body.pass !== "") {
-    pass = Number(body.pass);
-    if (![0, 1, 2].includes(pass) || pass === keep || ids[pass] === BONUS) return json({ error: "Pass on one of the other two." }, 400);
+  // v0.39: one of the other two always goes to somebody (no "send to nobody"). Which one defaults to the first, and who defaults to a
+  // random real player (recently seen first; a bot only if no real player is around, and never for an ultra).
+  const others = [0, 1, 2].filter((j) => j !== keep && ids[j] !== BONUS);
+  let pass = body.pass === undefined || body.pass === null || body.pass === "" ? others[0] : Number(body.pass);
+  if (!others.includes(pass)) return json({ error: "Send one of the other two!" }, 400);
+  const ultra = (await env.DB.prepare("SELECT rarity FROM designs WHERE id = ?").bind(ids[pass]).first() || {}).rarity === "ultra";
+  let recipient = null;
+  if (body.to && body.to !== RANDOM) {
     recipient = await userByName(env, body.to);
     if (!recipient) return json({ error: "No player by that name." }, 404);
-    if (recipient.id === user.id) return json({ error: "You can't pass one to yourself!" }, 400);
+    if (recipient.id === user.id) return json({ error: "You can't send one to yourself!" }, 400);
+    if (recipient.is_bot && ultra) return json({ error: "An ultra can only go to a real player." }, 400);
+  } else {
+    const real = (bots) => env.DB.prepare(
+      `SELECT id, name, is_bot FROM users WHERE id != ? AND is_bot = ? ORDER BY (last_seen > ?) DESC, RANDOM() LIMIT 1`
+    ).bind(user.id, bots, now() - 14 * 86400).first();
+    recipient = (await real(0)) || (ultra ? null : await real(1));
+    if (!recipient) return json({ error: "There's nobody to send it to yet! Try again later." }, 409);
   }
 
   // Claim today's pull (only works once, even if two clicks race).
@@ -124,5 +138,5 @@ export async function onRequestPost({ request, env }) {
     passed = passRes[0].meta.changes === 1; // false only if that one sold out
   }
   await sealSafe(env);
-  return json({ ok: true, kept, passed });
+  return json({ ok: true, kept, passed, to: recipient.name });
 }
