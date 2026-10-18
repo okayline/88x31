@@ -9,6 +9,12 @@ import { json, currentUser } from "../../lib/auth.js";
 import { sealLedger, verifyLedger } from "../../lib/ledger.js";
 import { seenSet } from "../../lib/progress.js";
 
+const WALL_COLS = `rw.theme AS wall_theme, rw.week AS wall_week, rw.ring_id AS wall_ring_id, rg.name AS wall_ring,
+            CASE WHEN l.kind = 'wall' THEN (SELECT COUNT(*) FROM json_each(json_extract(l.record, '$[6]')) WHERE json_extract(value, '$[1]') IS NOT NULL) END AS wall_buttons,`;
+const WALL_NONE = "NULL AS wall_theme, NULL AS wall_week, NULL AS wall_ring_id, NULL AS wall_ring, NULL AS wall_buttons,";
+const WALL_JOINS = `LEFT JOIN ring_walls rw ON l.kind = 'wall' AND rw.id = l.ref_id
+     LEFT JOIN rings rg ON rg.id = rw.ring_id`;
+
 export async function onRequestGet({ request, env }) {
   const params = new URL(request ? request.url : "http://x").searchParams;
   const limit = Math.min(200, Math.max(1, Number(params.get("limit")) || 15));
@@ -16,7 +22,7 @@ export async function onRequestGet({ request, env }) {
   const viewer = request ? await currentUser(env, request) : null;
   await sealLedger(env);
   const check = await verifyLedger(env);
-  const { results: recent } = await env.DB.prepare(
+  const query = (walls) => env.DB.prepare(
     `SELECT l.id, l.kind, l.hash, l.created_at,
             h.reason, f.name AS from_name, t.name AS to_name,
             CASE WHEN COALESCE(d1.status, d2.status, d3.status, d5.status) = 'removed' THEN 'a removed button' ELSE COALESCE(d1.name, d2.name, d3.name, d5.name) END AS design, COALESCE(i.edition, fi.edition) AS edition,
@@ -28,9 +34,7 @@ export async function onRequestGet({ request, env }) {
             COALESCE(d1.id, d2.id, d3.id, d4.id, d5.id) AS design_id, COALESCE(i.id, fi.id, fo.id) AS copy_id,
             COALESCE(d1.rarity, d2.rarity, d3.rarity, d4.rarity, d5.rarity) AS design_rarity, COALESCE(d1.series_id, d2.series_id, d3.series_id, d4.series_id, d5.series_id) AS design_series,
             rq.foil AS request_foil,
-            rw.theme AS wall_theme, rw.week AS wall_week, rw.ring_id AS wall_ring_id, rg.name AS wall_ring,
-            CASE WHEN l.kind = 'wall' THEN (SELECT COUNT(*) FROM json_each(json_extract(l.record, '$[6]')) WHERE json_extract(value, '$[1]') IS NOT NULL) END AS wall_buttons,
-            CASE l.kind
+${walls ? WALL_COLS : WALL_NONE}            CASE l.kind
               WHEN 'request' THEN (SELECT name FROM users WHERE id = rq.user_id)
               WHEN 'fusion' THEN (SELECT name FROM users WHERE id = fu.user_id)
               WHEN 'design' THEN (SELECT name FROM users WHERE id = d1.found_by)   -- only players' finds; batch imports and cLuB originals have no finder
@@ -57,10 +61,11 @@ export async function onRequestGet({ request, env }) {
      LEFT JOIN designs d4 ON d4.id = fo.design_id
      LEFT JOIN requests rq ON l.kind = 'request' AND rq.id = l.ref_id
      LEFT JOIN designs d5 ON d5.id = rq.design_id
-     LEFT JOIN ring_walls rw ON l.kind = 'wall' AND rw.id = l.ref_id
-     LEFT JOIN rings rg ON rg.id = rw.ring_id
-     WHERE (? = 0 OR l.id < ?) ORDER BY l.id DESC LIMIT ?`
+${walls ? WALL_JOINS : ""}     WHERE (? = 0 OR l.id < ?) ORDER BY l.id DESC LIMIT ?`
   ).bind(before, before, limit).all();
+  // (before migration 028 there are no Theme Walls and no ring_walls table: list the ledger without them)
+  let recent;
+  try { recent = (await query(true)).results; } catch (e) { recent = (await query(false)).results; }
   // hide spoilers: the same rule as the Wall of Buttons
   const admin = !!(viewer && viewer.is_admin);
   let seen = new Set(), upcoming = new Set();
