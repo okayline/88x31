@@ -6,19 +6,21 @@ A collecting game where the creatures are 88x31 web buttons: collect, trade, and
 ## What's here
 
 ```
-public/            the site (index.html, style.css, app.js)
-functions/api/     the API (Cloudflare Pages Functions)
-  signup.js        POST  make an account, get a save code
-  login.js         POST  log in with a save code
-  logout.js        POST  log out
-  me.js            GET   who am I
-  codes.js         GET/POST/DELETE  list, add, remove save codes
-lib/auth.js        save codes, hashing, sessions, rate limits
+public/            the site (index.html, style.css, app.js, banners/)
+functions/api/     the API (Cloudflare Pages Functions), one file per route
+lib/               the game: packs, pulls, trades, fusion, sets, rings and Theme Walls, bots, the ledger,
+                   the shared registry mirror (registry.js), travel to 4Dungeon, accounts (shared.js, auth.js)
+migrations/        database changes, in order (002 to 028)
 schema.sql         database tables
+seed_*.sql         starter banners and sets
+sources/           open-licensed art the remixed buttons came from, with credits
+tools/             scripts that made the button art, add_banner.py and make_key.mjs
 wrangler.toml      Cloudflare config
 ```
 
-Login uses **save codes**: a random 20-character code (like `K7QM-2XPA-9RTD-HV4C-8NBE`) given at signup. The server stores only a SHA-256 hash of each code, never the code itself. Players can hold up to 5 codes. No email, no outside services.
+Login uses **save codes** (a random 20-character code like `K7QM-2XPA-9RTD-HV4C-8NBE`) and **passkeys**. Both are kept by the
+shared Accounts service in dungeon-items (see its `ACCOUNTS.md`), so one account works across the 88x31.app games. Only
+hashes of codes are stored. Players can hold up to 5 codes. No email, no outside services.
 
 ## Setup (once)
 
