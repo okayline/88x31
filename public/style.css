@@ -1198,83 +1198,58 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .visitor-card { display: inline-block; vertical-align: top; width: 220px; margin: 6px; padding: 8px 10px; border: 1px dashed currentColor; text-align: left; }
 .visitor-card button { display: block; margin-top: 6px; }
 
-/* ---------- the streak's Free Pack (v0.37): three quiet homepage looks, no shine ---------- */
-.pack-tile.still-art .pack-art { animation: none; }
-.th-fp-a .pack-art, .th-fp-b .pack-art, .th-fp-c .pack-art { text-shadow: none; justify-content: center; gap: 4px; }
-/* a: a guestbook page. Cream paper, a navy double rule, a serif name */
-.th-fp-a .pack-art { background: #f6efdc; border-color: #1f2a5a; color: #1f2a5a; box-shadow: inset 0 0 0 3px #f6efdc, inset 0 0 0 4px #1f2a5a, 3px 3px 0 #000; }
-.th-fp-a .fp-top { font: 7.5px Georgia, "Times New Roman", serif; letter-spacing: .5px; }
-.th-fp-a .fp-quill { font-size: 18px; line-height: 1; margin-top: 6px; }
-.th-fp-a .fp-name { font: italic bold 17px Georgia, "Times New Roman", serif; }
-.th-fp-a .fp-rule { width: 54px; border-top: 3px double #1f2a5a; margin: 2px 0; }
-.th-fp-a .fp-line { font: italic 8px Georgia, "Times New Roman", serif; }
-.th-fp-a .pack-sub { font: 8px Georgia, "Times New Roman", serif; color: #6b5a3a; margin-top: 6px; }
-/* b: a starry tiled background with one grey bevelled box in the middle */
-.th-fp-b .pack-art { background: #000033 radial-gradient(#ffffff 0.6px, transparent 1.1px) 0 0 / 13px 13px; border-color: #c0c0c0; }
-.th-fp-b .fp-top { font: 7.5px "Times New Roman", serif; color: #ccccff; }
-.th-fp-b .fp-box { margin: 10px 0 8px; padding: 7px 10px 6px; background: #c0c0c0; color: #000; text-align: center;
-  border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff; font: 15px "Times New Roman", serif; line-height: 1.05; }
-.th-fp-b .fp-box b, .th-fp-b .fp-box i { display: block; }
-.th-fp-b .fp-box i { font-size: 11px; letter-spacing: 2px; }
-.th-fp-b .pack-sub { font: italic 8px "Times New Roman", serif; color: #c0c0c0; }
-/* c: a plain white page with a link, a groove line and a webring */
-.th-fp-c .pack-art { background: #ffffff; border-color: #000; color: #000; box-shadow: 3px 3px 0 #000; }
-.th-fp-c .fp-top { font: bold 8px "Times New Roman", serif; }
-.th-fp-c .fp-link { font: 16px "Times New Roman", serif; color: #0000ee; text-decoration: underline; margin-top: 10px; }
-.th-fp-c .fp-hr { width: 70px; border-top: 2px groove #c0c0c0; margin: 4px 0; }
-.th-fp-c .fp-visited { font: 10px "Times New Roman", serif; color: #551a8b; text-decoration: underline; }
-.th-fp-c .fp-ring { font: 7px "Times New Roman", serif; color: #0000ee; margin-top: 12px; white-space: nowrap; }
+/* ---------- the ~*~cLuB~*~ Single (v0.45): three 90s Blingee kawaii looks, glitter fill, rhinestone edge, twinkles ---------- */
+.bl .pack-art{justify-content:center;gap:2px;text-shadow:none;border:0!important;border-radius:6px!important}
+.bl .glit{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(#fff 0.7px,transparent 1.3px) 0 0/7px 7px,radial-gradient(rgba(255,255,255,.8) 0.6px,transparent 1.2px) 3px 4px/9px 9px,radial-gradient(rgba(255,255,255,.55) 0.5px,transparent 1px) 1px 2px/5px 5px;
+  animation:bl-glit .45s steps(2) infinite;mix-blend-mode:screen}
+@keyframes bl-glit{50%{background-position:1px 1px,4px 3px,2px 1px;opacity:.75}}
+.bl .stones{position:absolute;inset:2px;z-index:3;pointer-events:none;border-radius:5px;
+  background:radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 0 0/9px 9px repeat-x,radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 0 100%/9px 9px repeat-x,
+             radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 0 0/9px 9px repeat-y,radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 100% 0/9px 9px repeat-y}
+.bl .tw{position:absolute;z-index:4;color:#fff;font:12px/1 Arial;text-shadow:0 0 3px #fff,0 0 6px var(--tw,#ff66cc);animation:bl-tw 1.1s ease-in-out infinite}
+@keyframes bl-tw{0%,100%{transform:scale(.4) rotate(0);opacity:.3}50%{transform:scale(1.15) rotate(45deg);opacity:1}}
+.bl .t{z-index:2;position:relative}
+.bl .top{font:bold 7px Verdana,Arial,sans-serif;letter-spacing:.3px}
+.bl .chrome{font:900 italic 23px/1 "Arial Black",Impact,Arial,sans-serif;letter-spacing:-.5px;
+  background:linear-gradient(180deg,#fff 0%,#ffd6f2 30%,#ff4fb8 52%,#ffe6f7 56%,#ff8fd6 80%,#fff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:.6px #b0006e;filter:drop-shadow(1px 1px 0 #fff) drop-shadow(0 0 3px #ff9ad9)}
+.bl .stamp{display:inline-block;padding:1px 5px;border-radius:8px;font:bold 8px Verdana,Arial,sans-serif;transform:rotate(-6deg)}
+
+/* A: Glitter Bunny (hot pink) */
+.th-bl-a .pack-art{background:linear-gradient(160deg,#ff5fb7,#ff9bd6 45%,#ff63c0);--st:#ff2f9e;--tw:#fff}
+.th-bl-a .top{color:#fff;text-shadow:1px 1px 0 #d4007a}
+.th-bl-a .heart{width:46px;height:40px;position:relative;margin:2px 0 -2px}
+.th-bl-a .heart::before,.th-bl-a .heart::after{content:"";position:absolute;top:0;width:24px;height:37px;border-radius:24px 24px 0 0;background:linear-gradient(#fff,#ffe1f3);box-shadow:0 0 0 1.5px #ff2f9e}
+.th-bl-a .heart::before{left:23px;transform:rotate(-45deg);transform-origin:0 100%}.th-bl-a .heart::after{left:-1px;transform:rotate(45deg);transform-origin:100% 100%}
+.th-bl-a .face{position:absolute;left:0;right:0;top:13px;z-index:1;text-align:center;font:bold 11px/1 Arial;color:#c2006f;white-space:nowrap}
+.th-bl-a .chrome{margin-top:2px}
+.th-bl-a .stamp{background:#fff;color:#ff2f9e;box-shadow:0 0 0 1px #ff2f9e}
+
+/* B: Strawberry Milk (pastel lavender + mint) */
+.th-bl-b .pack-art{background:repeating-conic-gradient(#e9d9ff 0 25%,#d3f5ec 0 50%) 0 0/16px 16px;--st:#b98cff;--tw:#b98cff}
+.th-bl-b .top{color:#6a3fb5}
+.th-bl-b .bub{background:#fff;border:2px solid #b98cff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;padding:4px 7px 3px;text-align:center;box-shadow:2px 2px 0 #ff9ad9}
+.th-bl-b .bub i{display:block;font:normal 8px Verdana,Arial;color:#ff4fb8}
+.th-bl-b .chrome{font-size:19px;background:linear-gradient(90deg,#ff7ad1,#ffb36b,#ffe46b,#7ae6b8,#7ab8ff,#c48bff);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:.5px #6a3fb5}
+.th-bl-b .berry{font:bold 9px/1 Arial;color:#ff4f8b;letter-spacing:1px}
+.th-bl-b .fly{font:9px/1 Arial;color:#6a3fb5}
+.th-bl-b .stamp{background:#ff4fb8;color:#fff}
+
+/* C: Midnight Tiara (black + pink glitter) */
+.th-bl-c .pack-art{background:radial-gradient(circle at 50% 42%,#5a1263,#1a0420 70%);--st:#ff7ad1;--tw:#ff7ad1}
+.th-bl-c .glit{background:radial-gradient(#ff9ad9 0.7px,transparent 1.3px) 0 0/11px 11px,radial-gradient(#fff 0.6px,transparent 1.2px) 5px 4px/17px 17px}
+.th-bl-c .top{color:#ffb3e6}
+.th-bl-c .tiara{font:14px/1 Arial;color:#fff;text-shadow:0 0 4px #fff,0 0 8px #ff7ad1;letter-spacing:-1px;margin-bottom:-6px}
+.th-bl-c .chrome{background:linear-gradient(180deg,#fff,#ffc4ec 40%,#ff3fae 55%,#fff 100%);-webkit-background-clip:text;background-clip:text}
+.th-bl-c .xo{font:italic bold 11px Georgia,serif;color:#ff7ad1;text-shadow:0 0 4px #ff3fae}
+.th-bl-c .stamp{background:linear-gradient(90deg,#ff3fae,#b04fff);color:#fff}
+
 /* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
 @media (max-width: 480px) {
   #page-collection .tile { width: calc(50% - 4px); }
   /* (v0.37.1) the size itself is worked out in showPage (bannerImg's scale), so foils and effects size with it */
 }
-
-/* (v0.37) a little more fun: stickers and doodles, all still, no shine */
-.th-fp-a .fp-stamp { position: absolute; top: 10px; right: 6px; z-index: 4; transform: rotate(14deg); font: bold 8px Arial, sans-serif; letter-spacing: 1px;
-  color: #c4302b; border: 2px solid #c4302b; border-radius: 50%; padding: 6px 3px; opacity: .85; }
-.th-fp-a .fp-name { color: #7a2a52; }
-.th-fp-a .fp-line { color: #7a2a52; }
-.th-fp-a .fp-count { font: 7px Georgia, serif; color: #1f2a5a; }
-.th-fp-a .fp-count b { font: bold 8px "Courier New", monospace; background: #000; color: #33ff66; padding: 0 2px; letter-spacing: 1px; }
-.th-fp-b .fp-moon { position: absolute; top: 6px; left: 8px; z-index: 4; font-size: 20px; color: #ffe680; line-height: 1; }
-.th-fp-b .fp-burst { position: absolute; top: 18px; right: 2px; z-index: 4; transform: rotate(12deg); width: 34px; height: 34px; display: grid; place-items: center;
-  background: #ffef00; color: #cc0000; font: bold 9px Arial, sans-serif;
-  clip-path: polygon(50% 0, 61% 18%, 82% 10%, 80% 32%, 100% 40%, 84% 55%, 96% 75%, 74% 76%, 70% 98%, 52% 84%, 33% 100%, 28% 78%, 6% 80%, 16% 60%, 0 44%, 19% 34%, 14% 12%, 36% 18%); }
-.th-fp-b .fp-box b { background: linear-gradient(90deg, #cc0000, #ff8800, #e6c200, #00a03c, #0050d0, #7a00cc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.th-fp-b .fp-stars { font-size: 10px; color: #ffe680; letter-spacing: 3px; }
-.th-fp-c .fp-rainbow { width: 76px; height: 4px; margin: 4px 0; background: linear-gradient(90deg, #ff0000, #ff9900, #ffff00, #00cc00, #0066ff, #9900cc); }
-.th-fp-c .fp-mail { font: 8px "Times New Roman", serif; color: #0000ee; margin-top: 6px; }
-.th-fp-c .fp-ring { margin-top: 6px; }
-.th-fp-a .fp-stamp { top: 30px; right: 5px; }
-.th-fp-b .fp-top { margin-top: 12px; }
-.th-fp-b .fp-burst { top: 46px; right: 0; }
-.th-fp-a .fp-stamp { position: static; transform: rotate(-8deg); margin: 4px 0 2px; }
-.th-fp-b .fp-burst { position: static; transform: rotate(-8deg); margin: -2px 0 2px; }
-.th-fp-b .fp-burst { display: grid; flex-shrink: 0; width: 38px; height: 38px; }
-.th-fp-b .fp-moon { font-size: 15px; top: 5px; left: 7px; }
-.th-fp-b .fp-top { margin-top: 10px; }
-.th-fp-b .fp-box { margin: 4px 0 2px; }
-.th-fp-b .fp-burst { width: 30px; height: 30px; font-size: 8px; }
-/* (v0.37) "Free Pack" stands out on all three */
-.th-fp-a .fp-name { font-size: 19px; font-weight: 900; text-shadow: 1px 1px 0 #e8c9d6; }
-.th-fp-b .fp-box b { font-size: 19px; font-weight: 900; }
-.th-fp-b .fp-box i { font-weight: bold; color: #000066; }
-.th-fp-c .fp-link { font-size: 18px; font-weight: bold; }
-/* (v0.37) renamed: the ~*~cLuB~*~ Single */
-.th-fp-a .fp-name { font-size: 21px; }
-.th-fp-b .fp-box { padding: 6px 6px 5px; }
-.th-fp-b .fp-box b { font-size: 16px; letter-spacing: .5px; }
-.th-fp-b .fp-box i { font-size: 8px; letter-spacing: 0; font-style: normal; }
-.th-fp-c .fp-link { font-size: 20px; }
-.th-fp-a .fp-club { font: bold 9px Georgia, "Times New Roman", serif; color: #1f2a5a; margin-bottom: -4px; }
-.th-fp-c .fp-club { font: bold 9px "Times New Roman", serif; color: #0000ee; margin: 6px 0 -4px; }
-.th-fp-c .fp-link { margin-top: 0; }
-.th-fp-a .fp-stamp { margin: 0; padding: 4px 3px; }
-.th-fp-a .fp-name { font-size: 20px; }
-.th-fp-a .fp-rule { margin: 0; }
-.th-fp-a .pack-sub { margin-top: 2px; }
-.th-fp-c .fp-rainbow, .th-fp-a .fp-rule, .th-fp-c .fp-hr { flex-shrink: 0; }
 
 /* (v0.37) the bottom menu, the same size as the top one */
 .bottom-bar { font-size: 18px; }

@@ -1840,16 +1840,19 @@ function packTile(p, href) {
     theme = "special";
     parts = [spanC("gleam"), top(), name("SPECIAL"), spanC("pack-sub", sub)];
   } else if (p.cards === 1) {
-    // (v0.37) the visit streak's ~*~cLuB~*~ Single (one card): three quiet homepage looks, picked by its number, no shine
+    // (v0.45) the ~*~cLuB~*~ Single (one card): three 90s Blingee kawaii looks, picked by its number (glitter, rhinestones, twinkles)
     const look = "abc"[(Number(p.id) || 0) % 3];
-    theme = "fp-" + look; cls = "still-art";
-    const fsub = spanC("pack-sub", p.revealed ? "opened!" : "1 card inside");
-    parts = look === "a" ? [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), spanC("fp-stamp", "1 CARD"), spanC("fp-club", "~*~cLuB~*~"), spanC("fp-name", "Single"), spanC("fp-rule"),
-        spanC("fp-line", "thanks 4 visiting! ♥"), el("span", { class: "fp-count" }, "visitor ", el("b", {}, "000042"))]   // the stamp already says 1 CARD
-      : look === "b" ? [spanC("fp-moon", "☾"), spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("i", {}, "~*~cLuB~*~"), el("b", {}, "SINGLE")),
-        spanC("fp-burst", "NEW!"), fsub]
-      : [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), spanC("fp-club", "~*~cLuB~*~"), el("span", { class: "fp-link" }, "Single"), spanC("fp-rainbow"), el("span", { class: "fp-visited" }, "[ 1 card ]"),
-        el("span", { class: "fp-mail" }, "✉ ", el("u", {}, "e-mail me!")), spanC("fp-ring", "« prev · ring · next »")];
+    theme = "bl-" + look; cls = "bl";
+    const t = (c, ...k) => spanC("t " + c, ...k), opened = p.revealed ? "opened!" : null;
+    const tw = (l, top, d, ch = "\u2726") => { const n = spanC("tw", ch); n.setAttribute("style", `left:${l}px;top:${top}px;animation-delay:${d}s`); return n; };
+    parts = [spanC("glit"), spanC("stones"), t("top", "~*~ 88x31 cLuB ~*~"), ...(look === "a"
+      ? [el("span", { class: "t heart" }, spanC("face", "\u25d5 \u1d17 \u25d5")), t("chrome", "Single"), t("stamp", opened || "\u2661 1 card \u2661"),
+         tw(10, 14, 0), tw(76, 34, .4, "\u2727"), tw(14, 98, .8), tw(80, 104, .2, "\u2727")]
+      : look === "b"
+      ? [t("fly", "\u01b8\u0335\u0321\u04dc\u0335\u0328\u0304\u01b7"), el("span", { class: "t bub" }, el("i", {}, "~*~cLuB~*~"), spanC("chrome", "SiNGLE")), t("berry", "\u2665 luv u 4ever \u2665"), t("stamp", opened || "1 card inside"),
+         tw(8, 24, .3), tw(82, 18, .9, "\u2727"), tw(84, 90, 0), tw(10, 110, .6, "\u2727")]
+      : [t("tiara", "\u265b"), t("chrome", "Single"), t("xo", "xoxo"), t("stamp", opened || "1 cArD iNsiDe \u273f"),
+         tw(12, 20, .1), tw(78, 30, .7, "\u2727"), tw(16, 94, .5, "\u2727"), tw(80, 100, 0)])];
   } else if (p.source === "welcome") {
     theme = "welcome";
     parts = [spanC("confetti"), spanC("gleam"), top(), spanC("script", "Welcome"), spanC("pack-sub", sub)];
