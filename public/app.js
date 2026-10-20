@@ -2904,13 +2904,13 @@ const twOverlap = (a, b) => Math.abs(a.x - b.x) < TW_W && Math.abs(a.y - b.y) < 
 const twMatch = (type, theme) => type === theme || type === "found";
 const twWeekStart = (w) => (w * 604800 + 345600) * 1000;
 // Onto the grid first, then flush against a nearby pin's edge (edge snapping beats the grid, so it can land off-grid: that is how shapes get clean).
-function twSnap(want, others, size) {
+function twSnap(want, others, size, height = size) {
   let x = Math.round(want.x / TW_GRID) * TW_GRID, y = Math.round(want.y / TW_GRID) * TW_GRID;
   for (const o of others) {
     if (Math.abs(y - o.y) < TW_H + TW_SNAP) for (const c of [o.x + TW_W, o.x - TW_W, o.x]) if (Math.abs(x - c) <= TW_SNAP) { x = c; break; }
     if (Math.abs(x - o.x) < TW_W + TW_SNAP) for (const c of [o.y + TW_H, o.y - TW_H, o.y]) if (Math.abs(y - c) <= TW_SNAP) { y = c; break; }
   }
-  return { x: Math.min(size - TW_W, Math.max(0, x)), y: Math.min(size - TW_H, Math.max(0, y)) };
+  return { x: Math.min(size - TW_W, Math.max(0, x)), y: Math.min(height - TW_H, Math.max(0, y)) };
 }
 
 async function showThemeWall(arg) {
@@ -3087,7 +3087,8 @@ function twDraw(D) {
 
   // the canvas, drawn to fit
   const scale = Math.max(0.5, Math.min(2, (Math.max(240, Math.min(body.clientWidth || 360, 720)) - 8) / W.size));
-  const cv = el("div", { class: "tw-canvas", style: `width:${W.size * scale}px;height:${W.size * scale}px;--g:${TW_GRID * scale}px` });
+  const WH = W.height ?? W.size;   // v0.46.5: a wall can be shorter than it is wide
+  const cv = el("div", { class: "tw-canvas", style: `width:${W.size * scale}px;height:${WH * scale}px;--g:${TW_GRID * scale}px` });
   const mineP = W.pins.find((p) => p.mine);
   let mineBox = null;
   for (const p of W.pins) {
@@ -3113,7 +3114,7 @@ function twDraw(D) {
   };
   const queue = () => { clearTimeout(timer); timer = setTimeout(commit, 250); };
   const nudge = (dx, dy) => {
-    const x = Math.min(W.size - TW_W, Math.max(0, mineP.x + dx)), y = Math.min(W.size - TW_H, Math.max(0, mineP.y + dy));
+    const x = Math.min(W.size - TW_W, Math.max(0, mineP.x + dx)), y = Math.min(WH - TW_H, Math.max(0, mineP.y + dy));
     if (others().some((o) => twOverlap({ x, y }, o))) { status("Somebody's button is in the way."); return; }
     status(""); place(x, y); queue();
   };
@@ -3140,7 +3141,7 @@ function twDraw(D) {
       twCarry(ev, {
         move: (m) => {
           const t = trayEl(); if (t) t.classList.toggle("over", overTray(m.clientX, m.clientY));
-          const sn = twSnap({ x: (m.clientX - r.left) / scale - off.x, y: (m.clientY - r.top) / scale - off.y }, others(), W.size);
+          const sn = twSnap({ x: (m.clientX - r.left) / scale - off.x, y: (m.clientY - r.top) / scale - off.y }, others(), W.size, WH);
           if (others().some((o) => twOverlap(sn, o))) return;   // can't land on somebody: stay at the last free spot
           if (sn.x !== mineP.x || sn.y !== mineP.y) { moved = true; place(sn.x, sn.y); }
         },
@@ -3162,7 +3163,7 @@ function twDraw(D) {
     const reload = () => showThemeWall(String(D.ring.id)).catch((e) => status(e.message));
     const prev = el("div", { class: "tw-preview", hidden: "" });
     cv.append(prev);
-    const dropSpot = (m, r) => twSnap({ x: (m.clientX - r.left) / scale - TW_W / 2, y: (m.clientY - r.top) / scale - TW_H / 2 }, others(), W.size);
+    const dropSpot = (m, r) => twSnap({ x: (m.clientX - r.left) / scale - TW_W / 2, y: (m.clientY - r.top) / scale - TW_H / 2 }, others(), W.size, WH);
     const inside = (m, r) => m.clientX >= r.left && m.clientX <= r.right && m.clientY >= r.top && m.clientY <= r.bottom;
     const carryFrom = (ev, b) => {
       const r = cv.getBoundingClientRect();

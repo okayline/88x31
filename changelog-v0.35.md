@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.4
+# 88x31 cLuB Changelog — v0.35–v0.46.5
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.5
+**Tue Oct 20, 2026 · 2:35 AM HST** (migration 030, run before the push)
+
+- Webring Theme Walls are now half as tall: the same width, but a short wide strip instead of a square. There's still room for every member's button. Removed: the square wall for new walls.
+- Walls already made, and past weeks you can look back at, stay the shape they were. Only walls made from now on are the shorter strip.
 
 ## v0.46.4
 **Tue Oct 20, 2026 · 2:10 AM HST**

@@ -2,7 +2,7 @@
 //
 // GET  /api/themewall?ring=ID&week=N
 //   -> { week, week_start, week_end, theme, now, rings: [{ id, name, is_default, members }], ring,
-//        wall: { id, week, theme, size, slots, locked, locked_at, editable, pins: [...] },
+//        wall: { id, week, theme, size, height, slots, locked, locked_at, editable, pins: [...] },
 //        members: [{ id, name, pinned }] }
 //   Your ring (a default "cLuB Ring" is made for you the first time) and its wall for this week, or an earlier locked week.
 //   Everyone in a ring sees every pin on its wall, whether or not they have met the button (looking uncovers it, like
@@ -15,7 +15,7 @@
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { markSeen } from "../../lib/progress.js";
 import {
-  weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, allRings, ringById, privateIds, joinInfo, addRequest, dropRequest, seatMember, wallPins, lockEndedWalls, placePin, BTN_W, BTN_H,
+  weekOf, weekStart, weekEnd, themeFor, myRings, pickRing, ensureDefaultRing, ensureWall, allRings, ringById, privateIds, joinInfo, addRequest, dropRequest, seatMember, wallPins, lockEndedWalls, placePin, wallHeight, BTN_W, BTN_H,
 } from "../../lib/themewall.js";
 
 // the oldest week this ring has a wall for (so the page doesn't offer an "earlier week" with nothing behind it)
@@ -56,7 +56,7 @@ export async function onRequestGet({ request, env }) {
   return json({
     week: cur, week_start: weekStart(cur), week_end: weekEnd(cur), theme: themeFor(cur), now: t,
     first_week: first, rings, ring: { ...ring, ...(guest ? await joinInfo(env, ring.id, me.id) : {}) }, guest, all_rings: await allRings(env, me.id, !!me.is_admin),
-    wall: { id: wall.id, week: wall.week, theme: wall.theme, size: wall.size, slots: wall.slots,
+    wall: { id: wall.id, week: wall.week, theme: wall.theme, size: wall.size, height: wallHeight(wall), slots: wall.slots,
       locked: !!wall.locked_at, locked_at: wall.locked_at, editable: !guest && !wall.locked_at && wall.week === cur, pins },
     members: members.map((m) => ({ id: m.id, name: m.name, pinned: pinnedBy.has(m.id) })),
   });
@@ -104,13 +104,13 @@ export async function onRequestPost({ request, env }) {
   }
   if (!mine && !instance) return json({ error: "Pick a button to put up." }, 400);
 
-  const centre = { x: (wall.size - BTN_W) / 2, y: (wall.size - BTN_H) / 2 };
+  const centre = { x: (wall.size - BTN_W) / 2, y: (wallHeight(wall) - BTN_H) / 2 };
   const want = {
     x: Number.isFinite(Number(body.x)) && body.x !== undefined && body.x !== null ? Number(body.x) : mine ? mine.x : centre.x,
     y: Number.isFinite(Number(body.y)) && body.y !== undefined && body.y !== null ? Number(body.y) : mine ? mine.y : centre.y,
   };
   const { results: others } = await db.prepare("SELECT x, y FROM wall_pins WHERE wall_id = ? AND user_id != ?").bind(wall.id, me.id).all();
-  const spot = placePin(wall.size, others, want);
+  const spot = placePin(wall.size, others, want, wallHeight(wall));
   if (!spot) return json({ error: "The wall is full." }, 409);
   await db.prepare(
     `INSERT INTO wall_pins (wall_id, user_id, instance_id, x, y, updated_at) VALUES (?, ?, ?, ?, ?, ?)

@@ -159,6 +159,7 @@ CREATE TABLE IF NOT EXISTS ring_walls (
   created_at  INTEGER NOT NULL,
   locked_at   INTEGER,
   snapshot    TEXT,
+  height      INTEGER,                         -- v0.46.5 (migration 030): canvas height in px; NULL = square (size x size)
   UNIQUE (ring_id, week)
 );
 CREATE TABLE IF NOT EXISTS wall_pins (
