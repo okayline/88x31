@@ -93,10 +93,11 @@ async function api(path, opts = {}) {
 }
 
 const fmtDate = (t) => new Date(t * 1000).toLocaleDateString();
-// date + time, for the ledger (e.g. "10/11/2026, 9:52:13 PM")
-const fmtStamp = (t) => new Date(t * 1000).toLocaleString();
-// "Oct 13, 2026, 7:20 AM" in the viewer's own time zone (guestbook entries)
-const fmtWhen = (t) => new Date(t * 1000).toLocaleString([], { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+// date + time, for the ledger (e.g. "10/11/2026, 21:52:13")
+const when24 = (d, o = {}) => d.toLocaleString([], { hour: "2-digit", minute: "2-digit", hourCycle: "h23", ...o });   // times are always 24-hour
+const fmtStamp = (t) => when24(new Date(t * 1000), { year: "numeric", month: "numeric", day: "numeric", second: "2-digit" });
+// "Oct 13, 2026, 07:20" in the viewer's own time zone (guestbook entries)
+const fmtWhen = (t) => when24(new Date(t * 1000), { month: "short", day: "numeric", year: "numeric" });
 
 // In-game "are you sure?" window instead of the browser's popup. Resolves true/false.
 function ask(text, { ok = "OK", cancel = "Cancel", pic = null, input = null } = {}) {
@@ -1595,7 +1596,7 @@ async function checkFile(file) {
     box.append(
       el("p", { class: "ok-text" }, el("b", {}, "✓ GENUINE cLuB CERTIFICATE")),
       el("p", {}, el("b", {}, f.button), ` · copy #${f.copy}`),
-      el("p", {}, "Issued to ", el("b", {}, f.issued_to), ` on ${new Date(f.issued_at).toLocaleString()}`),
+      el("p", {}, "Issued to ", el("b", {}, f.issued_to), ` on ${when24(new Date(f.issued_at), { year: "numeric", month: "numeric", day: "numeric", second: "2-digit" })}`),
       f.homepage && f.homepage !== "-" ? el("p", { class: "small" }, "Their homepage then: ", f.homepage) : null,
       el("p", {}, "Owned right now by: ",
         n && n.owner ? el("a", { href: "#u/" + encodeURIComponent(n.owner) }, el("b", {}, n.owner)) : el("b", {}, "nobody (retired)"),
@@ -2944,7 +2945,7 @@ function twDraw(D) {
   body.append(el("p", { class: "center tw-head" }, el("b", {}, "~*~ Theme Wall ~*~")));
   let lockLine = null;   // when the wall locks: shown under the wall (this week's wall only)
   if (can) {
-    const endText = new Date(D.week_end * 1000).toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
+    const endText = when24(new Date(D.week_end * 1000), { weekday: "long" });
     const last = D.week_end - D.now < 86400;
     body.append(el("p", { class: "center" }, "This week's theme: ", el("b", { class: "tw-theme" }, theme), el("br"),
         el("span", { class: "small tw-flavor" }, twFlavor(W.theme))));
