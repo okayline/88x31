@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.10
+# 88x31 cLuB Changelog — v0.35–v0.46.11
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.11
+**Tue Oct 20, 2026 · 10:38 AM HST**
+
+- The site reads far less from its database, so it stays clear of the free daily limit. Series print runs are now counted in one pass over every copy. Removed: two passes over every button for each series, each time a pack or pull was opened or a series page loaded. Removed too: the background copy to the shared Registry every minute. It now runs every 15 minutes, and buttons you keep from a pack still go there right away.
 
 ## v0.46.10
 **Tue Oct 20, 2026 · 10:09 AM HST**
