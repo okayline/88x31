@@ -11,6 +11,7 @@ import { userByName } from "../../lib/game.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { packsOf, packStory, openPack, keepFromPack, givePack, allPacks } from "../../lib/packs.js";
 import { markSeen } from "../../lib/progress.js";
+import { syncRegistry } from "../../lib/registry.js";
 
 export async function onRequestGet({ request, env }) {
   const params = new URL(request.url).searchParams;
@@ -33,7 +34,8 @@ export async function onRequestGet({ request, env }) {
   return json({ packs: await packsOf(env, me.id) });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const me = await currentUser(env, request);
   if (!me) return json({ error: "Log in first." }, 401);
   const body = await readJson(request);
@@ -48,5 +50,7 @@ export async function onRequestPost({ request, env }) {
   } else return json({ error: "Unknown action." }, 400);
   if (r.error) return json(r, 400);
   await sealSafe(env);
+  // (v0.45.2) kept buttons go to the shared registry now, in the background, not at the next page load (lib/registry.js)
+  if (body.action === "keep") context.waitUntil(syncRegistry(env).catch((e) => console.log("registry sync failed", e)));
   return json(r);
 }
