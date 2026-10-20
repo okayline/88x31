@@ -455,7 +455,7 @@ CREATE TABLE IF NOT EXISTS pack_history (
 );
 CREATE INDEX IF NOT EXISTS idx_pack_history_pack ON pack_history(pack_id);
 
--- What a pack held and what was kept (sealed into the ledger as kind 'pack_open' once finished).
+-- What a pack held and what was kept (sealed into the ledger as kind 'pack_roll' when opened, and 'pack_open' once finished).
 CREATE TABLE IF NOT EXISTS pack_openings (
   pack_id     INTEGER PRIMARY KEY REFERENCES packs(id),
   user_id     INTEGER NOT NULL REFERENCES users(id),
@@ -699,3 +699,6 @@ INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats,
 INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_title, source_author, source_url, license, tier, series_id) SELECT 'Copper Bars', 'banners/beta/beta-copper-bars.gif', '5ef7c99d16b785014889c25bed140799e513371c88141201ba0661803e557e03', 'neon', 'rare', '{}', NULL, 'active', strftime('%s','now'), 'Copper Bars', '88x31', NULL, 'Original', 'original', id FROM series WHERE name = 'Beta';
 INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_title, source_author, source_url, license, tier, series_id) SELECT 'Vector Cube', 'banners/beta/beta-vector-cube.gif', 'd310cac3a3636429c82f02e49825caa222ee861b4168f9c587d037e87f25e36a', 'neon', 'rare', '{}', NULL, 'active', strftime('%s','now'), 'Vector Cube', '88x31', NULL, 'Original', 'original', id FROM series WHERE name = 'Beta';
 INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_title, source_author, source_url, license, tier, series_id) SELECT 'Rotozoom', 'banners/beta/beta-rotozoom.gif', '550f7f9c9a95cf4c870c5ff306e656bcf660f381a3fedd4f95c38ad221c648d0', 'neon', 'rare', '{}', NULL, 'active', strftime('%s','now'), 'Rotozoom', '88x31', NULL, 'Original', 'original', id FROM series WHERE name = 'Beta';
+-- ---------- v0.46.9: daily pulls are sealed when rolled (also in migrations/032_pull_rolls.sql) ----------
+ALTER TABLE daily_pulls ADD COLUMN roll_id INTEGER;   -- the pull's number on the ledger (kind 'pull_roll', ref_id)
+CREATE UNIQUE INDEX IF NOT EXISTS daily_pulls_roll ON daily_pulls (roll_id);

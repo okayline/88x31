@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.8
+# 88x31 cLuB Changelog — v0.35–v0.46.9
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.9
+**Tue Oct 20, 2026 · 9:07 AM HST** (migration 032, run before the push)
+
+- Every pack and daily pull is now written in the Ledger the moment it's opened, before you see what's inside. So the buttons you were shown can't be quietly swapped afterwards. Removed: a pack's buttons only going in the Ledger once you'd picked from it, and a daily pull's three buttons never going in at all (only the ones kept and passed did).
+- The Ledger on Fair Play has two new lines: "A daily pack was opened by..." and "Sealed pack #N was opened by...". When you pick from a pack it now reads "Sealed pack #N's buttons were picked by...". Removed: "was opened by" on the picking line.
 
 ## v0.46.8
 **Tue Oct 20, 2026 · 8:11 AM HST**

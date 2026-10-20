@@ -2404,8 +2404,12 @@ function ledgerItem(h) {
     } else if (h.kind === "pack") {
       what = h.pack_reason === "made" ? line(packName(), " was made for ", ledUser(h.pack_to), ` (${PACK_FROM[/visit streak!$/.test(h.pack_note || "") ? "streak" : h.pack_source] || h.pack_source})`)
         : line(packName(), ` was ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} to `, ledUser(h.pack_to), " by ", ledUser(h.pack_from));
-    } else if (h.kind === "pack_open") {
+    } else if (h.kind === "pull_roll") {
+      what = line(/#b/.test(h.pull_day || "") ? "A bonus pack" : "A daily pack", " was opened by ", ledWho(h), "!");
+    } else if (h.kind === "pack_roll") {
       what = line(packName(), " was opened by ", ledWho(h), "!");
+    } else if (h.kind === "pack_open") {
+      what = line(packName(), "'s buttons were picked by ", ledWho(h));
     } else if (h.kind === "wall") {
       const n = h.wall_buttons || 0;
       what = line(el("a", { href: `#themewall/${h.wall_ring_id}/${h.wall_week}` }, `${h.wall_ring || "A ring"}'s Theme Wall`),

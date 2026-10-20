@@ -2,7 +2,7 @@
 // Seals anything pending, checks the whole hash chain, and lists entries newest first (limit 1-200,
 // default 15; `before` pages further back). Mystery buttons (rares, ultras, set rewards you've never
 // owned, and anything in an unreleased series) are listed as "a mystery button", with no name or link.
-// Who did it (v0.34.2): requests, fusions, foils, pack openings and new designs name the player.
+// Who did it (v0.34.2): requests, fusions, foils, pack openings, pull rolls (v0.46.9) and new designs name the player.
 // Names come from the users table at read time (they aren't in the hashed records), so a deleted
 // player shows as "a former player". Webmaster actions stay vague and name nobody.
 import { json, currentUser } from "../../lib/auth.js";
@@ -28,16 +28,18 @@ export async function onRequestGet({ request, env }) {
             CASE WHEN COALESCE(d1.status, d2.status, d3.status, d5.status) = 'removed' THEN 'a removed button' ELSE COALESCE(d1.name, d2.name, d3.name, d5.name) END AS design, COALESCE(i.edition, fi.edition) AS edition,
             d1.license, d1.source_author, d1.rarity, d1.max_editions, d1.tier,
             fi.foil, fi.pattern, fi.effect, fi.id AS foil_copy, d3.status AS foil_design_status, a.action AS admin_action,
-            COALESCE(ph.pack_id, CASE WHEN l.kind = 'pack_open' THEN l.ref_id END) AS pack_id, ph.reason AS pack_reason, pk.source AS pack_source, pk.note AS pack_note, pk.special_no AS pack_special_no, pks.name AS pack_series, pks.special_name AS pack_special_name, pks.special_limit AS pack_special_limit,
+            COALESCE(ph.pack_id, CASE WHEN l.kind IN ('pack_roll', 'pack_open') THEN l.ref_id END) AS pack_id, ph.reason AS pack_reason, pk.source AS pack_source, pk.note AS pack_note, pk.special_no AS pack_special_no, pks.name AS pack_series, pks.special_name AS pack_special_name, pks.special_limit AS pack_special_limit,
             pt.name AS pack_to, pf.name AS pack_from,
             fu.foil AS fused_foil, fu.pattern AS fused_pattern, fu.effect AS fused_effect, fo.edition AS fused_edition, d4.name AS fused_design, d4.status AS fused_status,
             COALESCE(d1.id, d2.id, d3.id, d4.id, d5.id) AS design_id, COALESCE(i.id, fi.id, fo.id) AS copy_id,
             COALESCE(d1.rarity, d2.rarity, d3.rarity, d4.rarity, d5.rarity) AS design_rarity, COALESCE(d1.series_id, d2.series_id, d3.series_id, d4.series_id, d5.series_id) AS design_series,
-            rq.foil AS request_foil,
+            rq.foil AS request_foil, CASE WHEN l.kind = 'pull_roll' THEN json_extract(l.record, '$[3]') END AS pull_day,
 ${walls ? WALL_COLS : WALL_NONE}            CASE l.kind
               WHEN 'request' THEN (SELECT name FROM users WHERE id = rq.user_id)
               WHEN 'fusion' THEN (SELECT name FROM users WHERE id = fu.user_id)
               WHEN 'design' THEN (SELECT name FROM users WHERE id = d1.found_by)   -- only players' finds; batch imports and cLuB originals have no finder
+              WHEN 'pull_roll' THEN (SELECT u.name FROM daily_pulls dp JOIN users u ON u.id = dp.user_id WHERE dp.roll_id = l.ref_id)
+              WHEN 'pack_roll' THEN (SELECT u.name FROM pack_openings po JOIN users u ON u.id = po.user_id WHERE po.pack_id = l.ref_id)
               WHEN 'pack_open' THEN (SELECT u.name FROM pack_openings po JOIN users u ON u.id = po.user_id WHERE po.pack_id = l.ref_id)
               WHEN 'foil' THEN (SELECT u.name FROM ownership_history oh JOIN users u ON u.id = oh.to_user WHERE oh.instance_id = fi.id ORDER BY oh.id LIMIT 1)
             END AS who
@@ -52,7 +54,7 @@ ${walls ? WALL_COLS : WALL_NONE}            CASE l.kind
      LEFT JOIN designs d3 ON d3.id = fi.design_id
      LEFT JOIN admin_actions a ON l.kind = 'admin' AND a.id = l.ref_id
      LEFT JOIN pack_history ph ON l.kind = 'pack' AND ph.id = l.ref_id
-     LEFT JOIN packs pk ON pk.id = COALESCE(ph.pack_id, CASE WHEN l.kind = 'pack_open' THEN l.ref_id END)
+     LEFT JOIN packs pk ON pk.id = COALESCE(ph.pack_id, CASE WHEN l.kind IN ('pack_roll', 'pack_open') THEN l.ref_id END)
      LEFT JOIN series pks ON pks.id = pk.series_id
      LEFT JOIN users pt ON pt.id = ph.to_user
      LEFT JOIN users pf ON pf.id = ph.from_user
