@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.1
+# 88x31 cLuB Changelog — v0.35–v0.46.2
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.2
+**Tue Oct 20, 2026 · 1:40 AM HST**
+
+- On the Fair Play ledger, opening a sealed pack now comes first: "Sealed pack #N was opened" is written before the buttons that came out of it. Removed: writing the pack's opening last, after its buttons.
+- Each new button's entries now sit together: "was opened... from a sealed pack" and then its finish, before the next button. This goes for every new copy, not just packs. Removed: listing all the new copies first and all their finishes after.
+- Entries already on the ledger stay as they are.
 
 ## v0.46.1
 **Tue Oct 20, 2026 · 1:33 AM HST**
