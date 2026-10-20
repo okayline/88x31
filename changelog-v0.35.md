@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46
+# 88x31 cLuB Changelog — v0.35–v0.46.1
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.1
+**Tue Oct 20, 2026 · 1:33 AM HST**
+
+- A button copy's link to the shared item registry now shows the button's name: "Shared item registry: Item Name (item 49, copy #1)". Removed: the words "this copy's page".
 
 ## v0.46
 **Tue Oct 20, 2026 · 12:55 AM HST**
