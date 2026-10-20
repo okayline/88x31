@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.11
+# 88x31 cLuB Changelog — v0.35–v0.46.12
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.12
+**Tue Oct 20, 2026 · 10:58 AM HST** (migration 033, run before the push)
+
+- Series print runs ("312 of 500 printed") are now kept as a running total, updated each time a copy is made, so the site reads a couple of rows instead of every copy. Removed: counting every copy of every series each time a pack or pull is opened, a series or button page loads, or the news ticker refreshes.
 
 ## v0.46.11
 **Tue Oct 20, 2026 · 10:38 AM HST**

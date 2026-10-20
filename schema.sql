@@ -702,3 +702,9 @@ INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats,
 -- ---------- v0.46.9: daily pulls are sealed when rolled (also in migrations/032_pull_rolls.sql) ----------
 ALTER TABLE daily_pulls ADD COLUMN roll_id INTEGER;   -- the pull's number on the ledger (kind 'pull_roll', ref_id)
 CREATE UNIQUE INDEX IF NOT EXISTS daily_pulls_roll ON daily_pulls (roll_id);
+-- ---------- v0.46.12: series print runs are stored (also in migrations/033_series_printed.sql) ----------
+ALTER TABLE series ADD COLUMN printed INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE series ADD COLUMN first_copy INTEGER;
+UPDATE series SET
+  printed = (SELECT COUNT(*) FROM instances i JOIN designs d ON d.id = i.design_id WHERE d.series_id = series.id),
+  first_copy = (SELECT MIN(i.created_at) FROM instances i JOIN designs d ON d.id = i.design_id WHERE d.series_id = series.id);

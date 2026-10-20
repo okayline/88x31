@@ -10,7 +10,7 @@
 //   { action: "assign", design_id, series_id }    put a cLuB original into a series
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
-import { MAX_ACTIVE_SERIES, seriesPrinted } from "../../lib/game.js";
+import { MAX_ACTIVE_SERIES, seriesPrinted, recountStatement } from "../../lib/game.js";
 
 export async function onRequestGet({ request, env }) {
   const me = await currentUser(env, request);
@@ -101,12 +101,14 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true });
   }
   if (b.action === "assign") {
-    const d = await db.prepare("SELECT id, tier FROM designs WHERE id = ?").bind(Number(b.design_id)).first();
+    const d = await db.prepare("SELECT id, tier, series_id FROM designs WHERE id = ?").bind(Number(b.design_id)).first();
     if (!d) return json({ error: "No such button." }, 404);
     if (d.tier === "archive") return json({ error: "Found buttons stay outside series." }, 400);
     const sid = b.series_id ? Number(b.series_id) : null;
     if (sid && !(await db.prepare("SELECT 1 FROM series WHERE id = ?").bind(sid).first())) return json({ error: "No such series." }, 404);
-    await db.prepare("UPDATE designs SET series_id = ? WHERE id = ?").bind(sid, d.id).run();
+    // its copies move to the other series' print run too (v0.46.12)
+    const moved = [d.series_id, sid].filter((x) => x != null);
+    await db.batch([db.prepare("UPDATE designs SET series_id = ? WHERE id = ?").bind(sid, d.id), ...(moved.length ? [recountStatement(db, moved)] : [])]);
     return json({ ok: true });
   }
   return json({ error: "Unknown action." }, 400);
