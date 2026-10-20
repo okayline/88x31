@@ -1499,7 +1499,7 @@ function drawCollection() {
   for (const b of colShown) {
     const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
     grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
-      bannerImg(b, scale), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
+      bannerImg(b, scale), dense ? null : el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
   }
 }
 const zoomBy = (step) => {
