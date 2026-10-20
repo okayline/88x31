@@ -1462,21 +1462,31 @@ function renderSwatches(current) {
 }
 
 // The collection on a page. (v0.37) twice the size; (v0.37.1) on a phone, as big as fits two to a row. A scale, not CSS
-// stretching, so a foiled or effect button's layers (sized from the same scale) grow with it. (v0.45.3) [+] and [-] zoom it
-// from 1x to 4x, remembered in this browser; a phone stops at two to a row.
-const ZOOM_MAX = 4;
-let colZoom = 2, colShown = [];
-try { colZoom = Math.min(ZOOM_MAX, Math.max(1, Number(localStorage.getItem("col-zoom")) || 2)); } catch {}
+// stretching, so a foiled or effect button's layers (sized from the same scale) grow with it. (v0.45.3) [+] and [-] zoom it,
+// remembered in this browser. (v0.45.4) desktop: 0.5x to 4x; a phone: 0.5x, 0.75x, 1x, two to a row, one to a row.
+const PHONE = "(max-width: 480px)";
+let colShown = [];
+const zoomKey = () => (window.matchMedia(PHONE).matches ? "col-zoom-phone" : "col-zoom-desk");
+function zoomLevels(grid) {
+  if (!window.matchMedia(PHONE).matches) return { levels: [0.5, 1, 2, 3, 4], start: 2 };
+  const w = (grid.clientWidth || 360) - 8;
+  const fit = (n) => Math.max(1, Math.floor(((w / n) - 4 - 4) / 88 * 100) / 100);
+  return { levels: [0.5, 0.75, 1, fit(2), fit(1)], start: 3 };
+}
+function zoomIndex(n) {
+  let i = NaN; try { i = parseInt(localStorage.getItem(zoomKey()), 10); } catch {}
+  return Number.isInteger(i) && i >= 0 && i < n ? i : null;
+}
 function drawCollection() {
   const grid = $("page-collection");
   grid.textContent = "";
   if (!colShown.length) grid.append(el("p", {}, "No buttons yet!"));
-  const fit = Math.floor((((grid.clientWidth || 800) - 8) / 2 - 4 - 4) / 88 * 100) / 100;
-  const phone = window.matchMedia("(max-width: 480px)").matches;
-  const scale = phone ? Math.max(1, Math.min(colZoom, fit)) : colZoom;
-  grid.classList.toggle("zoom-1", colZoom === 1);
-  $("zoom-out").disabled = colZoom <= 1;
-  $("zoom-in").disabled = colZoom >= ZOOM_MAX || (phone && scale < colZoom);
+  const { levels, start } = zoomLevels(grid);
+  const i = zoomIndex(levels.length) ?? start;
+  const scale = levels[i];
+  grid.classList.toggle("two-a-row", i === start);   // a phone's starting size keeps its two-to-a-row tiles (style.css)
+  $("zoom-out").disabled = i === 0;
+  $("zoom-in").disabled = i === levels.length - 1;
   for (const b of colShown) {
     const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
     grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
@@ -1484,8 +1494,9 @@ function drawCollection() {
   }
 }
 const zoomBy = (step) => {
-  colZoom = Math.min(ZOOM_MAX, Math.max(1, colZoom + step));
-  try { localStorage.setItem("col-zoom", String(colZoom)); } catch {}
+  const { levels, start } = zoomLevels($("page-collection"));
+  const i = Math.min(levels.length - 1, Math.max(0, (zoomIndex(levels.length) ?? start) + step));
+  try { localStorage.setItem(zoomKey(), String(i)); } catch {}
   drawCollection();
 };
 $("zoom-in").onclick = () => zoomBy(1);
@@ -1635,12 +1646,12 @@ drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.ad
 drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); checkFile(e.dataTransfer.files[0]); });
 
-// "show bot messages": webmasters only (only they get bots' entries from /api/guestbook), off unless ticked, remembered in this browser.
+// "show bot messages": everyone sees bots' messages; (v0.45.4) only webmasters get this checkbox to hide them, remembered in this browser.
 function applyBotToggle() {
   $("bot-toggle").hidden = !(me && me.is_admin);
-  $("page-guestbook").classList.toggle("hide-bots", !$("show-bots").checked);
+  $("page-guestbook").classList.toggle("hide-bots", !!(me && me.is_admin) && !$("show-bots").checked);
 }
-try { $("show-bots").checked = localStorage.getItem("show-bots") === "1"; } catch {}
+try { $("show-bots").checked = localStorage.getItem("show-bots") !== "0"; } catch {}
 $("show-bots").onchange = () => {
   try { localStorage.setItem("show-bots", $("show-bots").checked ? "1" : "0"); } catch {}
   applyBotToggle();

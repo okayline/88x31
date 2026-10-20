@@ -1255,8 +1255,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 
 /* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
 @media (max-width: 480px) {
-  #page-collection .tile { width: calc(50% - 4px); }
-  #page-collection.zoom-1 .tile { width: auto; }   /* (v0.45.3) zoomed all the way out: as many to a row as fit */
+  #page-collection.two-a-row .tile { width: calc(50% - 4px); }   /* (v0.45.4) only at the starting zoom; other zooms fit as many as they can */
   /* (v0.37.1) the size itself is worked out in showPage (bannerImg's scale), so foils and effects size with it */
 }
 
