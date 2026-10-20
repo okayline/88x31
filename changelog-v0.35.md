@@ -7,7 +7,8 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ## v0.45.5
 **Mon Oct 19, 2026 · 11:10 PM HST**
 
-- A button collection zoomed out to 0.5x (or 0.75x on a phone) now lines up in even columns: 12 to a row on a computer (as many as fit on a phone), the buttons sit closer side to side, and the "#2 of 25" captions are smaller and stay on one line. Removed: the loose wrapping rows at those sizes, where the captions made some columns wider than others.
+- A button collection zoomed out to 0.5x (or 0.75x on a phone) now lines up in even columns: 12 to a row on a computer (as many as fit on a phone), and the buttons sit closer side to side. Removed: the loose wrapping rows at those sizes, and the "#2 of 25" captions under the buttons there (hover a button for its name and number).
+- The Registry line on Fair Play moved from the Ledger Status panel into The Ledger panel. Removed: the line from Ledger Status.
 
 ## v0.45.4
 **Mon Oct 19, 2026 · 11:03 PM HST**
