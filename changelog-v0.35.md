@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.7
+# 88x31 cLuB Changelog — v0.35–v0.46.8
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.8
+**Tue Oct 20, 2026 · 8:11 AM HST**
+
+- The webring box at the bottom of every page keeps its empty dotted square for a ring logo. Removed: the "100x100" written inside it.
 
 ## v0.46.7
 **Tue Oct 20, 2026 · 4:48 AM HST**
