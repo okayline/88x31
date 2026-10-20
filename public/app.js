@@ -1946,17 +1946,21 @@ async function loadPacksPanel(mine) {
     if ((sum.streak && sum.streak.given) || (sum.quests && sum.quests.rewarded)) ({ packs } = await api("/api/packs"));
     grid.textContent = "";
     const used = sum.pulls_per_day - sum.packs_left;
-    for (let i = 1; i <= sum.pulls_per_day; i++) {
-      const done = i <= used;
-      const t = dailyTile(done, `pack ${i} of ${sum.pulls_per_day}`);
+    const dailySlot = (t, done, note) => {
       t.onclick = async (e) => {
         e.preventDefault();
         if (done) return;
         if (!(openingKey === "daily" && $("pack-open").childElementCount) && !(await holdToOpen({ daily: true }, t))) return;
         if (startOpening("daily", t)) showPull().catch((err) => say(err.message));
       };
-      grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, done ? "opened today" : "keep 1")));
+      grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, note)));
+    };
+    for (let i = 1; i <= sum.pulls_per_day; i++) {
+      const done = i <= used;
+      dailySlot(dailyTile(done, `pack ${i} of ${sum.pulls_per_day}`), done, done ? "opened today" : "keep 1");
     }
+    // (v0.45.3) a bonus pack you took but haven't picked from yet: /api/pull serves it like a daily pack
+    if (sum.bonus_waiting) dailySlot(dailyTile(false, "bonus pack!"), false, "keep 1");
     for (const p of packs) {
       const t = packTile(p, "#pack/" + p.id);
       if (p.in_trade) {   // offered in a trade (v0.34): sealed shut until the trade's answered
