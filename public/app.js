@@ -2056,6 +2056,10 @@ const toFront = (e) => {
 };
 packsGrid.addEventListener("pointerdown", toFront, true);
 packsGrid.addEventListener("click", toFront, true);
+// (v0.45.9) a click or tap anywhere but the pack in front puts it back in line
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".pack-slot.front")) packsGrid.querySelectorAll(".pack-slot.front").forEach((s) => s.classList.remove("front"));
+});
 // Which pack is open right now. Clicking it again just takes you back to its cards instead of
 // opening it all over again; the tile shows "opened!" while you pick.
 let openingKey = null;

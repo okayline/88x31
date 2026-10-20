@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.8
+# 88x31 cLuB Changelog — v0.35–v0.45.9
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.9
+**Mon Oct 19, 2026 · 11:43 PM HST**
+
+- With the packs lined up, the pack you tap to the front now grows to 1.25× (was 1.15×), with a little more room above the row for it. Removed: the 1.15× size and the 14px space above the row.
+- Clicking or tapping anywhere else puts the pack in front back in line. Removed: a pack staying in front until another one was picked.
 
 ## v0.45.8
 **Mon Oct 19, 2026 · 11:36 PM HST**
