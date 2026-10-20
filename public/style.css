@@ -672,7 +672,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .pack-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 120px; text-align: center; }
 /* (v0.45.7) zoomed out: every pack on one row, each overlapping the one before by all but --visible, the hovered one on top */
 .packs-grid.stacked { flex-wrap: nowrap; gap: 0; justify-content: safe center; overflow-x: auto; padding: 8px 0 4px; }
-.packs-grid.stacked .pack-slot { flex: 0 0 auto; width: 100px; max-width: none; position: relative; }
+.packs-grid.stacked .pack-slot { flex: 0 0 auto; width: 100px; max-width: none; position: relative; z-index: 0; }   /* each pack its own layer, so its art's z-indexes can't poke through the pack on top of it */
 .packs-grid.stacked .pack-slot + .pack-slot { margin-left: calc(var(--visible, 40px) - 100px); }
 .packs-grid.stacked .pack-slot > .small { display: none; }
 .packs-grid.stacked .pack-slot:hover { z-index: 20; }
