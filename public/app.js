@@ -1048,7 +1048,7 @@ async function loadSummary() {
 }
 
 // v0.30: starter quests and the visit streak, at the top of the dashboard.
-const STREAK_SAYS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single", series: "a series pack" };
+const STREAK_SAYS = { welcome: "a Welcome pack", club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single", series: "a series pack" };
 function dashExtras(s, list) {
   const top = [];
   const q = s.quests;
@@ -1084,8 +1084,8 @@ function streakChart(st) {
   const got = Object.fromEntries((st.days || []).map((x) => [x.day, x]));
   const mini = (tile) => el("span", { class: "sk-mini" }, tile);
   const club = () => mini(packTile({ id: 0, source: "streak" }, "#"));
-  const PICS = { club: () => [club()], club2: () => [club(), club()], free: () => [mini(packTile({ id: 0, source: "streak", cards: 1 }, "#"))], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
-  const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single (one card)", series: "a series pack" };
+  const PICS = { welcome: () => [mini(packTile({ id: 0, source: "welcome" }, "#"))], club: () => [club()], club2: () => [club(), club()], free: () => [mini(packTile({ id: 0, source: "streak", cards: 1 }, "#"))], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
+  const TIPS = { welcome: "a Welcome pack", club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single (one card)", series: "a series pack" };
   const cells = [];
   for (let d = start; d < start + 7; d++) {
     const r = streakDay(d);
@@ -1111,8 +1111,7 @@ const STREAK_SERIES = "Beta";   // fallback: the server says which series is new
 // same schedule as the server (lib/progress.js streakReward)
 function streakDay(d) {
   if (d <= 1) return null;
-  if (d <= 7) return { 2: "club", 3: "club", 4: "free", 5: "club2", 6: "free", 7: "series" }[d] || null;
-  return { 3: "club", 4: "free", 5: "club", 6: "free", 7: "series" }[((d - 1) % 7) + 1] || null;
+  return { 1: "welcome", 2: "club", 3: "club", 4: "free", 5: "club2", 6: "free", 7: "series" }[((d - 1) % 7) + 1] || null;
 }
 
 // ---------- trade in: 5 commons/uncommons for a sealed cLuB pack ----------
@@ -2403,7 +2402,7 @@ function ledgerItem(h) {
       what = line(h.mystery ? ledName(h, "") : [h.request_foil ? `A ${foilName(h.request_foil) === "None" ? "plain" : foilName(h.request_foil)} ` : "", ledName(h, h.design || "a button")],
         " was wished for by ", ledWho(h), " on the request board");
     } else if (h.kind === "pack") {
-      what = h.pack_reason === "made" ? line(packName(), " was made for ", ledUser(h.pack_to), ` (${PACK_FROM[h.pack_source] || h.pack_source})`)
+      what = h.pack_reason === "made" ? line(packName(), " was made for ", ledUser(h.pack_to), ` (${PACK_FROM[/visit streak!$/.test(h.pack_note || "") ? "streak" : h.pack_source] || h.pack_source})`)
         : line(packName(), ` was ${h.pack_reason === "trade" ? "traded" : h.pack_reason === "guestbook" ? "stamped" : "given"} to `, ledUser(h.pack_to), " by ", ledUser(h.pack_from));
     } else if (h.kind === "pack_open") {
       what = line(packName(), " was opened by ", ledWho(h), "!");

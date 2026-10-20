@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.6
+# 88x31 cLuB Changelog — v0.35–v0.46.7
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.7
+**Tue Oct 20, 2026 · 4:48 AM HST**
+
+- Every week of your visit streak now gives the same packs as the first week: day 9 and 10 a ~*~cLuB~*~ pack each, day 11 a Single, day 12 two ~*~cLuB~*~ packs, day 13 a Single and day 14 a Series pack, and the same again from day 15. Day 8, 15, 22... give a Welcome pack. Removed: later weeks giving nothing on their 1st and 2nd day and only one ~*~cLuB~*~ pack on their 5th.
+- A streak Welcome pack shows up in the history as made for you "(a visit streak)". Removed: it reading "(welcome to the cLuB!)" like the one you get when you join.
 
 ## v0.46.6
 **Tue Oct 20, 2026 · 3:15 AM HST** (migration 031, run after the push)
