@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.2
+# 88x31 cLuB Changelog — v0.35–v0.46.3
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.3
+**Tue Oct 20, 2026 · 1:57 AM HST**
+
+- The visit streak track on your dashboard now rolls along with you and never ends: it shows the 3 days before today, today, and the 3 days ahead, so you can always see what's coming next (on day 7 you can see days 8, 9 and 10). Removed: the track stopping at day 7, and jumping to a fresh week (days 8-14, 15-21...) that hid the days just behind you.
+- Day numbers of 100 and up fit inside today's circle. The packs each day gives are unchanged.
 
 ## v0.46.2
 **Tue Oct 20, 2026 · 1:40 AM HST**

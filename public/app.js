@@ -1073,21 +1073,21 @@ function dashExtras(s, list) {
   if ((st && st.given) || (q && q.rewarded)) loadPacksPanel(true);   // show the new packs on the shelf
 }
 
-// The streak week as a little track: 7 days, evenly spread, each with its pack above the day number.
-// Week 1 is days 2-7 (v0.34.8: day 1 is just your first visit, so the streak starts at day 2); after
-// that it shows the current week (days 8-14, 15-21...). v0.34.7: days you've been through show the real
-// streak packs you got (gray once opened, each linking to its page), days before today are crossed out,
-// and today is circled. Days ahead show what's coming.
+// The streak as a little track: 7 days, evenly spread, each with its pack above the day number.
+// v0.46.3: it rolls along with you, with no end: the 3 days before today, today, and the 3 days ahead
+// (it starts at day 2, since day 1 is just your first visit, v0.34.8). v0.34.7: days you've been through
+// show the real streak packs you got (gray once opened, each linking to its page), days before today are
+// crossed out, and today is circled. Days ahead show what's coming.
 function streakChart(st) {
   const n = st.streak;
-  const start = n <= 7 ? 2 : n - ((n - 1) % 7);
+  const start = Math.max(2, n - 3);
   const got = Object.fromEntries((st.days || []).map((x) => [x.day, x]));
   const mini = (tile) => el("span", { class: "sk-mini" }, tile);
   const club = () => mini(packTile({ id: 0, source: "streak" }, "#"));
   const PICS = { club: () => [club()], club2: () => [club(), club()], free: () => [mini(packTile({ id: 0, source: "streak", cards: 1 }, "#"))], series: () => [mini(packTile({ id: 0, source: "streak", series: st.series || STREAK_SERIES }, "#"))] };
   const TIPS = { club: "a ~*~cLuB~*~ pack", club2: "2 ~*~cLuB~*~ packs", free: "a ~*~cLuB~*~ Single (one card)", series: "a series pack" };
   const cells = [];
-  for (let d = start; d < (start === 2 ? 8 : start + 7); d++) {
+  for (let d = start; d < start + 7; d++) {
     const r = streakDay(d);
     const state = d < n ? "past" : d === n ? "today" : "future";
     const g = got[d];
@@ -1102,7 +1102,7 @@ function streakChart(st) {
     } else pics = r ? PICS[r]() : [el("span", { class: "sk-none" }, "·")];
     cells.push(el("span", { class: `sk-day sk-${state}` + (r ? " sk-" + r : ""), title: tip },
       el("span", { class: "sk-pack" + (pics.length > 1 ? " sk-stack" : "") }, pics),
-      el("span", { class: "sk-num" }, String(d))));
+      el("span", { class: "sk-num" + (d >= 100 ? " sk-wide" : "") }, String(d))));
   }
   return el("div", { class: "streak-chart", style: `grid-template-columns: repeat(${cells.length}, 1fr)` }, cells);
 }

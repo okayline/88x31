@@ -1107,6 +1107,8 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .sk-past .sk-num::after { content: ""; position: absolute; left: 3px; right: 3px; top: 50%; border-top: 2px solid #ff5555; transform: rotate(-35deg); }
 /* today: circled */
 .sk-today .sk-num { color: #ffff00; font-weight: bold; border: 2px solid #ffff00; border-radius: 50%; width: 20px; min-width: 0; line-height: 16px; box-sizing: border-box; }
+/* day 100 and up: the circle stretches to fit */
+.sk-today .sk-num.sk-wide { width: auto; padding: 0 3px; border-radius: 10px; }
 
 /* v0.31: prototype tier (only 4 of each) */
 img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
