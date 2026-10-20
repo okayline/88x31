@@ -2046,6 +2046,7 @@ $("packs-zoom-out").onclick = () => zoomPacks(true);
 // click and tear handlers see it.
 const packsGrid = $("packs-grid");
 let scrubbed = false;   // (v0.45.10) a finger just dragged along the row; the click that may follow it doesn't open anything
+let touchX = null;      // (v0.45.11) where the finger came down; it has to move a little before it counts as a drag
 const toFront = (e) => {
   if (!packsOut) return;
   if (e.type === "click" && scrubbed) { scrubbed = false; e.preventDefault(); e.stopPropagation(); return; }
@@ -2061,10 +2062,14 @@ packsGrid.addEventListener("click", toFront, true);
 // (v0.45.10) lined up, on a touch screen: drag a finger along the row and each pack you pass comes to the front; tap the
 // one you stop on to open it. A touch here never starts a tear (tearing still works with the packs spread out).
 packsGrid.addEventListener("pointerdown", (e) => {
-  if (packsOut && e.pointerType === "touch") { scrubbed = false; e.stopPropagation(); }
+  if (packsOut && e.pointerType === "touch") { scrubbed = false; touchX = e.clientX; e.stopPropagation(); }
 }, true);
 packsGrid.addEventListener("pointermove", (e) => {
-  if (!packsOut || e.pointerType !== "touch") return;
+  if (!packsOut || e.pointerType !== "touch" || touchX == null) return;
+  // (v0.45.11) a tap wobbles a few pixels; without this, tapping the right side of the bigger front pack picked the
+  // pack whose strip lies under it instead
+  if (!scrubbed && Math.abs(e.clientX - touchX) < 12) return;
+  scrubbed = true;
   // the pack whose own strip is under the finger, by where each pack starts (not what's drawn there: the bigger front
   // pack would cover its neighbours and the drag would skip them)
   let slot = null;
@@ -2074,7 +2079,6 @@ packsGrid.addEventListener("pointermove", (e) => {
   }
   if (!slot || slot.classList.contains("front")) return;
   if (slot === packsGrid.lastElementChild && !packsGrid.querySelector(".pack-slot.front")) return;
-  scrubbed = true;
   packsGrid.querySelectorAll(".pack-slot.front").forEach((s) => s.classList.remove("front"));
   if (slot !== packsGrid.lastElementChild) slot.classList.add("front");
 });
