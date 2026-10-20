@@ -1253,12 +1253,6 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .th-bl-c .xo{font:italic bold 11px Georgia,serif;color:#ff7ad1}
 .th-bl-c .stamp{background:linear-gradient(90deg,#ff3fae,#b04fff);color:#fff}
 
-/* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
-@media (max-width: 480px) {
-  #page-collection.two-a-row .tile { width: calc(50% - 4px); }   /* (v0.45.4) only at the starting zoom; other zooms fit as many as they can */
-  /* (v0.37.1) the size itself is worked out in showPage (bannerImg's scale), so foils and effects size with it */
-}
-
 /* (v0.37) the bottom menu, the same size as the top one */
 .bottom-bar { font-size: 18px; }
 @media (max-width: 560px) { .bottom-bar { font-size: 15px; } }
@@ -1316,7 +1310,6 @@ table.webring td { padding: 12px 6px; }
 body.tw-carrying { cursor: grabbing; user-select: none; -webkit-user-select: none; }
 body.tw-carrying * { cursor: grabbing !important; }
 .tw-lock { margin-bottom: 1.6em; }
-/* (v0.45.5) zoomed out (under 1x): equal columns, a button wide each, tight side to side, no captions (the tooltip has them) */
-#page-collection.dense { display: grid; grid-template-columns: repeat(var(--cols), var(--cell)); gap: var(--rowgap) 0; }
-#page-collection { justify-content: center; }   /* the collection sits in the middle of its panel */
+/* (v0.45.6) the collection is a grid of equal columns, one per button on a row (--cols), the buttons centred in them (see drawCollection) */
+#page-collection { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: var(--rowgap, 8px) 0; }
 .stamp img.banner { image-rendering: pixelated; }

@@ -1461,59 +1461,48 @@ function renderSwatches(current) {
   }
 }
 
-// The collection on a page. (v0.37) twice the size; (v0.37.1) on a phone, as big as fits two to a row. A scale, not CSS
-// stretching, so a foiled or effect button's layers (sized from the same scale) grow with it. (v0.45.3) [+] and [-] zoom it,
-// remembered in this browser. (v0.45.4) desktop: 0.5x to 4x; a phone: 0.5x, 0.75x, 1x, two to a row, one to a row.
-// (v0.45.6) one more level out (0.25x), and the smaller the zoom, the closer the buttons sit side to side.
+// The collection on a page. A scale, not CSS stretching, so a foiled or effect button's layers (sized from the same scale)
+// grow with it. [+] and [-] zoom it. (v0.45.6) a zoom level is how many buttons sit on a row: each step adds or takes one,
+// from 2 across (1 on a phone) to as many as are still readable. The row is a grid of equal columns, so every row lines up;
+// the button's art fills its column less a small margin that shrinks as the buttons shrink (8px at the biggest sizes, 1px
+// when zoomed right out), so zoomed out they almost touch. Under 88px wide there is no room for a caption, and the tile's
+// tooltip has the name and number. The row count is remembered in this browser.
 const PHONE = "(max-width: 480px)";
 let colShown = [];
-const zoomKey = () => (window.matchMedia(PHONE).matches ? "col-zoom-phone2" : "col-zoom-desk2");
+const zoomKey = () => (window.matchMedia(PHONE).matches ? "col-n-phone" : "col-n-desk");
 function zoomLevels(grid) {
-  if (!window.matchMedia(PHONE).matches) return { levels: [0.25, 0.5, 1, 2, 3, 4], start: 3 };
-  const w = (grid.clientWidth || 360) - 8;
-  const fit = (n) => Math.max(1, Math.floor(((w / n) - 4 - 4) / 88 * 100) / 100);
-  return { levels: [0.25, 0.5, 0.75, 1, fit(2), fit(1)], start: 4 };
+  const w = grid.clientWidth || 640, phone = window.matchMedia(PHONE).matches;
+  // the starting row is what the old 2x gave: two across on a phone, as many as fit at 176px a button on a computer
+  return { w, min: phone ? 1 : 2, max: Math.max(2, Math.floor(w / 21)), start: phone ? 2 : Math.max(2, Math.floor(w / 184)) };
 }
-function zoomIndex(n) {
-  let i = NaN; try { i = parseInt(localStorage.getItem(zoomKey()), 10); } catch {}
-  return Number.isInteger(i) && i >= 0 && i < n ? i : null;
+function zoomCols(z) {
+  let n = NaN; try { n = parseInt(localStorage.getItem(zoomKey()), 10); } catch {}
+  return Number.isInteger(n) ? Math.min(z.max, Math.max(z.min, n)) : z.start;
 }
 function drawCollection() {
   const grid = $("page-collection");
   grid.textContent = "";
   if (!colShown.length) grid.append(el("p", {}, "No buttons yet!"));
-  const { levels, start } = zoomLevels(grid);
-  const i = zoomIndex(levels.length) ?? start;
-  const scale = levels[i];
-  grid.classList.toggle("two-a-row", i === start);   // a phone's starting size keeps its two-to-a-row tiles (style.css)
-  // (v0.45.5) the zoomed-out sizes are a grid: a set number of equal columns, each a button wide, so the rows line up.
-  // (v0.45.6) the column is the button's art (its box less the 2px border each side) plus a margin that shrinks with the zoom
-  // (1px at 0.25x, 2px at 0.5x, 3px at 0.75x), so zoomed out they almost touch; desktop keeps the same row width at every
-  // level (14 at 0.5x, 28 at 0.25x), a phone fits as many as it can
-  const dense = scale < 1, cell = Math.round(scale * 88) - 4 + Math.round(scale * 4);
-  grid.classList.toggle("dense", dense);
-  if (dense) {
-    const fit = Math.max(1, Math.floor((grid.clientWidth || 640) / cell));
-    grid.style.setProperty("--cols", String(window.matchMedia(PHONE).matches ? fit : Math.min(Math.round(7 / scale), fit)));
-    grid.style.setProperty("--cell", cell + "px");
-    grid.style.setProperty("--rowgap", Math.round(scale * 8) + 2 + "px");
-  }
-  $("zoom-out").disabled = i === 0;
-  $("zoom-in").disabled = i === levels.length - 1;
+  const z = zoomLevels(grid), n = zoomCols(z), cell = z.w / n;
+  const margin = Math.min(8, Math.max(1, Math.round(cell / 21)));
+  const box = Math.max(22, Math.round(cell - margin + 4)), scale = box / 88;   // the button's box is its art plus a 2px border each side
+  grid.style.setProperty("--cols", String(n));
+  grid.style.setProperty("--rowgap", Math.min(10, Math.round(scale * 8) + 2) + "px");
+  $("zoom-in").disabled = n <= z.min;
+  $("zoom-out").disabled = n >= z.max;
   for (const b of colShown) {
     const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
     grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
-      bannerImg(b, scale), dense ? null : el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
+      bannerImg(b, scale), scale < 1 ? null : el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
   }
 }
 const zoomBy = (step) => {
-  const { levels, start } = zoomLevels($("page-collection"));
-  const i = Math.min(levels.length - 1, Math.max(0, (zoomIndex(levels.length) ?? start) + step));
-  try { localStorage.setItem(zoomKey(), String(i)); } catch {}
+  const z = zoomLevels($("page-collection")), n = Math.min(z.max, Math.max(z.min, zoomCols(z) + step));
+  try { localStorage.setItem(zoomKey(), String(n)); } catch {}
   drawCollection();
 };
-$("zoom-in").onclick = () => zoomBy(1);
-$("zoom-out").onclick = () => zoomBy(-1);
+$("zoom-in").onclick = () => zoomBy(-1);   // fewer to a row: bigger
+$("zoom-out").onclick = () => zoomBy(1);
 
 // ---------- arrange my wall (drag to reorder; mouse and touch) ----------
 
