@@ -2017,8 +2017,30 @@ async function loadPacksPanel(mine) {
       if (!p.revealed) addTear(t, go);
       grid.append(el("div", { class: "pack-slot" }, t, el("span", { class: "small" }, p.note || PACK_FROM[p.source] || "")));
     }
+    applyPacksZoom();
   } catch {}
 }
+// (v0.45.7) two zoom levels for the Packs panel: [+] spreads the packs out (a tile and its label each), [-] lines them all
+// up on one row, overlapping like a hand of cards, as much as it takes to fit (the labels are hidden then). Remembered in this browser.
+let packsOut = false;
+try { packsOut = localStorage.getItem("packs-zoom") === "out"; } catch {}
+function applyPacksZoom() {
+  const grid = $("packs-grid"), n = grid.children.length, tile = grid.querySelector(".pack-tile");
+  grid.classList.toggle("stacked", packsOut);
+  if (packsOut && n > 1) {
+    const room = grid.clientWidth - (tile ? tile.offsetWidth : 100);
+    grid.style.setProperty("--visible", Math.max(10, Math.min(44, Math.floor(room / (n - 1)))) + "px");   // how much of each pack shows
+  }
+  $("packs-zoom-in").disabled = !packsOut;
+  $("packs-zoom-out").disabled = packsOut;
+}
+const zoomPacks = (out) => {
+  packsOut = out;
+  try { localStorage.setItem("packs-zoom", out ? "out" : "in"); } catch {}
+  applyPacksZoom();
+};
+$("packs-zoom-in").onclick = () => zoomPacks(false);
+$("packs-zoom-out").onclick = () => zoomPacks(true);
 // Which pack is open right now. Clicking it again just takes you back to its cards instead of
 // opening it all over again; the tile shows "opened!" while you pick.
 let openingKey = null;
