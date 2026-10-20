@@ -12,6 +12,9 @@ import { sealSafe } from "../../lib/ledger.js";
 import { ODDS, PULLS_PER_DAY, BONUS_CHANCE, BONUS, today, rollDesigns, mintStatements, userByName } from "../../lib/game.js";
 
 const RANDOM = "__random__";   // the "random person" choice
+// A new pull, numbered for the ledger (kind 'pull_roll'): sealLedger seals its three buttons right away.
+const ROLL = `INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at, roll_id)
+              SELECT ?, ?, ?, ?, COALESCE(MAX(roll_id), 0) + 1 FROM daily_pulls`;
 
 async function loadPull(env, userId, day) {
   return env.DB.prepare(
@@ -54,9 +57,8 @@ export async function onRequestGet({ request, env }) {
     const ids = await rollDesigns(env, 3, [], { userId: user.id });
     if (!ids.length) return json({ error: "No banners to pull yet. Check back soon!" }, 503);
     if (Math.random() < BONUS_CHANCE) ids[Math.floor(Math.random() * 3)] = BONUS;
-    await env.DB.prepare(
-      "INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at) VALUES (?, ?, ?, ?)"
-    ).bind(user.id, key, JSON.stringify(ids), now()).run();
+    await env.DB.prepare(ROLL).bind(user.id, key, JSON.stringify(ids), now()).run();
+    await sealSafe(env);   // (v0.46.9) the roll is on the ledger before it's shown
   }
   if (!key) key = rows[rows.length - 1].day; // all used up: show the last one
   const pull = await loadPull(env, user.id, key);
@@ -89,9 +91,8 @@ export async function onRequestPost({ request, env }) {
     if (!claim.meta.changes) return json({ error: "You already picked from this pack." }, 400);
     const n = (await todaysPulls(env, user.id)).filter((r) => r.day.includes("#b")).length + 1;
     const fresh = await rollDesigns(env, 3, [], { userId: user.id }); // never another bonus card
-    await env.DB.prepare(
-      "INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at) VALUES (?, ?, ?, ?)"
-    ).bind(user.id, `${today()}#b${n}`, JSON.stringify(fresh), now()).run();
+    await env.DB.prepare(ROLL).bind(user.id, `${today()}#b${n}`, JSON.stringify(fresh), now()).run();
+    await sealSafe(env);
     return json({ ok: true, bonus: true });
   }
 
