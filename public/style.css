@@ -819,6 +819,17 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   clip-path: polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%); animation: pack-twinkle 2.6s ease-in-out infinite; }
 .pack-art .spark.s { width: 7px; height: 7px; }
 @keyframes pack-twinkle { 0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); } 45% { opacity: 1; transform: scale(1) rotate(45deg); } 60% { opacity: 0; transform: scale(.3) rotate(60deg); } }
+/* (v0.45.12) Series Alpha's holo: a rainbow sheen drifting back and forth, like holographic foil */
+.pack-art .holo { position: absolute; inset: 0; z-index: 5; pointer-events: none; mix-blend-mode: screen; background-size: 300% 300%;
+  background-image: linear-gradient(115deg, transparent 20%, rgba(255,80,180,.35) 32%, rgba(255,230,90,.35) 40%, rgba(90,255,170,.35) 48%, rgba(80,200,255,.35) 56%, rgba(180,110,255,.35) 64%, transparent 76%);
+  animation: pack-holo 4s ease-in-out infinite alternate; }
+@keyframes pack-holo { from { background-position: 100% 100%; } to { background-position: 0% 0%; } }
+/* (v0.45.12) the free pack (the one wrapped like a gift): white and gold specks that catch the light, two layers blinking out of step */
+.pack-art .glitter { position: absolute; inset: 0; z-index: 5; pointer-events: none; mix-blend-mode: screen; }
+.pack-art .glitter::before, .pack-art .glitter::after { content: ""; position: absolute; inset: 0; animation: pack-glitter 1.3s ease-in-out infinite; }
+.pack-art .glitter::before { background: radial-gradient(#fff 0 .8px, transparent 1.4px) 2px 3px / 13px 11px, radial-gradient(#ffe27a 0 .8px, transparent 1.4px) 8px 7px / 17px 15px; }
+.pack-art .glitter::after { background: radial-gradient(#fff 0 .7px, transparent 1.3px) 6px 1px / 11px 14px, radial-gradient(#ffe27a 0 .9px, transparent 1.5px) 1px 9px / 19px 13px; animation-delay: -.65s; }
+@keyframes pack-glitter { 0%, 100% { opacity: .1; } 50% { opacity: 1; } }
 
 /* Alpha special (Cool Site of the Day): holo with an award rosette */
 .th-alpha-sp .pack-art, .th-special .pack-art { background: linear-gradient(135deg, #c0c0c0 0%, #fff 18%, #ff66cc 34%, #66ccff 50%, #ffff66 66%, #fff 82%, #a0a0a0 100%);
@@ -1043,7 +1054,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 
 @media (prefers-reduced-motion: reduce) {
   .pack-tile, .pack-tile * { animation: none !important; }
-  .pack-art .gleam, .pack-art .refresh, .pack-art .rain, .pack-art .spark { display: none; }
+  .pack-art .gleam, .pack-art .refresh, .pack-art .rain, .pack-art .spark, .pack-art .holo, .pack-art .glitter { display: none; }
 }
 
 /* ---------- How to Play & Fair Play (v0.28) ---------- */
@@ -1115,7 +1126,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 /* v0.31.2: opened packs lose their shine and color; the All the Packs page */
 .pack-tile.spent { filter: grayscale(1) brightness(0.8) contrast(0.9); }
 .pack-tile.spent, .pack-tile.spent * { animation: none !important; }
-.pack-tile.spent .gleam, .pack-tile.spent .sparkle, .pack-tile.spent .twinkle, .pack-tile.spent .sparks, .pack-tile.spent .refresh, .pack-tile.spent .scan { display: none !important; }
+.pack-tile.spent .gleam, .pack-tile.spent .sparkle, .pack-tile.spent .twinkle, .pack-tile.spent .sparks, .pack-tile.spent .spark, .pack-tile.spent .holo, .pack-tile.spent .glitter, .pack-tile.spent .refresh, .pack-tile.spent .scan { display: none !important; }
 .pack-tile.spent:hover { transform: none; }
 .allpacks { justify-content: flex-start; }
 .allpacks .pack-slot .small { text-align: center; }

@@ -1864,7 +1864,7 @@ function packTile(p, href) {
       parts = [spanC("gleam"), top(sTop), name(special), spanC("pack-sub", sub)];
     } else if (s === "alpha") {
       theme = "alpha";
-      parts = [spanC("gleam"), ...packSparks(), top(), spanC("rainbow"), spanC("pack-name", "ALPHA"), spanC("pack-sub", p.revealed ? sub : "series alpha"), spanC("hazard")];
+      parts = [spanC("holo"), ...packSparks(), top(), spanC("rainbow"), spanC("pack-name", "ALPHA"), spanC("pack-sub", p.revealed ? sub : "series alpha"), spanC("hazard")];
     } else if (s === "beta") {
       theme = "beta";
       parts = [...packRain(), spanC("scan"), spanC("refresh"), top(), spanC("win", el("img", { src: "banners/beta/beta-dos-prompt.gif", alt: "", width: "88", height: "31" })),
@@ -1904,16 +1904,17 @@ function packTile(p, href) {
     theme = "club-" + look;
     const name = spanC("club-name", "~*~cLuB~*~ pack"), sealed = spanC("pack-sub", p.revealed ? "opened!" : look === "d" ? "Sealed Pack ♡" : look === "e" ? "$ealed Pack" : "Sealed Pack");
     const at = (node, style) => { node.setAttribute("style", style); return node; };
-    parts = look === "d" ? [el("span", { class: "hearts" }, "♡ ♥ ♡ ♥ ♡\n".repeat(9)), spanC("gleam"), top(),
+    // (v0.45.12) club packs twinkle instead of the gleam
+    parts = look === "d" ? [el("span", { class: "hearts" }, "♡ ♥ ♡ ♥ ♡\n".repeat(9)), ...packSparks(), top(),
         el("span", { class: "kitty" }, "=^･ω･^=", el("i", { class: "l" }), el("i", { class: "r" })),
         at(spanC("twinkle", "✦"), "left:8px;top:30px"), at(spanC("twinkle t2", "✦"), "right:9px;top:44px"), at(spanC("twinkle t3", "✧"), "left:16px;top:96px"), name, sealed]
-      : look === "e" ? [spanC("gems"), spanC("gleam"), top(), spanC("bling", "BLiNG"), spanC("gem"),
+      : look === "e" ? [spanC("gems"), ...packSparks(), top(), spanC("bling", "BLiNG"), spanC("gem"),
         at(spanC("sparkle"), "left:14px;top:26px"), at(spanC("sparkle"), "right:12px;top:58px;animation-delay:.5s"), at(spanC("sparkle"), "left:22px;bottom:30px;animation-delay:1s"), name, sealed]
-      : look === "f" ? [spanC("gleam"), top(), el("span", { class: "holo-heart" }, el("b", {}, "88x31")), spanC("stk xo", "xoxo"), spanC("stk qt", "QT ♡"),
+      : look === "f" ? [...packSparks(), top(), el("span", { class: "holo-heart" }, el("b", {}, "88x31")), spanC("stk xo", "xoxo"), spanC("stk qt", "QT ♡"),
         at(spanC("star", "★"), "left:8px;top:20px"), at(spanC("star", "★"), "right:10px;top:82px;font-size:10px"), name, sealed]
-      : look === "a" ? [spanC("gleam"), top(), spanC("sticker", "NEW!"), spanC("logo", "88x31"), name, sealed]
-      : look === "b" ? [spanC("gleam"), top(), el("span", { class: "club-btn" }, el("i", {}, "~*~"), "\u00a0cLuB\u00a0", el("i", {}, "~*~")), name, spanC("stars3", "★★★"), sealed]
-      : [spanC("gleam"), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "88x31.app"),
+      : look === "a" ? [...packSparks(), top(), spanC("sticker", "NEW!"), spanC("logo", "88x31"), name, sealed]
+      : look === "b" ? [...packSparks(), top(), el("span", { class: "club-btn" }, el("i", {}, "~*~"), "\u00a0cLuB\u00a0", el("i", {}, "~*~")), name, spanC("stars3", "★★★"), sealed]
+      : [...packSparks(), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "88x31.app"),
           el("span", { class: "pg" }, el("b", {}, "Welcome 2"), el("em", {}, "~*~ 88x31 cLuB ~*~"), spanC("uc"))), name, sealed];
   }
   return packArt({ shape, theme, parts, title, href, cls: cls + (p.revealed ? " revealed" : "") + (p.opened_at ? " spent" : "") });
@@ -1924,7 +1925,7 @@ function dailyTile(done, label) {
 }
 function freeTile() {
   return packArt({ shape: "flat", theme: "free", cls: "glow",
-    parts: [spanC("ribbon-v"), spanC("ribbon-h"), spanC("bow"), spanC("gleam"), spanC("pack-top", PACK_TOP), spanC("nmwrap", spanC("pack-name", "FREE PACK"), spanC("pack-sub", "open me!"))] });
+    parts: [spanC("ribbon-v"), spanC("ribbon-h"), spanC("bow"), spanC("glitter"), spanC("pack-top", PACK_TOP), spanC("nmwrap", spanC("pack-name", "FREE PACK"), spanC("pack-sub", "open me!"))] });
 }
 
 // ---------- opening a pack (v0.27) ----------
