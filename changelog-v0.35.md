@@ -11,6 +11,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 - Bots' guestbook messages no longer show to players, and their "show bot messages" checkbox is gone. Webmasters keep a "show bot messages" checkbox (off by default). Bots still sign and stamp gifts: the gifts arrive as before.
 - "Kept, and ___ got your gift!" and the other messages from opening a pack on your page now show at the top of the Packs panel instead of at the very bottom of the page.
 - The "Trades" link on your page is now "Trades & Requests".
+- Small [+] and [-] buttons above a button collection zoom it from 1x to 4x (2x to start, as before). Your browser remembers the zoom. On a phone, the largest size is still two to a row. Nothing was removed.
 - The odds line under the Packs panel is gone (the odds are still on the Odds page).
 
 ## v0.45.2

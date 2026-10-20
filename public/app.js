@@ -480,17 +480,8 @@ async function showPage(name) {
   $("theme-picker").hidden = !mine;
   if (mine) renderSwatches(col.owner.theme || "starry");
   const grid = $("page-collection");
-  grid.textContent = "";
-  if (!col.banners.length) grid.append(el("p", {}, "No buttons yet!"));
-  // (v0.37) twice the size; (v0.37.1) on a phone, as big as fits two to a row. A scale, not CSS stretching, so a
-  // foiled or effect button's layers (sized from the same scale) grow with it.
-  const fit = Math.floor((((grid.clientWidth || 800) - 8) / 2 - 4 - 4) / 88 * 100) / 100;
-  const scale = window.matchMedia("(max-width: 480px)").matches ? Math.max(1, Math.min(2, fit)) : 2;
-  for (const b of col.banners) {
-    const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
-    grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
-      bannerImg(b, scale), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
-  }
+  colShown = col.banners;
+  drawCollection();
   showVisitors(grid, mine, seq);
 
   // Sign form: only on other people's pages.
@@ -1470,6 +1461,36 @@ function renderSwatches(current) {
   }
 }
 
+// The collection on a page. (v0.37) twice the size; (v0.37.1) on a phone, as big as fits two to a row. A scale, not CSS
+// stretching, so a foiled or effect button's layers (sized from the same scale) grow with it. (v0.45.3) [+] and [-] zoom it
+// from 1x to 4x, remembered in this browser; a phone stops at two to a row.
+const ZOOM_MAX = 4;
+let colZoom = 2, colShown = [];
+try { colZoom = Math.min(ZOOM_MAX, Math.max(1, Number(localStorage.getItem("col-zoom")) || 2)); } catch {}
+function drawCollection() {
+  const grid = $("page-collection");
+  grid.textContent = "";
+  if (!colShown.length) grid.append(el("p", {}, "No buttons yet!"));
+  const fit = Math.floor((((grid.clientWidth || 800) - 8) / 2 - 4 - 4) / 88 * 100) / 100;
+  const phone = window.matchMedia("(max-width: 480px)").matches;
+  const scale = phone ? Math.max(1, Math.min(colZoom, fit)) : colZoom;
+  grid.classList.toggle("zoom-1", colZoom === 1);
+  $("zoom-out").disabled = colZoom <= 1;
+  $("zoom-in").disabled = colZoom >= ZOOM_MAX || (phone && scale < colZoom);
+  for (const b of colShown) {
+    const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
+    grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
+      bannerImg(b, scale), el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
+  }
+}
+const zoomBy = (step) => {
+  colZoom = Math.min(ZOOM_MAX, Math.max(1, colZoom + step));
+  try { localStorage.setItem("col-zoom", String(colZoom)); } catch {}
+  drawCollection();
+};
+$("zoom-in").onclick = () => zoomBy(1);
+$("zoom-out").onclick = () => zoomBy(-1);
+
 // ---------- arrange my wall (drag to reorder; mouse and touch) ----------
 
 let arranging = false, arrangeBefore = null, dragging = null;
@@ -1478,6 +1499,7 @@ function stopArranging(restore) {
   if (restore && arrangeBefore) arrangeBefore.forEach((t) => grid.append(t));
   arranging = false; arrangeBefore = null; dragging = null;
   grid.classList.remove("arranging");
+  $("zoom-bar").hidden = false;
   $("arrange-btn").hidden = false;
   $("arrange-tools").hidden = true;
 }
@@ -1485,6 +1507,7 @@ $("arrange-btn").onclick = () => {
   arranging = true;
   arrangeBefore = [...$("page-collection").children];
   $("page-collection").classList.add("arranging");
+  $("zoom-bar").hidden = true;   // a redraw would drop the order being dragged
   $("arrange-btn").hidden = true;
   $("arrange-tools").hidden = false;
 };

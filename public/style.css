@@ -236,6 +236,7 @@ h3 { margin: 10px 0 6px; font-size: 15px; color: var(--link); }
 .home-form { text-align: center; margin: 4px 0 10px; font-size: 14px; }
 .home-form input { display: inline-block; width: 240px; max-width: 60%; }
 .arrange-bar { margin: 10px 0 0; text-align: right; }
+.zoom-bar { margin: 0 0 6px; text-align: right; }
 .grid.arranging .tile { cursor: grab; border: 2px dashed #ffff00; padding: 2px; touch-action: none; user-select: none; }
 .grid.arranging .tile.dragging { opacity: 0.5; cursor: grabbing; }
 .use-box { margin: 10px 0; padding: 8px; border: 2px dashed var(--edge); }
@@ -1255,6 +1256,7 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 /* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
 @media (max-width: 480px) {
   #page-collection .tile { width: calc(50% - 4px); }
+  #page-collection.zoom-1 .tile { width: auto; }   /* (v0.45.3) zoomed all the way out: as many to a row as fit */
   /* (v0.37.1) the size itself is worked out in showPage (bannerImg's scale), so foils and effects size with it */
 }
 
