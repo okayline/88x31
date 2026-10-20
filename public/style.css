@@ -824,7 +824,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   background-image: linear-gradient(115deg, transparent 20%, rgba(255,80,180,.35) 32%, rgba(255,230,90,.35) 40%, rgba(90,255,170,.35) 48%, rgba(80,200,255,.35) 56%, rgba(180,110,255,.35) 64%, transparent 76%);
   animation: pack-holo 4s ease-in-out infinite alternate; }
 @keyframes pack-holo { from { background-position: 100% 100%; } to { background-position: 0% 0%; } }
-/* (v0.45.12) the free pack (the one wrapped like a gift): white and gold specks that catch the light, two layers blinking out of step */
+/* (v0.45.12) the webmaster's gift packs: white and gold specks that catch the light, two layers blinking out of step */
 .pack-art .glitter { position: absolute; inset: 0; z-index: 5; pointer-events: none; mix-blend-mode: screen; }
 .pack-art .glitter::before, .pack-art .glitter::after { content: ""; position: absolute; inset: 0; animation: pack-glitter 1.3s ease-in-out infinite; }
 .pack-art .glitter::before { background: radial-gradient(#fff 0 .8px, transparent 1.4px) 2px 3px / 13px 11px, radial-gradient(#ffe27a 0 .8px, transparent 1.4px) 8px 7px / 17px 15px; }
