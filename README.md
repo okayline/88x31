@@ -9,7 +9,7 @@ A collecting game where the creatures are 88x31 web buttons: collect, trade, and
 public/            the site (index.html, style.css, app.js, banners/)
 functions/api/     the API (Cloudflare Pages Functions), one file per route
 lib/               the game: packs, pulls, trades, fusion, sets, rings and Theme Walls, bots, the ledger,
-                   the shared registry mirror (registry.js), travel to 4Dungeon, accounts (shared.js, auth.js)
+                   the shared registry mirror (registry.js) and its public ledger passed through at /registry (registry-view.js), travel to 4Dungeon, accounts (shared.js, auth.js)
 migrations/        database changes, in order (002 to 028)
 schema.sql         database tables
 seed_*.sql         starter banners and sets
