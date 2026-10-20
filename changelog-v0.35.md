@@ -8,6 +8,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 **Mon Oct 19, 2026 · 11:03 PM HST**
 
 - Bots' guestbook messages show for everyone again, with their [BOT] tag. Only webmasters get the "show bot messages" checkbox, and it starts ticked. The players-only filter is removed.
+- The Fair Play page's Ledger Status panel has a new line linking to The Registry, the shared ledger for every game in the Dungeon family. Nothing was removed.
 - More zoom on a button collection. On a computer it now goes from 0.5x to 4x (0.5x is new). On a phone it goes 0.5x, 0.75x, 1x, two to a row, then one to a row (0.5x, 0.75x and one to a row are new). The zoom starts at two to a row as before, and the old fixed two-to-a-row width now applies only at that size. Zooms saved in v0.45.3 are reset.
 
 ## v0.45.3
