@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.2
+# 88x31 cLuB Changelog — v0.35–v0.45.3
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.3
+**Mon Oct 19, 2026 · 10:55 PM HST**
+
+- A bonus pack you haven't picked from yet gets its own "bonus pack!" tile in your Packs. Before, if it didn't open right away, it had no tile and the daily tiles were greyed out, so there was no way to open it.
 
 ## v0.45.2
 **Mon Oct 19, 2026 · 10:20 PM HST**

@@ -12,10 +12,12 @@ export async function onRequestGet({ request, env }) {
   if (!me) return json({ error: "Not logged in." }, 401);
   const d = today();
   const db = env.DB;
-  const [packs, trades, gotGift, gaveGift, msgs, count] = await Promise.all([
+  const [packs, bonus, trades, gotGift, gaveGift, msgs, count] = await Promise.all([
     db.prepare(
       "SELECT COUNT(*) AS n FROM daily_pulls WHERE user_id = ? AND (day = ? OR day LIKE ?) AND day NOT LIKE ? AND status = 'done'"
     ).bind(me.id, d, d + "#%", d + "#b%").first(),
+    // (v0.45.3) a bonus pack from today still waiting to be picked from (it has no daily tile of its own)
+    db.prepare("SELECT 1 FROM daily_pulls WHERE user_id = ? AND day LIKE ? AND status = 'open' LIMIT 1").bind(me.id, d + "#b%").first(),
     db.prepare(
       "SELECT COUNT(*) AS n FROM trades WHERE to_user = ? AND status = 'open' AND expires_at > ?"
     ).bind(me.id, Math.floor(Date.now() / 1000)).first(),
@@ -46,6 +48,7 @@ export async function onRequestGet({ request, env }) {
     sets_ready: await readyCount(env, me.id),
     packs_left: Math.max(0, PULLS_PER_DAY - (packs ? packs.n : 0)),
     pulls_per_day: PULLS_PER_DAY,
+    bonus_waiting: !!bonus,
     trades_waiting: trades ? trades.n : 0,
     last_received: gotGift || null,
     last_given: gaveGift || null,
