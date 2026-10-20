@@ -6,6 +6,8 @@ const $ = (id) => document.getElementById(id);
   Element.prototype.append = function (...kids) { return orig.apply(this, kids.filter((k) => k != null && k !== false)); };
 }
 const say = (text) => ($("msg").textContent = text || "");
+// (v0.45.3) what happened to a pack you just opened shows in the Packs panel, not at the bottom of the page
+const packSay = (text) => ($("pack-msg").textContent = text || "");
 
 // Where this visitor first came from (just the site name), sent along when they make an account so
 // the webmaster can see which places bring new players. Remembered from the very first visit.
@@ -248,7 +250,7 @@ function webringTo(afterEl) {
 }
 
 async function route(clicked = false) {
-  say("");
+  say(""); packSay("");
   if (!/^#themewall(\/|$)/.test(decodeURIComponent(location.hash))) webringTo(null);   // hopping between rings keeps the panel (and your place) where it is
   if (me && !wrRings.length) api("/api/themewall?list=1").then((r) => webringFooter(r.rings, null)).catch(() => {});
   setPageMode();
@@ -404,17 +406,17 @@ async function showPull() {
   form.hidden = true;
   form.onsubmit = async (e) => {
     e.preventDefault();
-    say("");
+    packSay("");
     const pass = giftChoice();
     try {
       const takingBonus = !!(pull.options[keep] && pull.options[keep].bonus);
       const r = await api("/api/pull", { method: "POST", body: { keep, pass: takingBonus || pass === "" ? null : Number(pass), to: takingBonus ? null : toInput.value } });
-      if (r.bonus) { say("★ BONUS PACK! ★ Here's a fresh one!"); return await showPull(); }
+      if (r.bonus) { packSay("★ BONUS PACK! ★ Here's a fresh one!"); return await showPull(); }
       loadSummary();
-      say(!r.passed ? "Kept! (The one you sent sold out, sorry.)" : `Kept, and ${r.to} got your gift!`);
+      packSay(!r.passed ? "Kept! (The one you sent sold out, sorry.)" : `Kept, and ${r.to} got your gift!`);
       box.textContent = "";
       afterOpening();
-    } catch (err) { say(err.message); }
+    } catch (err) { packSay(err.message); }
   };
   box.append(form);
   box.scrollIntoView({ behavior: "smooth", block: "start" });   // the cards are above the Packs panel: take the player to them
@@ -534,6 +536,7 @@ async function showPage(name) {
 
   const list = $("page-guestbook");
   list.textContent = "";
+  applyBotToggle();
   // messages and finished trades, newest first
   const items = [
     ...gb.entries.map((g) => ({ at: g.created_at, g })),
@@ -543,9 +546,9 @@ async function showPage(name) {
   for (const it of items) {
     if (it.t) { list.append(tradeNote(it.t)); continue; }
     const g = it.g;
-    list.append(el("div", { class: "entry" },
+    list.append(el("div", { class: "entry" + (g.author_is_bot ? " from-bot" : "") },
       el("p", { class: "small" },
-        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), ` wrote on ${fmtWhen(g.created_at)}:`),
+        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtWhen(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect }, 2)),   // stamped buttons at 2x
@@ -1195,7 +1198,7 @@ const pickedGive = new Set(), pickedWant = new Set();
 
 function setTradeCount(n) {
   document.querySelectorAll(".trades-link").forEach((a) => {
-    a.textContent = n ? `Trades (${n})` : "Trades";
+    a.textContent = n ? `Trades & Requests (${n})` : "Trades & Requests";
     a.classList.toggle("has-offers", !!n);
   });
 }
@@ -1609,6 +1612,17 @@ drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.ad
 drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); checkFile(e.dataTransfer.files[0]); });
 
+// "show bot messages": webmasters only (only they get bots' entries from /api/guestbook), off unless ticked, remembered in this browser.
+function applyBotToggle() {
+  $("bot-toggle").hidden = !(me && me.is_admin);
+  $("page-guestbook").classList.toggle("hide-bots", !$("show-bots").checked);
+}
+try { $("show-bots").checked = localStorage.getItem("show-bots") === "1"; } catch {}
+$("show-bots").onchange = () => {
+  try { localStorage.setItem("show-bots", $("show-bots").checked ? "1" : "0"); } catch {}
+  applyBotToggle();
+};
+
 // The gift picked with "Stamp a Gift!" (or null).
 let giftPick = null;
 function chooseGift(b) {
@@ -1975,6 +1989,7 @@ let openingKey = null;
 function startOpening(key, tile) {
   if (openingKey === key && $("pack-open").childElementCount) { $("pack-open").scrollIntoView({ behavior: "smooth", block: "start" }); return false; }
   openingKey = key;
+  packSay("");
   tile.classList.add("revealed");
   const sub = tile.querySelector(".pack-sub");
   if (sub) sub.textContent = "opened!";
@@ -2069,10 +2084,11 @@ async function openPackCards(p, box, onDone = null) {
     go.disabled = true;
     try {
       const r = await api("/api/packs", { method: "POST", body: { action: "keep", id: p.id, picks: [...picked] } });
-      say(r.sold_out ? "Kept! (One of them sold out a moment ago, sorry.)" : "Added to your collection!");
+      // on your page the message goes in the Packs panel; from a pack's own page it stays where it was
+      (onDone ? packSay : say)(r.sold_out ? "Kept! (One of them sold out a moment ago, sorry.)" : "Added to your collection!");
       loadSummary();
       if (onDone) { box.textContent = ""; onDone(); } else showPack(p.id);
-    } catch (err) { say(err.message); go.disabled = false; }
+    } catch (err) { (onDone ? packSay : say)(err.message); go.disabled = false; }
   };
 }
 

@@ -51,7 +51,7 @@
     <div class="dash-cols">
       <ul class="dash-list" id="dash-list"><li>Loading your news...</li></ul>
       <div class="dash-side">
-        <p>[ <a href="#trades" id="nav-trades" class="trades-link">Trades</a> ]</p>
+        <p>[ <a href="#trades" id="nav-trades" class="trades-link">Trades &amp; Requests</a> ]</p>
         <p>[ <a href="#codes">Save Codes &amp; Passkeys</a> ]</p>
         <p>[ <a href="#check">Check a Button</a> ]</p>
         <form id="visit-form" class="visit">
@@ -326,6 +326,7 @@
       <div id="pack-open" class="panel pack-open"></div>
       <div class="panel packs-panel" id="packs-panel" hidden>
         <h2>&raquo; Packs &laquo;</h2>
+        <p id="pack-msg" class="center" role="status"></p>
         <div id="packs-grid" class="packs-grid"></div>
       </div>
       <div class="panel">
@@ -382,6 +383,7 @@
             <div id="gift-grid" class="grid"></div>
           </div>
         </form>
+        <p class="small bot-toggle" id="bot-toggle" hidden><label><input type="checkbox" id="show-bots"> show bot messages (webmasters only)</label></p>
         <div id="page-guestbook"></div>
       </div>
     </div>
