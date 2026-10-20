@@ -237,6 +237,7 @@ h3 { margin: 10px 0 6px; font-size: 15px; color: var(--link); }
 .home-form input { display: inline-block; width: 240px; max-width: 60%; }
 .arrange-bar { margin: 10px 0 0; text-align: right; }
 .zoom-bar { margin: 0 0 6px; text-align: right; }
+#zoom-bar { margin-bottom: 1.2em; }   /* (v0.45.8) a blank line between the collection's zoom buttons and its first row */
 .grid.arranging .tile { cursor: grab; border: 2px dashed #ffff00; padding: 2px; touch-action: none; user-select: none; }
 .grid.arranging .tile.dragging { opacity: 0.5; cursor: grabbing; }
 .use-box { margin: 10px 0; padding: 8px; border: 2px dashed var(--edge); }
@@ -671,11 +672,12 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .packs-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .pack-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 120px; text-align: center; }
 /* (v0.45.7) zoomed out: every pack on one row, each overlapping the one before by all but --visible, the hovered one on top */
-.packs-grid.stacked { flex-wrap: nowrap; gap: 0; justify-content: safe center; overflow-x: auto; padding: 8px 0 4px; }
+.packs-grid.stacked { flex-wrap: nowrap; gap: 0; justify-content: safe center; overflow-x: auto; padding: 8px 0 1.2em; }   /* (v0.45.8) a blank line under the row */
 .packs-grid.stacked .pack-slot { flex: 0 0 auto; width: 100px; max-width: none; position: relative; z-index: 0; }   /* each pack its own layer, so its art's z-indexes can't poke through the pack on top of it */
 .packs-grid.stacked .pack-slot + .pack-slot { margin-left: calc(var(--visible, 40px) - 100px); }
 .packs-grid.stacked .pack-slot > .small { display: none; }
 .packs-grid.stacked .pack-slot:hover { z-index: 20; }
+.packs-grid.stacked .pack-slot.front { z-index: 15; }   /* (v0.45.8) the pack a click brought forward; a click on it opens it */
 .card.small-card { min-width: 0; }
 .pack-give input { width: 140px; }
 .series-tag { color: #0066cc; }
@@ -1317,5 +1319,5 @@ body.tw-carrying { cursor: grabbing; user-select: none; -webkit-user-select: non
 body.tw-carrying * { cursor: grabbing !important; }
 .tw-lock { margin-bottom: 1.6em; }
 /* (v0.45.6) the collection is a grid of equal columns, one per button on a row (--cols), the buttons centred in them (see drawCollection) */
-#page-collection { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: var(--rowgap, 8px) 0; }
+#page-collection { margin-bottom: 1.2em; display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: var(--rowgap, 8px) 0; }
 .stamp img.banner { image-rendering: pixelated; }

@@ -2041,6 +2041,21 @@ const zoomPacks = (out) => {
 };
 $("packs-zoom-in").onclick = () => zoomPacks(false);
 $("packs-zoom-out").onclick = () => zoomPacks(true);
+// (v0.45.8) lined up, a click on a pack that's partly covered only brings it to the front; a click on the pack in front
+// (the last one, or the one just brought forward) opens it as usual. Caught on the way down, before the tile's own
+// click and tear handlers see it.
+const packsGrid = $("packs-grid");
+const toFront = (e) => {
+  if (!packsOut) return;
+  const slot = e.target.closest(".pack-slot");
+  if (!slot || slot === packsGrid.lastElementChild || slot.classList.contains("front")) return;
+  e.preventDefault(); e.stopPropagation();
+  if (e.type !== "click") return;
+  packsGrid.querySelectorAll(".pack-slot.front").forEach((s) => s.classList.remove("front"));
+  slot.classList.add("front");
+};
+packsGrid.addEventListener("pointerdown", toFront, true);
+packsGrid.addEventListener("click", toFront, true);
 // Which pack is open right now. Clicking it again just takes you back to its cards instead of
 // opening it all over again; the tile shows "opened!" while you pick.
 let openingKey = null;
