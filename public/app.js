@@ -347,8 +347,6 @@ async function showPull() {
   const box = $("pack-open");
   box.textContent = "Loading...";
   const pull = await api("/api/pull");
-  const o = pull.odds;
-  $("pull-odds").textContent = `Odds for each button: common ${o.common}% · uncommon ${o.uncommon}% · rare ${o.rare}%${o.prototype != null ? ` · PROTOTYPE ${o.prototype}%` : ""} · ULTRA ${o.ultra}%. Only 4 of each prototype exist, and every ultra is one of a kind. About 1 in ${Math.round(1 / pull.bonus_chance)} packs has a BONUS PACK card.`;
   box.textContent = "";
   if (pull.bonus_pack) box.append(el("p", { class: "center bonus-head" }, el("b", {}, "★ BONUS PACK! ★")));
   else if (pull.pulls_per_day > 1) box.append(el("p", { class: "center" }, el("b", {}, `Pack ${pull.pull_number} of ${pull.pulls_per_day} today`)));
@@ -545,9 +543,9 @@ async function showPage(name) {
   for (const it of items) {
     if (it.t) { list.append(tradeNote(it.t)); continue; }
     const g = it.g;
-    list.append(el("div", { class: "entry" + (g.author_is_bot ? " from-bot" : "") },
+    list.append(el("div", { class: "entry" },
       el("p", { class: "small" },
-        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), g.author_is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null, ` wrote on ${fmtWhen(g.created_at)}:`),
+        el("a", { href: "#u/" + encodeURIComponent(g.author) }, g.author), ` wrote on ${fmtWhen(g.created_at)}:`),
       el("p", {}, g.message),
       g.gift_id ? el("p", { class: "stamp" },
         el("a", { href: "#banner/" + g.gift_id }, bannerImg({ image_key: g.gift_image, name: g.gift_name, rarity: g.gift_rarity, foil: g.gift_foil, foil_seed: g.gift_foil_seed, pattern: g.gift_pattern, effect: g.gift_effect }, 2)),   // stamped buttons at 2x
@@ -1610,17 +1608,6 @@ const drop = $("check-drop");
 drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
 drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); checkFile(e.dataTransfer.files[0]); });
-
-// "show bot messages" toggle, remembered in this browser.
-function applyBotToggle() {
-  $("page-guestbook").classList.toggle("hide-bots", !$("show-bots").checked);
-}
-try { $("show-bots").checked = localStorage.getItem("show-bots") !== "0"; } catch {}
-applyBotToggle();
-$("show-bots").onchange = () => {
-  try { localStorage.setItem("show-bots", $("show-bots").checked ? "1" : "0"); } catch {}
-  applyBotToggle();
-};
 
 // The gift picked with "Stamp a Gift!" (or null).
 let giftPick = null;

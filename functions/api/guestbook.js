@@ -1,5 +1,6 @@
 // Guestbooks.
 // GET  /api/guestbook?user=NAME -> { owner, entries: [{ author, message, created_at, gift }] }
+//   (v0.45.3) bots' entries are left out for everyone; a bot's stamped gift still moves when it signs
 // POST /api/guestbook { user, message, instance_id? | pack_id? }
 //   Signing can carry one of your banners, or a sealed pack (v0.34), as a gift (the "stamp"):
 //   it moves to the page owner and stays shown next to your message. One signature per guestbook per day.
@@ -14,7 +15,7 @@ export async function onRequestGet({ request, env }) {
   if (!owner) return json({ error: "No player by that name." }, 404);
 
   const { results } = await env.DB.prepare(
-    `SELECT g.id, g.message, g.created_at, a.name AS author, a.is_bot AS author_is_bot,
+    `SELECT g.id, g.message, g.created_at, a.name AS author,
             g.instance_id AS gift_id, i.design_id AS gift_design, i.edition AS gift_edition, i.foil AS gift_foil, i.foil_seed AS gift_foil_seed, i.pattern AS gift_pattern, i.effect AS gift_effect, d.name AS gift_name,
             d.image_key AS gift_image, d.rarity AS gift_rarity, d.max_editions AS gift_max,
             g.pack_id AS gift_pack, p.source AS pack_source, p.note AS pack_note, p.keep AS pack_keep, p.special AS pack_special,
@@ -26,7 +27,7 @@ export async function onRequestGet({ request, env }) {
      LEFT JOIN designs d ON d.id = i.design_id
      LEFT JOIN packs p ON p.id = g.pack_id
      LEFT JOIN series ps ON ps.id = p.series_id
-     WHERE g.page_user = ? ORDER BY g.created_at DESC, g.id DESC LIMIT 100`
+     WHERE g.page_user = ? AND a.is_bot = 0 ORDER BY g.created_at DESC, g.id DESC LIMIT 100`
   ).bind(owner.id).all();
 
   const trades = (await listTrades(env, owner.id, { status: "accepted", limit: 30 }))

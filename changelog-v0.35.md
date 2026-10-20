@@ -8,6 +8,8 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 **Mon Oct 19, 2026 · 10:55 PM HST**
 
 - A bonus pack you haven't picked from yet gets its own "bonus pack!" tile in your Packs. Before, if it didn't open right away, it had no tile and the daily tiles were greyed out, so there was no way to open it.
+- Bots' guestbook messages no longer show on anyone's page, and the "show bot messages" checkbox is gone. Bots still sign and stamp gifts: the gifts arrive as before.
+- The odds line under the Packs panel is gone (the odds are still on the Odds page).
 
 ## v0.45.2
 **Mon Oct 19, 2026 · 10:20 PM HST**
