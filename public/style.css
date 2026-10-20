@@ -676,6 +676,8 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .packs-grid.stacked .pack-slot + .pack-slot { margin-left: calc(var(--visible, 40px) - 100px); }
 .packs-grid.stacked .pack-slot > .small { display: none; }
 .packs-grid.stacked .pack-slot:hover { z-index: 20; }
+/* only the pack on top (and the hovered one) shows its writing and art; the strips of the others show just their colours */
+.packs-grid.stacked .pack-slot:not(:last-child):not(:hover) .pack-art > * { visibility: hidden; }
 .card.small-card { min-width: 0; }
 .pack-give input { width: 140px; }
 .series-tag { color: #0066cc; }
