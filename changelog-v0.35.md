@@ -5,10 +5,10 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ---
 
 ## v0.45.6
-**Mon Oct 19, 2026 · 11:17 PM HST**
+**Mon Oct 19, 2026 · 11:30 PM HST**
 
-- One more zoom level out on a button collection: 0.25x (on a computer the zoom now runs 0.25x, 0.5x, 1x, 2x, 3x, 4x; on a phone 0.25x, 0.5x, 0.75x, 1x, two to a row, one to a row).
-- At the zoomed-out sizes the buttons now sit almost touching side to side, closer the smaller the zoom, and a row holds 14 at 0.5x and 28 at 0.25x on a computer. Removed: the old wider gaps between buttons at 0.5x and 0.75x, and everyone's saved zoom (it starts at the normal size again, since the list of sizes changed).
+- The [+] and [-] zoom on a button collection now goes one button per row at a time: each step adds or takes one button on the top row, from 2 across (1 on a phone) all the way out to about 30 across (15 on a phone). The buttons fill even columns and sit closer together the smaller they get (almost touching when zoomed right out). Removed: the fixed zoom sizes (0.5x, 1x, 2x, 3x, 4x and the phone's) that skipped from 4 across to 6, and everyone's saved zoom (it starts near the old normal size again).
+- Under 88px wide there is no caption under the buttons (hover a button for its name and number).
 
 ## v0.45.5
 **Mon Oct 19, 2026 · 11:10 PM HST**
