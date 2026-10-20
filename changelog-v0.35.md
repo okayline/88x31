@@ -9,7 +9,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 - The button collection zoom now runs from 1 button per row to 9 per row, on a computer and on a phone. Before, a computer could only zoom in to 2 per row, and zooming out went as far as about 30 across (15 on a phone). Removed: the 2-across stop on a computer and every zoom level past 9 across; a saved zoom past 9 drops to 9.
 - The smaller buttons keep a slightly wider gap than before, because they no longer go as small.
-- The Packs panel has [+] and [-] buttons too, with two zoom levels. [-] lines every pack up on one row, overlapping like a hand of cards (the pack on top shows its art and writing, the others show just a strip of colour, the labels under the packs are hidden, and hovering a pack brings it to the front); [+] spreads them out as before. Your browser remembers the choice. Nothing was removed.
+- The Packs panel has [+] and [-] buttons too, with two zoom levels. [-] lines every pack up on one row, overlapping like a hand of cards (each pack shows the strip of its art that isn't covered, the labels under the packs are hidden, and hovering a pack brings it to the front); [+] spreads them out as before. Your browser remembers the choice. Nothing was removed.
 
 ## v0.45.6
 **Mon Oct 19, 2026 · 11:30 PM HST**
