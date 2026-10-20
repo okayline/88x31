@@ -1,7 +1,12 @@
 # 88x31
-new game yo
 
+
+88x31 is a daily-visit button collecting game for the old web. Open packs, find foils and hidden rares, trade and gift with friends, and fuse duplicates into something new. Every copy is numbered, never reused, and written into a public ledger with its full history. Free in your browser at 88x31.app
 A collecting game where the creatures are 88x31 web buttons: collect, trade, and show them off.
+
+
+A daily-visit, asynchronous, Gacha-style pack-opening, persistent, scarcity-driven, collectible web-button trading game with numbered, never-reused copies, rarity tiers, foils, fusions, hidden items, p2p trading and gifting using a public hash-chained ownership ledger tracking items with provenance.
+
 
 ## What's here
 
