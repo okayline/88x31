@@ -8,6 +8,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 **Mon Oct 19, 2026 · 11:49 PM HST**
 
 - Fixed: after dragging along the lined-up packs, tapping the pack you stopped on could pick a pack to its right instead of opening it. A finger now has to move a little before it counts as a drag. Removed: treating any finger movement, even a tap's wobble, as a drag.
+- The buttons wall zooms out one more step, to 10 buttons across. Removed: the old limit of 9 across.
 
 ## v0.45.10
 **Mon Oct 19, 2026 · 11:45 PM HST**
