@@ -1,7 +1,6 @@
 // Guestbooks.
 // GET  /api/guestbook?user=NAME -> { owner, entries: [{ author, message, created_at, gift }] }
-//   (v0.45.3) bots' entries are left out for players; webmasters get them, marked author_is_bot, to show with a checkbox.
-//   A bot's stamped gift still moves when it signs either way.
+//   Bots' entries are marked author_is_bot; (v0.45.4) everyone gets them again, and only webmasters get a checkbox to hide them.
 // POST /api/guestbook { user, message, instance_id? | pack_id? }
 //   Signing can carry one of your banners, or a sealed pack (v0.34), as a gift (the "stamp"):
 //   it moves to the page owner and stays shown next to your message. One signature per guestbook per day.
@@ -14,8 +13,6 @@ import { today, userByName, transferStatements, newLockToken, lockedBy } from ".
 export async function onRequestGet({ request, env }) {
   const owner = await userByName(env, new URL(request.url).searchParams.get("user"));
   if (!owner) return json({ error: "No player by that name." }, 404);
-  const viewer = await currentUser(env, request);
-  const admin = !!(viewer && viewer.is_admin);
 
   const { results } = await env.DB.prepare(
     `SELECT g.id, g.message, g.created_at, a.name AS author, a.is_bot AS author_is_bot,
@@ -30,11 +27,12 @@ export async function onRequestGet({ request, env }) {
      LEFT JOIN designs d ON d.id = i.design_id
      LEFT JOIN packs p ON p.id = g.pack_id
      LEFT JOIN series ps ON ps.id = p.series_id
-     WHERE g.page_user = ? ${admin ? "" : "AND a.is_bot = 0 "}ORDER BY g.created_at DESC, g.id DESC LIMIT 100`
+     WHERE g.page_user = ? ORDER BY g.created_at DESC, g.id DESC LIMIT 100`
   ).bind(owner.id).all();
 
   const trades = (await listTrades(env, owner.id, { status: "accepted", limit: 30 }))
     .map((t) => ({ id: t.id, at: t.resolved_at, from_name: t.from_name, to_name: t.to_name, give: t.give, want: t.want, give_packs: t.give_packs, want_packs: t.want_packs }));
+  const viewer = await currentUser(env, request);
   if (viewer) await markSeen(env, viewer, [...results.map((e) => e.gift_design), ...trades.flatMap((t) => [...t.give, ...t.want].map((i) => i.design_id))]);
   return json({ owner, entries: results, trades });
 }
