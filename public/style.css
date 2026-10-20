@@ -677,7 +677,8 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .packs-grid.stacked .pack-slot + .pack-slot { margin-left: calc(var(--visible, 40px) - 100px); }
 .packs-grid.stacked .pack-slot > .small { display: none; }
 .packs-grid.stacked .pack-slot:hover { z-index: 20; }
-.packs-grid.stacked .pack-slot.front { z-index: 15; }   /* (v0.45.8) the pack a click brought forward; a click on it opens it */
+.packs-grid.stacked .pack-slot { transition: transform .15s ease-out; }
+.packs-grid.stacked .pack-slot.front { z-index: 15; transform: scale(1.08); }   /* (v0.45.8) the pack a click brought forward, a little bigger; a click on it opens it */
 .card.small-card { min-width: 0; }
 .pack-give input { width: 140px; }
 .series-tag { color: #0066cc; }
