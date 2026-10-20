@@ -8,7 +8,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 **Mon Oct 19, 2026 · 11:56 PM HST**
 
 - ~*~ cLuB ~*~ packs now twinkle with little stars instead of the sweeping gleam. Removed: the gleam on club packs.
-- The Free Pack (the one wrapped like a gift) now glitters with white and gold specks. Removed: its gleam.
+- Packs the webmaster gives out glitter with white and gold specks instead. The Free Pack has no shine. Removed: the gleam on both.
 - Series Alpha packs get a drifting rainbow holo shine. Removed: their gleam (their stars stay).
 - Singles, Limited packs and the other packs keep the shine they had.
 
