@@ -8,7 +8,7 @@ export async function onRequestGet({ request, env }) {
   await sealSafe(env); // make sure the latest steps have fingerprints
 
   const banner = await env.DB.prepare(
-    `SELECT i.id, i.edition, i.design_id, i.foil, i.foil_seed, i.pattern, i.effect, i.consumed, i.locked, d.registry_item,
+    `SELECT i.id, i.edition, i.design_id, i.foil, i.foil_seed, i.pattern, i.effect, i.consumed, i.locked, d.registry_item, i.registry_copy,
             (SELECT name FROM series WHERE id = d.series_id) AS series,
             (SELECT COUNT(*) FROM instances WHERE design_id = d.id AND consumed = 0) AS left_count, d.status, d.tier, fb.name AS found_by,
             (SELECT name FROM users WHERE is_admin = 1 AND is_bot = 0 ORDER BY id LIMIT 1) AS webmaster, u.name AS owner, d.name, d.type, d.rarity, d.image_key, d.max_editions,

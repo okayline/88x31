@@ -1761,6 +1761,8 @@ async function showBanner(id) {
       de ? `${fmtStamp(de.created_at)} as ledger entry #${de.id}` : "not sealed yet"),
     de ? el("p", { class: "small" }, "Design fingerprint: ", el("span", { class: "hash" }, de.hash)) : null,
     el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash" }, b.image_hash)),
+    b.registry_item && b.registry_copy > 0 ? el("p", { class: "small" }, "Shared item registry: ",
+      el("a", { href: `/registry?item=${b.registry_item}&copy=${b.registry_copy}` }, `this copy's page (item ${b.registry_item}, copy #${b.registry_copy})`)) : null,
 
     el("h2", {}, "» Travel Log «"),
     el("ol", { class: "log" }, history.map((h) => el("li", {},
