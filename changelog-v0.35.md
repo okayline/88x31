@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.12
+# 88x31 cLuB Changelog — v0.35–v0.46
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46
+**Tue Oct 20, 2026 · 12:55 AM HST**
+
+- Every button you own now carries its story onto the shared ledger: the moon when it was made (and any eclipse, blue moon, solstice or other special day), how it came to you (a pack, a daily pick, a welcome gift, passed on, a set reward), its foil, pattern and effect, whether it is copy #1 or #100, and whether it has been traded, gifted, left in a guestbook, used to fill a request or survived a fusion. Each thing is stamped once. Nothing was removed.
 
 ## v0.45.12
 **Mon Oct 19, 2026 · 11:56 PM HST**

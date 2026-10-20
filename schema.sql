@@ -673,3 +673,5 @@ ALTER TABLE instances ADD COLUMN registry_copy INTEGER;
 ALTER TABLE instances ADD COLUMN registry_owner INTEGER;
 ALTER TABLE instances ADD COLUMN registry_spent INTEGER NOT NULL DEFAULT 0;
 CREATE INDEX IF NOT EXISTS idx_instances_registry ON instances(registry_copy, registry_spent);
+-- v0.46 (also in migrations/029_registry_marks.sql): what lib/registry.js has stamped as marks on each copy there
+ALTER TABLE instances ADD COLUMN registry_marks TEXT;
