@@ -8,6 +8,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 **Mon Oct 19, 2026 · 10:20 PM HST**
 
 - The Strawberry Milk Single (the one that said "luv u 4ever") is gone, and the plain white Single with the blue underlined "Single", the rainbow line and the webring is back in its place. Glitter Heart and Midnight Tiara stay.
+- Buttons you keep from a pack show up on the item registry within about a minute. Before, they waited for your next page load.
 
 ## v0.45.1
 **Mon Oct 19, 2026 · 10:10 PM HST**
