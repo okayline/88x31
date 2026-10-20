@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.10
+# 88x31 cLuB Changelog — v0.35–v0.45.11
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.11
+**Mon Oct 19, 2026 · 11:49 PM HST**
+
+- Fixed: after dragging along the lined-up packs, tapping the pack you stopped on could pick a pack to its right instead of opening it. A finger now has to move a little before it counts as a drag. Removed: treating any finger movement, even a tap's wobble, as a drag.
 
 ## v0.45.10
 **Mon Oct 19, 2026 · 11:45 PM HST**
