@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.9
+# 88x31 cLuB Changelog — v0.35–v0.46.10
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.10
+**Tue Oct 20, 2026 · 10:09 AM HST**
+
+- On the shared Registry, a new button's lines now sit together: the line where it came into the world, then one line with everything about it ("was found under a waxing gibbous moon and was pulled from a pack"). Removed: one Registry line per mark, and new buttons' marks coming only after every other new button. Lines already on the Registry stay as they were.
 
 ## v0.46.9
 **Tue Oct 20, 2026 · 9:07 AM HST** (migration 032, run before the push)
