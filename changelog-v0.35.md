@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.5
+# 88x31 cLuB Changelog — v0.35–v0.46.6
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.6
+**Tue Oct 20, 2026 · 3:15 AM HST** (migration 031, run after the push)
+
+- 22 new Series Beta buttons from the early-90s PC and arcade: 12 commons (Abort, Retry, Fail?, Ctrl+Alt+Del, Format C:, Insert Disk 2, Hello World, Ping, Sysop Is In, Shareware, Caps Lock, Disk Full, Kernel Panic, Telnet), 6 uncommons (Insert Coin, Turbo, Starfield, Dot Matrix, Blow on It, Joystick) and 4 demoscene rares (Plasma, Copper Bars, Vector Cube, Rotozoom). Beta now has 24 commons, 16 uncommons and 16 rares, so each Beta common turns up about half as often as before (each uncommon and rare a bit less often too). Removed: nothing. Rarity odds and Alpha's share of packs are unchanged.
 
 ## v0.46.5
 **Tue Oct 20, 2026 · 2:35 AM HST** (migration 030, run before the push)
