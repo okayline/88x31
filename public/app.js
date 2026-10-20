@@ -1841,12 +1841,12 @@ function packTile(p, href) {
     parts = [spanC("gleam"), top(), name("SPECIAL"), spanC("pack-sub", sub)];
   } else if (p.cards === 1) {
     // (v0.45) the ~*~cLuB~*~ Single (one card): three looks, picked by its number. a and c are 90s Blingee kawaii (glitter, rhinestones, twinkles);
-    // (v0.45.2) b is back to the v0.37 starry grey box, no shine
+    // (v0.45.2) b is back to the v0.37 white link page (look c then), no shine
     const look = "abc"[(Number(p.id) || 0) % 3];
     if (look === "b") {
-      theme = "fp-b"; cls = "still-art";
-      parts = [spanC("fp-moon", "☾"), spanC("fp-top", "~*~ 88x31 cLuB ~*~"), el("span", { class: "fp-box" }, el("i", {}, "~*~cLuB~*~"), el("b", {}, "SINGLE")),
-        spanC("fp-burst", "NEW!"), spanC("pack-sub", p.revealed ? "opened!" : "1 card inside")];
+      theme = "fp-c"; cls = "still-art";
+      parts = [spanC("fp-top", "~*~ 88x31 cLuB ~*~"), spanC("fp-club", "~*~cLuB~*~"), el("span", { class: "fp-link" }, "Single"), spanC("fp-rainbow"), el("span", { class: "fp-visited" }, "[ 1 card ]"),
+        el("span", { class: "fp-mail" }, "\u2709 ", el("u", {}, "e-mail me!")), spanC("fp-ring", "\u00ab prev \u00b7 ring \u00b7 next \u00bb")];
     } else {
       theme = "bl-" + look; cls = "bl";
       const t = (c, ...k) => spanC("t " + c, ...k), opened = p.revealed ? "opened!" : null;

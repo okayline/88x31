@@ -7,7 +7,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ## v0.45.2
 **Mon Oct 19, 2026 · 10:20 PM HST**
 
-- The Strawberry Milk Single (the one that said "luv u 4ever") is gone, and the starry night Single with the grey SINGLE box and the NEW! sticker is back in its place. Glitter Heart and Midnight Tiara stay.
+- The Strawberry Milk Single (the one that said "luv u 4ever") is gone, and the plain white Single with the blue underlined "Single", the rainbow line and the webring is back in its place. Glitter Heart and Midnight Tiara stay.
 
 ## v0.45.1
 **Mon Oct 19, 2026 · 10:10 PM HST**
