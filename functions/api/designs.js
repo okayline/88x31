@@ -13,7 +13,8 @@ const UPCOMING_OUT = (viewer) => (viewer && viewer.is_admin ? ""
   : "AND NOT EXISTS (SELECT 1 FROM series s WHERE s.id = d.series_id AND s.status = 'upcoming')");
 // is this design a mystery to this viewer?
 // (v0.37.2) found (archive) commons are sent too: the page shows a couple of them
-const mysteryFor = (seen) => (d) => (seen ? !seen.has(d.id) : d.rarity !== "common");
+// (v0.45.2) commons are never a mystery to a player either, so a logged-in player always sees at least what a logged-out visitor sees
+const mysteryFor = (seen) => (d) => d.rarity !== "common" && (!seen || !seen.has(d.id));
 
 export async function onRequestGet({ request, env }) {
   const id = Number(new URL(request.url).searchParams.get("id"));

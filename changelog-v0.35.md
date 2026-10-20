@@ -9,6 +9,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 - The Strawberry Milk Single (the one that said "luv u 4ever") is gone, and the plain white Single with the blue underlined "Single", the rainbow line and the webring is back in its place. Glitter Heart and Midnight Tiara stay.
 - Buttons you keep from a pack show up on the item registry within about a minute. Before, they waited for your next page load.
+- Commons are never a "?" for a logged-in player now, so a player always sees at least what a logged-out visitor sees (the Wall and the Fair Play ledger). A logged-out visitor on the Fair Play ledger sees only commons by name, like the Wall; uncommons used to show there.
 
 ## v0.45.1
 **Mon Oct 19, 2026 · 10:10 PM HST**
