@@ -1485,6 +1485,15 @@ function drawCollection() {
   const i = zoomIndex(levels.length) ?? start;
   const scale = levels[i];
   grid.classList.toggle("two-a-row", i === start);   // a phone's starting size keeps its two-to-a-row tiles (style.css)
+  // (v0.45.5) the zoomed-out sizes are a grid: a set number of equal columns (12 on desktop, as many as fit on a phone),
+  // each a button wide, with small captions, so the rows line up and sit close together
+  const dense = scale < 1, cell = Math.round(scale * 88) + 6;
+  grid.classList.toggle("dense", dense);
+  if (dense) {
+    const fit = Math.max(1, Math.floor(((grid.clientWidth || 640) + 2) / (cell + 2)));
+    grid.style.setProperty("--cols", String(window.matchMedia(PHONE).matches ? fit : Math.min(12, fit)));
+    grid.style.setProperty("--cell", cell + "px");
+  }
   $("zoom-out").disabled = i === 0;
   $("zoom-in").disabled = i === levels.length - 1;
   for (const b of colShown) {
