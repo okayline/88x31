@@ -51,7 +51,7 @@ export async function onRequestGet({ request, env }) {
   if (!key && regular.length < PULLS_PER_DAY) {
     // open the next pack of the day
     key = regular.length === 0 ? today() : `${today()}#${regular.length + 1}`;
-    const ids = await rollDesigns(env, 3);
+    const ids = await rollDesigns(env, 3, [], { userId: user.id });
     if (!ids.length) return json({ error: "No banners to pull yet. Check back soon!" }, 503);
     if (Math.random() < BONUS_CHANCE) ids[Math.floor(Math.random() * 3)] = BONUS;
     await env.DB.prepare(
@@ -88,7 +88,7 @@ export async function onRequestPost({ request, env }) {
     ).bind(keep, user.id, day).run();
     if (!claim.meta.changes) return json({ error: "You already picked from this pack." }, 400);
     const n = (await todaysPulls(env, user.id)).filter((r) => r.day.includes("#b")).length + 1;
-    const fresh = await rollDesigns(env, 3); // never another bonus card
+    const fresh = await rollDesigns(env, 3, [], { userId: user.id }); // never another bonus card
     await env.DB.prepare(
       "INSERT OR IGNORE INTO daily_pulls (user_id, day, options, created_at) VALUES (?, ?, ?, ?)"
     ).bind(user.id, `${today()}#b${n}`, JSON.stringify(fresh), now()).run();

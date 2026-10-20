@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.3
+# 88x31 cLuB Changelog — v0.35–v0.46.4
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.4
+**Tue Oct 20, 2026 · 2:10 AM HST**
+
+- Rares you already own now come up much less in your packs and daily pulls: one you own is 1 time in 10 as likely as one you don't. Removed: every rare in a series being equally likely whether you had it or not. Rarity odds are unchanged, so you still see the same number of rares, just more new ones. Owned rares can still show up.
 
 ## v0.46.3
 **Tue Oct 20, 2026 · 1:57 AM HST**
