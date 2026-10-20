@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.44
+# 88x31 cLuB Changelog — v0.35–v0.45
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45 — "Bling Bling"
+**Mon Oct 19, 2026 · 10:00 PM HST**
+
+- **New ~*~cLuB~*~ Singles**: three glittery looks (Glitter Heart, Strawberry Milk, Midnight Tiara) with rhinestone edges and twinkles. They replace the three plain homepage looks.
+- **The item registry page got a makeover**: it looks like the cLuB now, each entry reads as a sentence and shows everything about the item, and 4Dungeon's things show up in 4Dungeon's black screen. A button's page links to its registry page, and back.
 
 ## v0.44 — "Open Ledger"
 **Mon Oct 19, 2026 · 8:15 PM HST**
