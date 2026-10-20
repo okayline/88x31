@@ -672,13 +672,13 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .packs-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .pack-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 120px; text-align: center; }
 /* (v0.45.7) zoomed out: every pack on one row, each overlapping the one before by all but --visible, the hovered one on top */
-.packs-grid.stacked { flex-wrap: nowrap; gap: 0; justify-content: safe center; overflow-x: auto; padding: 14px 0 1.2em; }   /* (v0.45.8) room for the bigger front pack, and a blank line under the row */
+.packs-grid.stacked { flex-wrap: nowrap; gap: 0; justify-content: safe center; overflow-x: auto; padding: 20px 0 1.2em; }   /* (v0.45.9) room for the bigger front pack, and a blank line under the row */
 .packs-grid.stacked .pack-slot { flex: 0 0 auto; width: 100px; max-width: none; position: relative; z-index: 0; }   /* each pack its own layer, so its art's z-indexes can't poke through the pack on top of it */
 .packs-grid.stacked .pack-slot + .pack-slot { margin-left: calc(var(--visible, 40px) - 100px); }
 .packs-grid.stacked .pack-slot > .small { display: none; }
 .packs-grid.stacked .pack-slot:hover { z-index: 20; }
 .packs-grid.stacked .pack-slot { transition: transform .15s ease-out; }
-.packs-grid.stacked .pack-slot.front { z-index: 15; transform: scale(1.15); }   /* (v0.45.8) the pack a click brought forward, a bit bigger; a click on it opens it */
+.packs-grid.stacked .pack-slot.front { z-index: 15; transform: scale(1.25); }   /* (v0.45.9) the pack a click brought forward, bigger; a click on it opens it */
 .card.small-card { min-width: 0; }
 .pack-give input { width: 140px; }
 .series-tag { color: #0066cc; }
