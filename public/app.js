@@ -2045,8 +2045,10 @@ $("packs-zoom-out").onclick = () => zoomPacks(true);
 // (the last one, or the one just brought forward) opens it as usual. Caught on the way down, before the tile's own
 // click and tear handlers see it.
 const packsGrid = $("packs-grid");
+let scrubbed = false;   // (v0.45.10) a finger just dragged along the row; the click that may follow it doesn't open anything
 const toFront = (e) => {
   if (!packsOut) return;
+  if (e.type === "click" && scrubbed) { scrubbed = false; e.preventDefault(); e.stopPropagation(); return; }
   const slot = e.target.closest(".pack-slot");
   if (!slot || slot === packsGrid.lastElementChild || slot.classList.contains("front")) return;
   e.preventDefault(); e.stopPropagation();
@@ -2056,6 +2058,26 @@ const toFront = (e) => {
 };
 packsGrid.addEventListener("pointerdown", toFront, true);
 packsGrid.addEventListener("click", toFront, true);
+// (v0.45.10) lined up, on a touch screen: drag a finger along the row and each pack you pass comes to the front; tap the
+// one you stop on to open it. A touch here never starts a tear (tearing still works with the packs spread out).
+packsGrid.addEventListener("pointerdown", (e) => {
+  if (packsOut && e.pointerType === "touch") { scrubbed = false; e.stopPropagation(); }
+}, true);
+packsGrid.addEventListener("pointermove", (e) => {
+  if (!packsOut || e.pointerType !== "touch") return;
+  // the pack whose own strip is under the finger, by where each pack starts (not what's drawn there: the bigger front
+  // pack would cover its neighbours and the drag would skip them)
+  let slot = null;
+  for (const s of packsGrid.children) {
+    const r = s.getBoundingClientRect();
+    if (r.left + (r.width - s.offsetWidth) / 2 <= e.clientX) slot = s;
+  }
+  if (!slot || slot.classList.contains("front")) return;
+  if (slot === packsGrid.lastElementChild && !packsGrid.querySelector(".pack-slot.front")) return;
+  scrubbed = true;
+  packsGrid.querySelectorAll(".pack-slot.front").forEach((s) => s.classList.remove("front"));
+  if (slot !== packsGrid.lastElementChild) slot.classList.add("front");
+});
 // (v0.45.9) a click or tap anywhere but the pack in front puts it back in line
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".pack-slot.front")) packsGrid.querySelectorAll(".pack-slot.front").forEach((s) => s.classList.remove("front"));

@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.9
+# 88x31 cLuB Changelog — v0.35–v0.45.10
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.10
+**Mon Oct 19, 2026 · 11:45 PM HST**
+
+- With the packs lined up on a touch screen, dragging a finger along the row brings each pack you pass to the front; tap the one you stop on to open it. Removed: sideways scrolling of the lined-up row by finger, and tearing a pack open from the lined-up row (tearing still works with the packs spread out).
 
 ## v0.45.9
 **Mon Oct 19, 2026 · 11:43 PM HST**
