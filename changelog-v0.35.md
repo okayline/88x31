@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.45
+# 88x31 cLuB Changelog — v0.35–v0.45.1
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.1
+**Mon Oct 19, 2026 · 10:10 PM HST**
+
+- Buttons on the item registry page show their real pictures (they all showed "removed by request"). The new Singles' sparkles and words no longer glow.
 
 ## v0.45 — "Bling Bling"
 **Mon Oct 19, 2026 · 10:00 PM HST**

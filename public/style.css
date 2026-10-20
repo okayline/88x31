@@ -1207,13 +1207,13 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .bl .stones{position:absolute;inset:2px;z-index:3;pointer-events:none;border-radius:5px;
   background:radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 0 0/9px 9px repeat-x,radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 0 100%/9px 9px repeat-x,
              radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 0 0/9px 9px repeat-y,radial-gradient(circle,#fff 0 1.2px,var(--st) 1.8px 2.6px,transparent 3px) 100% 0/9px 9px repeat-y}
-.bl .tw{position:absolute;z-index:4;color:#fff;font:12px/1 Arial;text-shadow:0 0 3px #fff,0 0 6px var(--tw,#ff66cc);animation:bl-tw 1.1s ease-in-out infinite}
+.bl .tw{position:absolute;z-index:4;color:#fff;font:12px/1 Arial;animation:bl-tw 1.1s ease-in-out infinite}
 @keyframes bl-tw{0%,100%{transform:scale(.4) rotate(0);opacity:.3}50%{transform:scale(1.15) rotate(45deg);opacity:1}}
 .bl .t{z-index:2;position:relative}
 .bl .top{font:bold 7px Verdana,Arial,sans-serif;letter-spacing:.3px}
 .bl .chrome{font:900 italic 23px/1 "Arial Black",Impact,Arial,sans-serif;letter-spacing:-.5px;
   background:linear-gradient(180deg,#fff 0%,#ffd6f2 30%,#ff4fb8 52%,#ffe6f7 56%,#ff8fd6 80%,#fff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  -webkit-text-stroke:.6px #b0006e;filter:drop-shadow(1px 1px 0 #fff) drop-shadow(0 0 3px #ff9ad9)}
+  -webkit-text-stroke:.6px #b0006e;filter:drop-shadow(1px 1px 0 #fff)}
 .bl .stamp{display:inline-block;padding:1px 5px;border-radius:8px;font:bold 8px Verdana,Arial,sans-serif;transform:rotate(-6deg)}
 
 /* A: Glitter Bunny (hot pink) */
@@ -1240,9 +1240,9 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .th-bl-c .pack-art{background:radial-gradient(circle at 50% 42%,#5a1263,#1a0420 70%);--st:#ff7ad1;--tw:#ff7ad1}
 .th-bl-c .glit{background:radial-gradient(#ff9ad9 0.7px,transparent 1.3px) 0 0/11px 11px,radial-gradient(#fff 0.6px,transparent 1.2px) 5px 4px/17px 17px}
 .th-bl-c .top{color:#ffb3e6}
-.th-bl-c .tiara{font:14px/1 Arial;color:#fff;text-shadow:0 0 4px #fff,0 0 8px #ff7ad1;letter-spacing:-1px;margin-bottom:-6px}
+.th-bl-c .tiara{font:14px/1 Arial;color:#fff;letter-spacing:-1px;margin-bottom:-6px}
 .th-bl-c .chrome{background:linear-gradient(180deg,#fff,#ffc4ec 40%,#ff3fae 55%,#fff 100%);-webkit-background-clip:text;background-clip:text}
-.th-bl-c .xo{font:italic bold 11px Georgia,serif;color:#ff7ad1;text-shadow:0 0 4px #ff3fae}
+.th-bl-c .xo{font:italic bold 11px Georgia,serif;color:#ff7ad1}
 .th-bl-c .stamp{background:linear-gradient(90deg,#ff3fae,#b04fff);color:#fff}
 
 /* (v0.37) the collection at 2x: on a phone, two to a row (a hair under 2x there), still pixelated */
