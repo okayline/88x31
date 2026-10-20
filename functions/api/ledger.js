@@ -73,10 +73,9 @@ ${walls ? WALL_JOINS : ""}     WHERE (? = 0 OR l.id < ?) ORDER BY l.id DESC LIMI
     seen = (await seenSet(env, viewer)) || null;
     try { upcoming = new Set((await env.DB.prepare("SELECT id FROM series WHERE status = 'upcoming'").all()).results.map((r) => r.id)); } catch {}
   }
-  const MYSTERY = new Set(["rare", "prototype", "ultra", "special"]);
   for (const r of recent) {
-    // hidden until seen (v0.30); logged-out visitors: rares and up stay mysteries
-    const unseen = seen ? !seen.has(r.design_id) : MYSTERY.has(r.design_rarity);
+    // hidden until seen (v0.30); commons always show; logged-out visitors see only commons, like the Wall (v0.45.2)
+    const unseen = r.design_rarity !== "common" && (!seen || !seen.has(r.design_id));
     const secret = !admin && r.design_id && (unseen || upcoming.has(r.design_series));
     if (secret) {
       Object.assign(r, { design: "a mystery button", fused_design: "a mystery button", mystery: true, design_id: null, copy_id: null,
