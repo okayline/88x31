@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.6
+# 88x31 cLuB Changelog — v0.35–v0.45.7
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.7
+**Mon Oct 19, 2026 · 11:23 PM HST**
+
+- The button collection zoom now runs from 1 button per row to 9 per row, on a computer and on a phone. Before, a computer could only zoom in to 2 per row, and zooming out went as far as about 30 across (15 on a phone). Removed: the 2-across stop on a computer and every zoom level past 9 across; a saved zoom past 9 drops to 9.
+- The smaller buttons keep a slightly wider gap than before, because they no longer go as small.
 
 ## v0.45.6
 **Mon Oct 19, 2026 · 11:30 PM HST**

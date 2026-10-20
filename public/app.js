@@ -1463,7 +1463,7 @@ function renderSwatches(current) {
 
 // The collection on a page. A scale, not CSS stretching, so a foiled or effect button's layers (sized from the same scale)
 // grow with it. [+] and [-] zoom it. (v0.45.6) a zoom level is how many buttons sit on a row: each step adds or takes one,
-// from 2 across (1 on a phone) to as many as are still readable. The row is a grid of equal columns, so every row lines up;
+// from 1 across to 9 across. The row is a grid of equal columns, so every row lines up;
 // the button's art fills its column less a small margin that shrinks as the buttons shrink (8px at the biggest sizes, 1px
 // when zoomed right out), so zoomed out they almost touch. Under 88px wide there is no room for a caption, and the tile's
 // tooltip has the name and number. The row count is remembered in this browser.
@@ -1473,7 +1473,7 @@ const zoomKey = () => (window.matchMedia(PHONE).matches ? "col-n-phone" : "col-n
 function zoomLevels(grid) {
   const w = grid.clientWidth || 640, phone = window.matchMedia(PHONE).matches;
   // the starting row is what the old 2x gave: two across on a phone, as many as fit at 176px a button on a computer
-  return { w, min: phone ? 1 : 2, max: Math.max(2, Math.floor(w / 21)), start: phone ? 2 : Math.max(2, Math.floor(w / 184)) };
+  return { w, min: 1, max: 9, start: phone ? 2 : Math.max(2, Math.floor(w / 184)) };
 }
 function zoomCols(z) {
   let n = NaN; try { n = parseInt(localStorage.getItem(zoomKey()), 10); } catch {}
