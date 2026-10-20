@@ -1226,15 +1226,34 @@ img.rarity-prototype { border-color: #c8c8d0; outline: 1px dashed #6a6a78; }
 .th-bl-a .chrome{margin-top:2px}
 .th-bl-a .stamp{background:#fff;color:#ff2f9e;box-shadow:0 0 0 1px #ff2f9e}
 
-/* B: Strawberry Milk (pastel lavender + mint) */
-.th-bl-b .pack-art{background:repeating-conic-gradient(#e9d9ff 0 25%,#d3f5ec 0 50%) 0 0/16px 16px;--st:#b98cff;--tw:#b98cff}
-.th-bl-b .top{color:#6a3fb5}
-.th-bl-b .bub{background:#fff;border:2px solid #b98cff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;padding:4px 7px 3px;text-align:center;box-shadow:2px 2px 0 #ff9ad9}
-.th-bl-b .bub i{display:block;font:normal 8px Verdana,Arial;color:#ff4fb8}
-.th-bl-b .chrome{font-size:19px;background:linear-gradient(90deg,#ff7ad1,#ffb36b,#ffe46b,#7ae6b8,#7ab8ff,#c48bff);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:.5px #6a3fb5}
-.th-bl-b .berry{font:bold 9px/1 Arial;color:#ff4f8b;letter-spacing:1px}
-.th-bl-b .fly{font:9px/1 Arial;color:#6a3fb5}
-.th-bl-b .stamp{background:#ff4fb8;color:#fff}
+/* B: (v0.45.2) back to the v0.37 look: a starry tiled background with one grey bevelled box in the middle, no shine */
+.pack-tile.still-art .pack-art { animation: none; }
+.th-fp-b .pack-art { text-shadow: none; justify-content: center; gap: 4px; }
+.th-fp-b .pack-art { background: #000033 radial-gradient(#ffffff 0.6px, transparent 1.1px) 0 0 / 13px 13px; border-color: #c0c0c0; }
+.th-fp-b .fp-top { font: 7.5px "Times New Roman", serif; color: #ccccff; }
+.th-fp-b .fp-box { margin: 10px 0 8px; padding: 7px 10px 6px; background: #c0c0c0; color: #000; text-align: center;
+  border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff; font: 15px "Times New Roman", serif; line-height: 1.05; }
+.th-fp-b .fp-box b, .th-fp-b .fp-box i { display: block; }
+.th-fp-b .fp-box i { font-size: 11px; letter-spacing: 2px; }
+.th-fp-b .pack-sub { font: italic 8px "Times New Roman", serif; color: #c0c0c0; }
+.th-fp-b .fp-moon { position: absolute; top: 6px; left: 8px; z-index: 4; font-size: 20px; color: #ffe680; line-height: 1; }
+.th-fp-b .fp-burst { position: absolute; top: 18px; right: 2px; z-index: 4; transform: rotate(12deg); width: 34px; height: 34px; display: grid; place-items: center;
+  background: #ffef00; color: #cc0000; font: bold 9px Arial, sans-serif;
+  clip-path: polygon(50% 0, 61% 18%, 82% 10%, 80% 32%, 100% 40%, 84% 55%, 96% 75%, 74% 76%, 70% 98%, 52% 84%, 33% 100%, 28% 78%, 6% 80%, 16% 60%, 0 44%, 19% 34%, 14% 12%, 36% 18%); }
+.th-fp-b .fp-box b { background: linear-gradient(90deg, #cc0000, #ff8800, #e6c200, #00a03c, #0050d0, #7a00cc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.th-fp-b .fp-top { margin-top: 12px; }
+.th-fp-b .fp-burst { top: 46px; right: 0; }
+.th-fp-b .fp-burst { position: static; transform: rotate(-8deg); margin: -2px 0 2px; }
+.th-fp-b .fp-burst { display: grid; flex-shrink: 0; width: 38px; height: 38px; }
+.th-fp-b .fp-moon { font-size: 15px; top: 5px; left: 7px; }
+.th-fp-b .fp-top { margin-top: 10px; }
+.th-fp-b .fp-box { margin: 4px 0 2px; }
+.th-fp-b .fp-burst { width: 30px; height: 30px; font-size: 8px; }
+.th-fp-b .fp-box b { font-size: 19px; font-weight: 900; }
+.th-fp-b .fp-box i { font-weight: bold; color: #000066; }
+.th-fp-b .fp-box { padding: 6px 6px 5px; }
+.th-fp-b .fp-box b { font-size: 16px; letter-spacing: .5px; }
+.th-fp-b .fp-box i { font-size: 8px; letter-spacing: 0; font-style: normal; }
 
 /* C: Midnight Tiara (black + pink glitter) */
 .th-bl-c .pack-art{background:radial-gradient(circle at 50% 42%,#5a1263,#1a0420 70%);--st:#ff7ad1;--tw:#ff7ad1}
