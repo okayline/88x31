@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.43
+# 88x31 cLuB Changelog — v0.35–v0.44
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.44 — "Open Ledger"
+**Mon Oct 19, 2026 · 8:15 PM HST**
+
+- **The item registry's ledger has a page here**, at 88x31.app/registry: every copy made, moved or marked across the games, newest first, with the date and time.
+- **Times are 24-hour now.** The ledger, guestbook, certificates and the wall's lock time all show 24-hour time.
 
 ## v0.43 — "Click Here to Enter"
 **Sat Oct 17, 2026 · 11:30 PM HST**
