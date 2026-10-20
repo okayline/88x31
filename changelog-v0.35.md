@@ -7,7 +7,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ## v0.45.8
 **Mon Oct 19, 2026 · 11:36 PM HST**
 
-- With the packs lined up, clicking a pack that's partly covered brings it to the front instead of opening it; click it again to open it. The pack on top still opens on the first click. Removed: opening a covered pack with one click (or a tear) from the lined-up row.
+- With the packs lined up, clicking a pack that's partly covered brings it to the front, a little bigger, instead of opening it; click it again to open it. The pack on top still opens on the first click. Removed: opening a covered pack with one click (or a tear) from the lined-up row.
 - A blank line under the lined-up packs, under the collection's zoom buttons, and under the last row of buttons. Nothing was removed.
 
 ## v0.45.7
