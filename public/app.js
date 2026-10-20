@@ -1464,14 +1464,15 @@ function renderSwatches(current) {
 // The collection on a page. (v0.37) twice the size; (v0.37.1) on a phone, as big as fits two to a row. A scale, not CSS
 // stretching, so a foiled or effect button's layers (sized from the same scale) grow with it. (v0.45.3) [+] and [-] zoom it,
 // remembered in this browser. (v0.45.4) desktop: 0.5x to 4x; a phone: 0.5x, 0.75x, 1x, two to a row, one to a row.
+// (v0.45.6) one more level out (0.25x), and the smaller the zoom, the closer the buttons sit side to side.
 const PHONE = "(max-width: 480px)";
 let colShown = [];
-const zoomKey = () => (window.matchMedia(PHONE).matches ? "col-zoom-phone" : "col-zoom-desk");
+const zoomKey = () => (window.matchMedia(PHONE).matches ? "col-zoom-phone2" : "col-zoom-desk2");
 function zoomLevels(grid) {
-  if (!window.matchMedia(PHONE).matches) return { levels: [0.5, 1, 2, 3, 4], start: 2 };
+  if (!window.matchMedia(PHONE).matches) return { levels: [0.25, 0.5, 1, 2, 3, 4], start: 3 };
   const w = (grid.clientWidth || 360) - 8;
   const fit = (n) => Math.max(1, Math.floor(((w / n) - 4 - 4) / 88 * 100) / 100);
-  return { levels: [0.5, 0.75, 1, fit(2), fit(1)], start: 3 };
+  return { levels: [0.25, 0.5, 0.75, 1, fit(2), fit(1)], start: 4 };
 }
 function zoomIndex(n) {
   let i = NaN; try { i = parseInt(localStorage.getItem(zoomKey()), 10); } catch {}
@@ -1485,14 +1486,17 @@ function drawCollection() {
   const i = zoomIndex(levels.length) ?? start;
   const scale = levels[i];
   grid.classList.toggle("two-a-row", i === start);   // a phone's starting size keeps its two-to-a-row tiles (style.css)
-  // (v0.45.5) the zoomed-out sizes are a grid: a set number of equal columns (12 on desktop, as many as fit on a phone),
-  // each a button wide, with small captions, so the rows line up and sit close together
-  const dense = scale < 1, cell = Math.round(scale * 88) + 6;
+  // (v0.45.5) the zoomed-out sizes are a grid: a set number of equal columns, each a button wide, so the rows line up.
+  // (v0.45.6) the column is the button's art (its box less the 2px border each side) plus a margin that shrinks with the zoom
+  // (1px at 0.25x, 2px at 0.5x, 3px at 0.75x), so zoomed out they almost touch; desktop keeps the same row width at every
+  // level (14 at 0.5x, 28 at 0.25x), a phone fits as many as it can
+  const dense = scale < 1, cell = Math.round(scale * 88) - 4 + Math.round(scale * 4);
   grid.classList.toggle("dense", dense);
   if (dense) {
-    const fit = Math.max(1, Math.floor(((grid.clientWidth || 640) + 2) / (cell + 2)));
-    grid.style.setProperty("--cols", String(window.matchMedia(PHONE).matches ? fit : Math.min(12, fit)));
+    const fit = Math.max(1, Math.floor((grid.clientWidth || 640) / cell));
+    grid.style.setProperty("--cols", String(window.matchMedia(PHONE).matches ? fit : Math.min(Math.round(7 / scale), fit)));
     grid.style.setProperty("--cell", cell + "px");
+    grid.style.setProperty("--rowgap", Math.round(scale * 8) + 2 + "px");
   }
   $("zoom-out").disabled = i === 0;
   $("zoom-in").disabled = i === levels.length - 1;
