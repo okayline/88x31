@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.45.5
+# 88x31 cLuB Changelog — v0.35–v0.45.6
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.45.6
+**Mon Oct 19, 2026 · 11:17 PM HST**
+
+- One more zoom level out on a button collection: 0.25x (on a computer the zoom now runs 0.25x, 0.5x, 1x, 2x, 3x, 4x; on a phone 0.25x, 0.5x, 0.75x, 1x, two to a row, one to a row).
+- At the zoomed-out sizes the buttons now sit almost touching side to side, closer the smaller the zoom, and a row holds 14 at 0.5x and 28 at 0.25x on a computer. Removed: the old wider gaps between buttons at 0.5x and 0.75x, and everyone's saved zoom (it starts at the normal size again, since the list of sizes changed).
 
 ## v0.45.5
 **Mon Oct 19, 2026 · 11:10 PM HST**

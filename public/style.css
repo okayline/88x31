@@ -1317,6 +1317,6 @@ body.tw-carrying { cursor: grabbing; user-select: none; -webkit-user-select: non
 body.tw-carrying * { cursor: grabbing !important; }
 .tw-lock { margin-bottom: 1.6em; }
 /* (v0.45.5) zoomed out (under 1x): equal columns, a button wide each, tight side to side, no captions (the tooltip has them) */
-#page-collection.dense { display: grid; grid-template-columns: repeat(var(--cols), var(--cell)); gap: 6px 2px; }
+#page-collection.dense { display: grid; grid-template-columns: repeat(var(--cols), var(--cell)); gap: var(--rowgap) 0; }
 #page-collection { justify-content: center; }   /* the collection sits in the middle of its panel */
 .stamp img.banner { image-rendering: pixelated; }
