@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.12
+# 88x31 cLuB Changelog — v0.35–v0.46.13
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.13
+**Wed Oct 21, 2026 · 12:02 AM HST**
+
+- The Registry page can open at one game's entry: Aura Farm's "On The Registry" link now lands on that farm's entry. Removed: nothing; the link used to open the top of the Registry.
 
 ## v0.46.12
 **Tue Oct 20, 2026 · 10:58 AM HST** (migration 033, run before the push)
