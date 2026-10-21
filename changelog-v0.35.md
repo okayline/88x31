@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.13
+# 88x31 cLuB Changelog — v0.35–v0.46.14
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.14
+**Wed Oct 21, 2026 · 4:40 AM HST**
+
+- The background copy to the shared Registry now runs every 5 minutes, so gifts, trades and other moves show there sooner. Removed: the 15-minute wait between copies (set in v0.46.11); a copy is still not made on every move, so the database reads stay low.
 
 ## v0.46.13
 **Wed Oct 21, 2026 · 12:02 AM HST**
