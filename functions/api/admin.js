@@ -60,7 +60,7 @@ export async function onRequestPost({ request, env }) {
   const db = env.DB;
 
   // Mirror into the shared item registry now (it also runs on its own after page loads). Bigger pass than the background one.
-  if (body.action === "registry_sync") return json(await syncRegistry(env, { budget: 120 }));
+  if (body.action === "registry_sync") return json(await syncRegistry(env, { budget: 120, full: true }));
 
   if (body.action === "remove_design" || body.action === "restore_design") {
     const id = Number(body.design_id);

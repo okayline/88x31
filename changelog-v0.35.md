@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.14
+# 88x31 cLuB Changelog — v0.35–v0.46.15
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.15
+**Wed Oct 21, 2026 · 8:05 PM HST** (migration 034, run before the push)
+
+- Gifts, trades and other moves now show on the shared Registry within about a minute. The site checks once a minute whether anything changed (3 rows) and only then copies, and each copy reads just the buttons that changed. Removed: the 5-minute wait, and every copy reading every button and design.
 
 ## v0.46.14
 **Wed Oct 21, 2026 · 4:40 AM HST**
