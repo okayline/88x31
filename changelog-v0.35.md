@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.15
+# 88x31 cLuB Changelog — v0.35–v0.46.16
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.46.16
+**Sat Oct 24, 2026 · 2:04 AM HST**
+
+- The button wall can now show on a.88x31.app too. a.88x31.app is added to the sites that can read a player's public collection, next to okayline.dev. Removed: nothing.
 
 ## v0.46.15
 **Wed Oct 21, 2026 · 8:05 PM HST** (migration 034, run before the push)

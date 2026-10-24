@@ -4,8 +4,8 @@ import { json, currentUser } from "../../lib/auth.js";
 import { userByName } from "../../lib/game.js";
 import { markSeen } from "../../lib/progress.js";
 
-// Sites allowed to read a player's public collection from the browser (okayline.dev shows kura's buttons).
-const SHOW_ON = ["https://okayline.dev", "https://www.okayline.dev"];
+// Sites allowed to read a player's public collection from the browser (okayline.dev and a.88x31.app show kura's buttons).
+const SHOW_ON = ["https://okayline.dev", "https://www.okayline.dev", "https://a.88x31.app"];
 
 export async function onRequestGet({ request, env }) {
   const name = new URL(request.url).searchParams.get("user");
