@@ -2561,6 +2561,7 @@ $("ledger-older-btn").onclick = async () => {
 async function showCodes() {
   showView("view-codes");
   showPasskeys();
+  showCarry();
   const { codes } = await api("/api/codes");
   const list = $("codes");
   list.textContent = "";
@@ -2573,6 +2574,26 @@ async function showCodes() {
         catch (e) { say(e.message); }
       } }, "remove"));
     }
+    list.append(li);
+  }
+}
+
+// ---------- carry (v0.47): the copy you carry into every game, and pinning another (/api/carry) ----------
+async function showCarry() {
+  const now = $("carry-now"), list = $("carry-list");
+  list.textContent = "";
+  let d;
+  try { d = await api("/api/carry"); } catch (e) { now.textContent = e.message; return; }
+  now.textContent = "";
+  now.append(d.carry ? el("span", {}, "Carrying ", el("b", d.carry.blessed ? { style: "color:#e3b341" } : {}, `${d.carry.name} #${d.carry.copy}`), d.carry.blessed ? " (blessed by the Moon)" : "")
+    : el("span", { class: "small" }, "You don't hold any copies yet."));
+  const on = d.copies.find((x) => x.pinned) || d.copies[0];
+  for (const x of d.copies.slice(0, 20)) {
+    const li = el("li", {}, `${x.name} #${x.copy} `, el("span", { class: "small" }, `(${x.game})`), " ");
+    if (x !== on) li.append(el("button", { onclick: async () => {
+      try { await api("/api/carry", { method: "POST", body: { itemId: x.itemId, copy: x.copy } }); await showCarry(); say("Pinned. Every game carries it now."); }
+      catch (e) { say(e.message); }
+    } }, "pin"));
     list.append(li);
   }
 }

@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.35–v0.46.16
+# 88x31 cLuB Changelog — v0.35–v0.47.0
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.0
+**Mon Oct 26, 2026 · 12:33 AM HST**
+
+- **My Carry** (on the Save Codes page): the one copy you carry into every 88x31 game, which is your pinned copy or your newest. It shows in gold if the Moon blessed it. Below it is every copy your account holds in any game (buttons, 4Dungeon finds, Dawn Batons), each with a pin button. Removed: no way to see or choose the copy you carry.
+- Keeping a 1-of-1 from a pack marks the copy you carry "kept_one_of_one" in the shared registry (read just before the keep, so it is never the new button itself). Removed: 1-of-1 pulls leaving no trace on the copy you carry.
+- Needs dungeon-items with the pinned copy (its migration 007) and its HTTP door's pinned, pin, heldAcross and markCarried live first.
 
 ## v0.46.16
 **Sat Oct 24, 2026 · 2:04 AM HST**

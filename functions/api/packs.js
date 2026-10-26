@@ -12,6 +12,7 @@ import { sealSafe } from "../../lib/ledger.js";
 import { packsOf, packStory, openPack, keepFromPack, givePack, allPacks } from "../../lib/packs.js";
 import { markSeen } from "../../lib/progress.js";
 import { syncRegistry } from "../../lib/registry.js";
+import { carriedNow, markUltraKeep } from "./carry.js";
 
 export async function onRequestGet({ request, env }) {
   const params = new URL(request.url).searchParams;
@@ -42,7 +43,8 @@ export async function onRequestPost(context) {
   const id = Number(body.id);
   let r;
   if (body.action === "open") r = await openPack(env, me.id, id);
-  else if (body.action === "keep") r = await keepFromPack(env, me.id, id, body.picks);
+  let carry = null;
+  if (body.action === "keep") { carry = await carriedNow(env, me.id); r = await keepFromPack(env, me.id, id, body.picks); }
   else if (body.action === "give") {
     const to = await userByName(env, body.to);
     if (!to) return json({ error: "No player by that name." }, 404);
@@ -52,5 +54,6 @@ export async function onRequestPost(context) {
   await sealSafe(env);
   // (v0.45.2) kept buttons go to the shared registry now, in the background, not at the next page load (lib/registry.js)
   if (body.action === "keep") context.waitUntil(syncRegistry(env).catch((e) => console.log("registry sync failed", e)));
+  if (body.action === "keep") context.waitUntil(markUltraKeep(env, me.id, id, r.kept, carry));   // (v0.47) a kept 1-of-1 marks the carried copy
   return json(r);
 }

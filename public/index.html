@@ -9,7 +9,7 @@
   // The cLuB moved to 88x31.app: send visitors from the old address to the same spot there.
   if (location.hostname === "88x31-d65.pages.dev") location.replace("https://88x31.app" + location.pathname + location.search + location.hash);
 </script>
-<link rel="stylesheet" href="style.css?v=0.46.16">
+<link rel="stylesheet" href="style.css?v=0.47.0">
 </head>
 <body>
 <main>
@@ -442,6 +442,11 @@
 
     <!-- save codes -->
     <div id="view-codes" class="view panel" hidden>
+      <h2>&raquo; My Carry &laquo;</h2>
+      <p class="small">The one copy you carry into every 88x31 game: a button, a 4Dungeon find, a Dawn Baton. Pin another and every game carries it from then on. Keep a 1-of-1 from a pack and it gets a mark.</p>
+      <p id="carry-now"></p>
+      <ul id="carry-list"></ul>
+
       <h2>&raquo; My Save Codes &laquo;</h2>
       <p class="small">You can keep up to 5 codes, so you can stash copies in different places.</p>
       <ul id="codes"></ul>
@@ -505,7 +510,7 @@
 
   <p class="center small">
     Best viewed in 800x600 with any browser.<br>
-    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.46.16</span>
+    Last updated: Oct 2026 &middot; Made with Notepad &middot; <span id="version">v0.47.0</span>
   </p>
 
 </main>
@@ -521,6 +526,6 @@
     <p class="dialog-buttons"><button type="button" id="dialog-ok">OK</button> <button type="button" id="dialog-cancel">Cancel</button></p>
   </div>
 </div>
-<script src="app.js?v=0.46.16"></script>
+<script src="app.js?v=0.47.0"></script>
 </body>
 </html>
