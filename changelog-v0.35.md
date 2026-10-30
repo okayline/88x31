@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.1
+# 88x31 cLuB Changelog — v0.35–v0.47.2
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.2
+**Thu Oct 29, 2026 · 2:50 PM HST**
+
+- The footer ("~*~88x31~*~ cLuB, year · ≡ v0.47.2") is right-justified instead of centered. Removed: the centered footer (`data-align="center"`).
 
 ## v0.47.1
 **Thu Oct 29, 2026 · 2:20 PM HST**
