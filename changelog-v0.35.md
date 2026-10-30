@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.0
+# 88x31 cLuB Changelog — v0.35–v0.47.1
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.1
+**Thu Oct 29, 2026 · 2:20 PM HST**
+
+- **The shared footer** from dungeon-items ("© ~*~88x31~*~ cLuB, year · ≡ v0.47.1"), the same line every 88x31 game shows. Its ≡ goes to the Save Codes page. Removed: the version at the end of the "Last updated" line.
 
 ## v0.47.0
 **Mon Oct 26, 2026 · 12:33 AM HST**
