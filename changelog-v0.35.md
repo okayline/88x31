@@ -5,6 +5,12 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ---
 
 ## Footer fixes
+**Sat Oct 31, 2026 · 5:40 AM HST** (no new version: the game itself is unchanged)
+
+- The footer is drawn into its own spot at the bottom of the page. Removed: the footer's old placement right after its script tag.
+- The ≡ in the footer is only a mark now; it no longer goes to the Save Codes page (`#codes`). The Save Codes page and the accounts still work. Removed: `data-carry="#codes"` and the ≡ link to Save Codes, so nothing on the page points there now.
+
+## Footer fixes
 **Thu Oct 29, 2026 · 9:46 PM HST** (no new version: the game itself is unchanged)
 
 - The shared footer (from dungeon-items) waits until the page has loaded before it shows, so it no longer appears alone in the middle of the screen first, and its text can be selected. Removed: nothing in this game (the change is in dungeon-items `footer.js`).
