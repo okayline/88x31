@@ -1914,7 +1914,7 @@ function packTile(p, href) {
         at(spanC("star", "★"), "left:8px;top:20px"), at(spanC("star", "★"), "right:10px;top:82px;font-size:10px"), name, sealed]
       : look === "a" ? [...shine(), top(), spanC("sticker", "NEW!"), spanC("logo", "88x31"), name, sealed]
       : look === "b" ? [...shine(), top(), el("span", { class: "club-btn" }, el("i", {}, "~*~"), "\u00a0cLuB\u00a0", el("i", {}, "~*~")), name, spanC("stars3", "★★★"), sealed]
-      : [...shine(), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "88x31.app"),
+      : [...shine(), top(), el("span", { class: "win95" }, el("span", { class: "tb" }, "~*~ cLuB ~*~", el("i", {}, "x")), el("span", { class: "addr" }, "club.88x31.app"),
           el("span", { class: "pg" }, el("b", {}, "Welcome 2"), el("em", {}, "~*~ 88x31 cLuB ~*~"), spanC("uc"))), name, sealed];
   }
   return packArt({ shape, theme, parts, title, href, cls: cls + (p.revealed ? " revealed" : "") + (p.opened_at ? " spent" : "") });
@@ -3337,8 +3337,8 @@ function loaderKind(p) {
   return "download";
 }
 const LOADER = {
-  dialup: { title: "Connect To ~*~cLuB~*~", lines: [[0, "Ready to dial 88x31..."], [.1, "Dialing https://88x31.app..."], [.5, "Verifying buttons and foiling..."], [.97, "Connected! Your daily pack is here!"]] },
-  download: { title: "Saving: clubpack.zip", lines: [[0, "Location: 88x31.app/packs/clubpack.zip"], [.1, "Receiving buttons..."], [.55, "Polishing the shiny ones..."], [.97, "Download complete! 3 buttons saved."]] },
+  dialup: { title: "Connect To ~*~cLuB~*~", lines: [[0, "Ready to dial 88x31..."], [.1, "Dialing https://club.88x31.app..."], [.5, "Verifying buttons and foiling..."], [.97, "Connected! Your daily pack is here!"]] },
+  download: { title: "Saving: clubpack.zip", lines: [[0, "Location: club.88x31.app/packs/clubpack.zip"], [.1, "Receiving buttons..."], [.55, "Polishing the shiny ones..."], [.97, "Download complete! 3 buttons saved."]] },
   setup: { title: "~*~cLuB~*~ Pack Setup", lines: [[0, "Setup is ready to unpack your ~*~cLuB~*~ pack."], [.1, "Setup is copying your buttons..."], [.55, "Checking for holos..."], [.97, "Setup is complete! Welcome 2 the cLuB!"]] },
   dos: { title: "MS-DOS Prompt", lines: [] },
   tape: { title: "Series Beta · Side A", lines: [] },
