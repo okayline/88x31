@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.2
+# 88x31 cLuB Changelog — v0.35–v0.47.3
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.3 — "Tab Icon"
+**Sat Oct 31, 2026 · 11:30 AM HST**
+
+- A tab icon: the pastel sky 88x31 icon (88 over 31 on a big yellow X), so the browser tab and home-screen bookmark show the club instead of a blank default. Removed: nothing (the page had no icon before).
 
 ## Footer fixes
 **Sat Oct 31, 2026 · 5:40 AM HST** (no new version: the game itself is unchanged)
