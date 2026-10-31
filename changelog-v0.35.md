@@ -8,7 +8,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 **Sat Oct 31, 2026 · 5:40 AM HST** (no new version: the game itself is unchanged)
 
 - The footer is drawn into its own spot at the bottom of the page. Removed: the footer's old placement right after its script tag.
-- The ≡ in the footer is only a mark now; it no longer goes to the Save Codes page (`#codes`). The Save Codes page and the accounts still work. Removed: `data-carry="#codes"` and the ≡ link to Save Codes, so nothing on the page points there now.
+- The ≡ in the footer is only a mark now; it no longer goes to the Save Codes page (`#codes`). The Save Codes page, its own "Save Codes & Passkeys" link on the page, and the accounts still work. Removed: `data-carry="#codes"` and the ≡ link to Save Codes.
 
 ## Footer fixes
 **Thu Oct 29, 2026 · 9:46 PM HST** (no new version: the game itself is unchanged)
