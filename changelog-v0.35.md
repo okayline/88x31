@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.3
+# 88x31 cLuB Changelog — v0.35–v0.47.4
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.4 — "Notes Tidy"
+**Sat Oct 31, 2026 · 1:35 PM HST**
+
+- Behind the scenes only: nothing in the game changes. The repo's working notes (`CLAUDE.md`) now hold only notes for this game. Removed: the shared working-rules block that was copied into that file.
 
 ## v0.47.3 — "Tab Icon"
 **Sat Oct 31, 2026 · 11:30 AM HST**
