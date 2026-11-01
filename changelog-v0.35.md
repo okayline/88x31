@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.4
+# 88x31 cLuB Changelog — v0.35–v0.47.5
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.5 — "Calm Icon"
+**Sat Oct 31, 2026 · 10:35 PM HST**
+
+- A calmer tab icon: just "88 x 31" in this game's accent colour, wider, inside a bold ASCII `+--+` border, on this page's own background colour. Removed: the busy pastel background with the big X, and the numbers' dark outline, white tops and shadow bar.
 
 ## v0.47.4 — "Notes Tidy"
 **Sat Oct 31, 2026 · 1:35 PM HST**
