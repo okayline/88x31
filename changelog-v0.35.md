@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.5
+# 88x31 cLuB Changelog — v0.35–v0.47.6
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.47.6 — "Series Shared"
+**Tue Nov 3, 2026 · 4:55 AM HST**
+
+- Behind the scenes only: buttons sent to the shared item table now say which series they belong to, so other games can show it. Removed: nothing.
 
 ## v0.47.5 — "Calm Icon"
 **Sat Oct 31, 2026 · 10:35 PM HST**
