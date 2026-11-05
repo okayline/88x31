@@ -42,9 +42,10 @@ export async function onRequestPost(context) {
   const body = await readJson(request);
   const id = Number(body.id);
   let r;
-  if (body.action === "open") r = await openPack(env, me.id, id);
   let carry = null;
-  if (body.action === "keep") { carry = await carriedNow(env, me.id); r = await keepFromPack(env, me.id, id, body.picks); }
+  // (v0.48.5) one chain: since v0.47.0 "keep" started a second if, so "open" fell through to "Unknown action." after the pack was rolled
+  if (body.action === "open") r = await openPack(env, me.id, id);
+  else if (body.action === "keep") { carry = await carriedNow(env, me.id); r = await keepFromPack(env, me.id, id, body.picks); }
   else if (body.action === "give") {
     const to = await userByName(env, body.to);
     if (!to) return json({ error: "No player by that name." }, 404);

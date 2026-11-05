@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.48.5 — "Open Sesame"
+**Thu Nov 5, 2026 · 12:10 PM HST**
+
+- Fixed: opening a sealed pack showed nothing. The pack was opened, but the page was told something went wrong. A pack this happened to opens normally now, with the same buttons. Removed: the error.
+
 ## v0.48.4 — "Box Only"
 **Thu Nov 5, 2026 · 12:00 PM HST**
 
