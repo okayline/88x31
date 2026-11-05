@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.48.2 — "Gamma Box"
+**Thu Nov 5, 2026 · 11:50 AM HST**
+
+- Series Gamma packs are a graphics card box, drawn by kura. Hold to open it, like every pack. Removed: the plain series look for Gamma packs.
+
 ## v0.48.1 — "No Frame"
 **Thu Nov 5, 2026 · 11:22 AM HST**
 

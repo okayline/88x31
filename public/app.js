@@ -1828,7 +1828,7 @@ const packTitle = (p) => (p.special_no ? `${limitedName(p)} #${p.special_no} of 
 // Beta: green terminal with a CRT refresh line; their limited packs: Cool Site of the Day rosette
 // and the Gold Master disc). Shelf packs (daily, welcome, free, mixed) keep the rounded outline with a picture.
 const PACK_TOP = "~*~ 88x31 cLuB ~*~";
-const PACK_THEMES = new Set(["alpha", "beta"]);   // series with their own pack art
+const PACK_THEMES = new Set(["alpha", "beta", "gamma"]);   // series with their own pack art
 const spanC = (cls, ...kids) => el("span", { class: cls }, ...kids);
 const packSparks = () => [[14, 22, 0, ""], [74, 40, .9, "s"], [30, 70, 1.7, ""], [80, 92, .4, "s"], [16, 110, 1.3, "s"], [60, 16, 2.1, "s"]]
   .map(([x, y, d, c]) => el("span", { class: "spark " + c, style: `left:${x}px;top:${y}px;animation-delay:${(d + Math.random() * .6).toFixed(2)}s` }));
@@ -1868,6 +1868,11 @@ function packTile(p, href) {
       theme = "beta";
       parts = [...packRain(), spanC("scan"), spanC("refresh"), top(), spanC("win", el("img", { src: "banners/beta/beta-dos-prompt.gif", alt: "", width: "88", height: "31" })),
         spanC("pack-name", "BETA"), spanC("prompt", "C:\\>", spanC("cur", "█")), spanC("pack-sub", sub)];
+    } else if (s === "gamma") {
+      // (v0.48.2) a graphics card box: kura's own picture is the whole pack (banners/gamma/gamma-pack.png), so nothing is written on
+      // it but "opened!"; a box has no crimp, so it opens by holding, not tearing
+      shape = "box"; theme = "gamma";
+      parts = p.revealed ? [spanC("pack-sub", sub)] : [];
     } else {
       theme = "series";
       parts = [spanC("gleam"), top(), name(`SERIES ${p.series.toUpperCase()}`), spanC("pack-sub", sub)];
@@ -3324,7 +3329,7 @@ async function showRings() {
 // ---------- hold to open, and tearing pouches (v0.32) ----------
 // Clicking a pack opens a little 90s window; hold "Open Pack" (or Space) until the bar fills.
 // Let go early and it drains back: nothing opens. Each kind of pack has its own loader:
-//   daily = dial-up · ~*~cLuB~*~ = download · welcome & free = setup · Alpha & limited = MS-DOS · Beta = cassette
+//   daily = dial-up · ~*~cLuB~*~ = download · welcome & free = setup · Alpha, Gamma & limited = MS-DOS · Beta = cassette
 // Crimped pouches (series and limited packs) can also be torn open: drag across the top.
 const HOLD_MS = 1600, DRAIN_MS = 500;
 function loaderKind(p) {

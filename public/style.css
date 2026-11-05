@@ -798,6 +798,11 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .45), transparent); animation: pack-gleam 3.6s ease-in-out infinite; }
 @keyframes pack-gleam { from { transform: translateX(-140%) rotate(20deg); } to { transform: translateX(260%) rotate(20deg); } }
 
+/* (v0.48.2) the box (Series Gamma): kura's graphics card box is the whole pack, at the pack's own 100x136; no crimp and no outline */
+.pack-tile.box { filter: drop-shadow(3px 3px 0 #000); }
+.th-gamma .pack-art { background: #000 url("banners/gamma/gamma-pack.png") center / 100% 100% no-repeat; border-radius: 3px; justify-content: flex-end; padding-bottom: 6px; }
+.th-gamma .pack-sub { background: rgba(0, 0, 0, .7); padding: 0 4px; }
+
 /* the crimped pouch (series packs) */
 .pack-tile.pouch { filter: drop-shadow(3px 3px 0 #000); }
 .pack-tile.pouch.glow-gold { filter: drop-shadow(0 0 7px rgba(255, 215, 90, .75)) drop-shadow(3px 3px 0 #000); }
