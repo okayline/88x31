@@ -147,6 +147,8 @@ textarea, select {
 img.banner { display: block; image-rendering: pixelated; border: 2px solid transparent; }
 img.rarity-uncommon { border-color: #00ffff; }
 img.rarity-rare { border-color: #ffff00; }
+/* (v0.48.1) the GPUs (hardware, Series Gamma) have no frame: kura, Nov 5, "no outline around the gpu, where the yellow is" */
+img.rarity-rare.type-hardware { border-color: transparent; }
 img.rarity-ultra { border-color: #ff00ff; outline: 1px solid #ffffff; }
 .card.rarity-ultra b, .variant { color: #ff99ff; font-weight: bold; }
 

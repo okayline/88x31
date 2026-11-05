@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.48.1 — "No Frame"
+**Thu Nov 5, 2026 · 11:22 AM HST**
+
+- The Series Gamma graphics cards are shown without the yellow rare frame around their picture. Removed: their yellow frame.
+
 ## v0.48 — "Series Gamma"
 **Thu Nov 5, 2026 · 10:30 AM HST**
 

@@ -169,7 +169,7 @@ function bannerImg(design, scale = 1) {
   const fin = finishName(design);
   const img = el("img", {
     src: design.image_key, alt: design.name, width: 88 * scale, height: 31 * scale,
-    class: "banner rarity-" + design.rarity,
+    class: "banner rarity-" + design.rarity + (design.type ? " type-" + design.type : ""),   // type-: Series Gamma's GPUs have no rare frame (v0.48.1)
     title: `${design.name} (${design.rarity}${fin && fin !== "None" ? ", " + fin : ""})`,
   });
   const foil = design.foil && drawn(design.foil), pat = design.pattern && drawn(design.pattern), fx = design.effect && drawn(design.effect);
