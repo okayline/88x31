@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.48.4 — "Box Only"
+**Thu Nov 5, 2026 · 12:00 PM HST**
+
+- Series Gamma's graphics cards only come out of Series Gamma packs: daily packs, ~*~cLuB~*~ packs, other series' packs and free packs no longer have them. Removed: graphics cards in every other pack.
+
 ## v0.48.3 — "Pick One"
 **Thu Nov 5, 2026 · 11:55 AM HST**
 

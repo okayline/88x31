@@ -6,9 +6,9 @@ import { json } from "../../lib/auth.js";
 import {
   ODDS_PER_1000, SPECIAL_ODDS_PER_1000, PULLS_PER_DAY, BONUS_CHANCE, FOUND_CHANCE, CRAWLER_SERIES_CHANCE,
   SERIES_WEIGHTS, MAX_ACTIVE_SERIES, PATTERN_CHANCE, EFFECT_CHANCE, FUSE_EFFECT_CHANCE, TOP_EFFECT, FREE_HOLD,
-  finishes, seriesPrinted,
+  finishes, seriesPrinted, SERIES_PACK, packOnlyIds,
 } from "../../lib/game.js";
-import { EARNED_KEEP, SERIES_PACK } from "../../lib/packs.js";
+import { EARNED_KEEP } from "../../lib/packs.js";
 import { BOARD_DAYS, MAX_OPEN, REQUEST_PACKS_PER_DAY, REQUESTABLE } from "../../lib/board.js";
 import { TRADE_DAYS, MAX_SIDE } from "../../lib/trades.js";
 import { MILESTONES } from "./hit.js";
@@ -71,7 +71,8 @@ export async function onRequestGet({ env }) {
   let order = [];
   try { order = (await env.DB.prepare("SELECT id FROM series WHERE status = 'active' ORDER BY sort DESC, id DESC LIMIT ?").bind(MAX_ACTIVE_SERIES).all()).results.map((r) => r.id); } catch {}
   const oop = new Set(runs.filter((s) => s.out_of_print).map((s) => s.id));
-  order = order.filter((id) => !oop.has(id));
+  const own = packOnlyIds(runs);   // (v0.48.4) a series that only comes out of its own packs gets no share
+  order = order.filter((id) => !oop.has(id) && !own.has(id));
   const wTotal = order.reduce((n, _, i) => n + (SERIES_WEIGHTS[i] ?? 0), 0);
   const series = runs.map((s) => {
     const made = specials[s.id] || 0, limit = s.special_limit ?? 25;
