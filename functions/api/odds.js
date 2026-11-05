@@ -8,7 +8,7 @@ import {
   SERIES_WEIGHTS, MAX_ACTIVE_SERIES, PATTERN_CHANCE, EFFECT_CHANCE, FUSE_EFFECT_CHANCE, TOP_EFFECT, FREE_HOLD,
   finishes, seriesPrinted,
 } from "../../lib/game.js";
-import { EARNED_KEEP } from "../../lib/packs.js";
+import { EARNED_KEEP, SERIES_PACK } from "../../lib/packs.js";
 import { BOARD_DAYS, MAX_OPEN, REQUEST_PACKS_PER_DAY, REQUESTABLE } from "../../lib/board.js";
 import { TRADE_DAYS, MAX_SIDE } from "../../lib/trades.js";
 import { MILESTONES } from "./hit.js";
@@ -97,7 +97,7 @@ export async function onRequestGet({ env }) {
       free: Object.fromEntries(Object.entries(free1000).map(([k, v]) => [k, pct(v, freeTotal)])) },
     packs: {
       daily: { cards: 3, keep: 1, per_day: PULLS_PER_DAY, found_chance: FOUND_CHANCE * 100, bonus_chance: BONUS_CHANCE * 100, reset_utc: "00:00" },
-      sealed: { cards: 3, keep: EARNED_KEEP },
+      sealed: { cards: 3, keep: EARNED_KEEP }, sealed_by_series: SERIES_PACK,   // (v0.48.3) Gamma: 2 cards, keep 1
       series_weights: SERIES_WEIGHTS, max_active_series: MAX_ACTIVE_SERIES,
       free: { cards: 1, hold_days: FREE_HOLD / 86400 },
     },

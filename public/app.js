@@ -2540,7 +2540,7 @@ async function showFair() {
       el("p", {}, bar(s.special_made, s.special_limit), ` Limited packs (${s.special_name}): ${s.special_left} of ${s.special_limit} left`),
       Object.keys(s.buttons || {}).length ? el("p", { class: "small" }, "In this series: ", lineup(s.buttons)) : null,
       s.pack_share ? el("p", { class: "small" }, `${pctTxt(s.pack_share)} of the cLuB's own cards in daily and ~*~cLuB~*~ packs come from Series ${s.name}.`) : null,
-      el("p", { class: "small" }, `Series packs hold 3 Series ${s.name} buttons, keep ${o.packs.sealed.keep}. Its Limited pack, the ${s.special_name} Pack: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.`)))) : [el("p", {}, "No series yet!")]));
+      el("p", { class: "small" }, `Series packs hold ${(o.packs.sealed_by_series?.[s.name] || o.packs.sealed).cards} Series ${s.name} buttons, keep ${(o.packs.sealed_by_series?.[s.name] || o.packs.sealed).keep}. Its Limited pack, the ${s.special_name} Pack: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.`)))) : [el("p", {}, "No series yet!")]));
 }
 
 // "Show older entries": 100 more each time, all the way back to entry #1

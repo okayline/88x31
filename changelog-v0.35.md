@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.48.3 — "Pick One"
+**Thu Nov 5, 2026 · 11:55 AM HST**
+
+- A Series Gamma pack shows 2 graphics cards and you keep 1, so every Gamma pack is one card from the limited run. Removed: 3 cards and keep 2 for Gamma packs.
+
 ## v0.48.2 — "Gamma Box"
 **Thu Nov 5, 2026 · 11:50 AM HST**
 
