@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.47.6
+# 88x31 cLuB Changelog — v0.35–v0.48
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.48 — "Series Gamma"
+**Thu Nov 5, 2026 · 10:30 AM HST**
+
+- **Series Gamma**: ten graphics cards, a new kind of button, hardware. A limited series: only 100 copies will ever be printed. Most of their fans spin. Removed: nothing.
+- Packs: a series with only some kinds of button no longer shows up more often than it should. Removed: the old fallback behind it.
 
 ## v0.47.6 — "Series Shared"
 **Tue Nov 3, 2026 · 4:55 AM HST**
