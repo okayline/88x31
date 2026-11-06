@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.48
+# 88x31 cLuB Changelog — v0.35–v0.49
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.49 — "Big Button"
+**Thu Nov 5, 2026 · 8:35 PM HST**
+
+- Rest your mouse on any button for a second (or hold it on a phone) to see it big. Move the mouse or slide your finger to turn it over: past a quarter turn you see the cLuB's face-down card. Series Gamma's graphics cards turn in 3D, with their real sides, and tilt up and down too. Where a long press already picks a button up (the Theme Wall, arranging your wall), a phone still picks it up. Removed: the phone's picture menu on a long press of a button (the button's info box still has the download links).
 
 ## v0.48.5 — "Open Sesame"
 **Thu Nov 5, 2026 · 12:10 PM HST**
