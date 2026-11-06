@@ -190,7 +190,7 @@ function bannerPic(design, scale = 1) {
 // phone (or rest the mouse on it without moving for HOVER_MS) to see the button big; letting go (or moving off) closes it. It turns
 // with your finger or mouse, and past a quarter turn shows its back, the cLuB's face-down stripes. A hold doesn't also click: the
 // click after it is swallowed. With it open, the mouse can go sideways until it has turned a half turn (TURN_OFF), and up or down
-// HOVER_PAD px past the button. Series Gamma's GPUs show Rob's Game's 3D models and tilt up and down too. Where a long press already
+// HOVER_PAD px past the button. Series Gamma's GPUs show Rob's Game's 3D models and tilt up and down too, up to a half turn each way. Where a long press already
 // picks a button up (the Theme Wall, arranging your wall), a phone keeps that and doesn't zoom.
 const zoomOf = new WeakMap();   // each button picture bannerImg made -> its design
 {
@@ -256,7 +256,10 @@ const zoomOf = new WeakMap();   // each button picture bannerImg made -> its des
     const n = e.buttons ? null : pic(e.target);   // no waiting while a button is pressed (carrying something)
     if (bigBy) {
       const r = bigBy.getBoundingClientRect(), y = e.clientY;
-      if (bigBy.isConnected && Math.abs(deg(e)) < TURN_OFF && y >= r.top - HOVER_PAD && y <= r.bottom + HOVER_PAD) turnBig(deg(e), tilt(e));
+      // a GPU tilts, so up and down count as turning too: it stays until either way has gone past a half turn (kura, v0.49.5: "my
+      // mouse goes off of the 3d view too quickly ... can we have the limit of rotation be 180 degrees"); a flat button keeps HOVER_PAD
+      const inside = bigTilt ? Math.abs(tilt(e)) < TURN_OFF : y >= r.top - HOVER_PAD && y <= r.bottom + HOVER_PAD;
+      if (bigBy.isConnected && Math.abs(deg(e)) < TURN_OFF && inside) turnBig(deg(e), tilt(e));
       else hideBig();
     }
     clearTimeout(hover); hoverOn = n;

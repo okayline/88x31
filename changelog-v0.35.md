@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.49.5 — "Stay Open"
+**Thu Nov 5, 2026 · 9:30 PM HST**
+
+- A graphics card's 3D view stays open while you tilt it up and down, until you've turned it half way round either way. Removed: it closing as soon as the mouse went a little above or below the button.
+
 ## v0.49.4 — "Easy Turn"
 **Thu Nov 5, 2026 · 8:55 PM HST**
 
