@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.49.4 — "Easy Turn"
+**Thu Nov 5, 2026 · 8:55 PM HST**
+
+- A big button turns more slowly as you move the mouse, the same speed as in Rob's Game, whatever size the button is on the page. Removed: the faster turning on small buttons.
+
 ## v0.49.3 — "Full Size"
 **Thu Nov 5, 2026 · 8:50 PM HST**
 

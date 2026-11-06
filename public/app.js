@@ -244,8 +244,11 @@ const zoomOf = new WeakMap();   // each button picture bannerImg made -> its des
   // until it has turned TURN_OFF or the mouse is more than HOVER_PAD above or below the picture. Resting still on another picture
   // meanwhile opens that one instead.
   let hover = null, hoverOn = null, x0 = 0, y0 = 0;
-  const deg = (e) => (e.clientX - x0) / bigBy.getBoundingClientRect().width * 180;
-  const tilt = (e) => -(e.clientY - y0) / bigBy.getBoundingClientRect().width * 180;
+  // the mouse turns it as fast as Rob's Game's: a half turn for every MOUSE_HALF px, the width of its cards in your hand on a computer
+  // (kura, v0.49.4: "can we have it the same as robs-game please"; it was the button's own width, 88 px or less, so faster)
+  const MOUSE_HALF = 112;
+  const deg = (e) => (e.clientX - x0) / MOUSE_HALF * 180;
+  const tilt = (e) => -(e.clientY - y0) / MOUSE_HALF * 180;
   addEventListener("pointermove", (e) => {
     if (holdTimer && Math.hypot(e.clientX - hx, e.clientY - hy) > 8) { clearTimeout(holdTimer); holdTimer = null; }
     if (held && bigCard && e.pointerType !== "mouse") { turnBig((e.clientX - hx) * FINGER_DEG_PX, -(e.clientY - hy) * FINGER_DEG_PX); return; }
