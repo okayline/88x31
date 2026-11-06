@@ -1,0 +1,4 @@
+# Series Gamma's GPU pictures and fan strips are read by other sites: Rob's Game's cards, and the shared big view (dungeon-items
+# /zoom.js), which paints a GPU's 3D sides from its pixels, so browsers must be told it's allowed (v0.50.1)
+/banners/gamma/gpu/*
+  Access-Control-Allow-Origin: *

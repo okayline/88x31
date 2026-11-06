@@ -189,7 +189,7 @@ function bannerPic(design, scale = 1) {
 // The big view itself is shared by every game: dungeon-items serves it as /zoom.js (v0.50, kura: "it would be nice to change it to
 // "90 degrees" once, and have it change everywhere"). The club's frame is the button itself, big, its foil and effect too. Where a long
 // press already picks a button up (the Theme Wall, arranging your wall), a phone keeps that. Series Gamma's GPUs turn in 3D, from
-// their pictures in banners/gamma/3d/.
+// their pictures in banners/gamma/gpu/.
 const zoomOf = new WeakMap();   // each button picture bannerImg made -> its design
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
@@ -199,7 +199,7 @@ window.DDZoom?.setup({
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { face: pic, w: 88, h: 31, width: px + "px" };
     const art = el("div", {}, pic);
-    return { face: art, w: 88, h: 31, width: px + "px", gpu: { key, image: `banners/gamma/3d/${key}.png`, frames: `banners/gamma/3d/${key}-frames.png`, art, spin: true } };
+    return { face: art, w: 88, h: 31, width: px + "px", gpu: { key, image: `banners/gamma/gpu/${key}.png`, frames: `banners/gamma/gpu/${key}-frames.png`, art, spin: true } };
   },
 });
 

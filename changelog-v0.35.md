@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.50.1 — "One Shelf"
+**Thu Nov 5, 2026 · 9:55 PM HST**
+
+- Behind the scenes: the graphics cards' pictures and spinning-fan strips all live here now, in one place, and Rob's Game shows them from here too (kura: "can the gpu pics be in a single place too?"). Nothing looks different. Removed: the second copy of eight of them.
+
 ## v0.50 — "Shared View"
 **Thu Nov 5, 2026 · 9:35 PM HST**
 
