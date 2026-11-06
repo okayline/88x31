@@ -1353,7 +1353,7 @@ body.tw-carrying * { cursor: grabbing !important; }
 .zflip > .zface, .zflip > .zback { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 /* thickness: the front sits --zd/2 in front, the back --zd/2 behind, and ZEDGE layers of a darker navy fill the gap */
 .zflip > .zface { transform: translateZ(calc(var(--zd) / 2)); display: flex; align-items: center; justify-content: center; }
-.zface img.banner, .zface canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.zface canvas { width: 100%; height: 100%; image-rendering: pixelated; }   /* a GPU's flat picture; a button is made at the big size already (bannerPic) */
 .zedge { position: absolute; inset: 0; background: #000048; transform: translateZ(calc((var(--k) - .5) * var(--zd))); }
 .zback { transform: rotateY(180deg) translateZ(calc(var(--zd) / 2)); background: repeating-linear-gradient(45deg, #000080 0 8px, #000060 8px 16px); }
 /* a GPU in 3D (GPU_3D in app.js, from Rob's Game): one art pixel is one --u; each face is a pixel texture */

@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.49.3 — "Full Size"
+**Thu Nov 5, 2026 · 8:50 PM HST**
+
+- Fixed: a foiled button, or one with an effect, opened tiny in the middle of its big view. It fills it now. Removed: the tiny ones.
+
 ## v0.49.2 — "No Popup"
 **Thu Nov 5, 2026 · 8:45 PM HST**
 
