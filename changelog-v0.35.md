@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.49.2 — "No Popup"
+**Thu Nov 5, 2026 · 8:45 PM HST**
+
+- Resting the mouse on a button no longer pops up its name and rarity in a little box, which came up over the big button. Removed: that popup.
+
 ## v0.49.1 — "Plain Back"
 **Thu Nov 5, 2026 · 8:40 PM HST**
 

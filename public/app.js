@@ -168,12 +168,10 @@ function finishName(b) {
 // every button picture: bannerPic, and its design remembered so holding or hovering it shows it big (v0.49, below)
 function bannerImg(design, scale = 1) { const n = bannerPic(design, scale); zoomOf.set(n, design); return n; }
 function bannerPic(design, scale = 1) {
-  const fin = finishName(design);
   const img = el("img", {
     src: design.image_key, alt: design.name, width: 88 * scale, height: 31 * scale,
     class: "banner rarity-" + design.rarity + (design.type ? " type-" + design.type : ""),   // type-: Series Gamma's GPUs have no rare frame (v0.48.1)
-    title: `${design.name} (${design.rarity}${fin && fin !== "None" ? ", " + fin : ""})`,
-  });
+  });   // no title: its hover popup came up over the big button (kura, v0.49.2)
   const foil = design.foil && drawn(design.foil), pat = design.pattern && drawn(design.pattern), fx = design.effect && drawn(design.effect);
   if (!foil && !fx) return img;
   // each copy shimmers a little differently, seeded from its own number
@@ -183,8 +181,8 @@ function bannerPic(design, scale = 1) {
   if (!fx) return layer();
   // the effect plays on the foiled button as one picture
   const cls = "fx " + (fx === "crt-vhs" ? "fx-crt fx-vhs" : "fx-" + fx);
-  if (fx === "marquee") return el("span", { class: cls, style: vars, title: img.title }, el("span", { class: "fx-track" }, layer(), layer()));
-  return el("span", { class: cls, style: vars, title: img.title }, layer());
+  if (fx === "marquee") return el("span", { class: cls, style: vars }, el("span", { class: "fx-track" }, layer(), layer()));
+  return el("span", { class: cls, style: vars }, layer());
 }
 
 // ---------- the big button (v0.49, kura, Nov 5: "can we take robs-game hover tap to zoom behavior, and copy it exactly into club.88x31") ----------
