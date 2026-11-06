@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.49.6 — "Edge On"
+**Thu Nov 5, 2026 · 9:30 PM HST**
+
+- A graphics card tilts all the way to edge-on, so you can look straight at its top or bottom. Removed: the tilt stopping a little short of that.
+
 ## v0.49.5 — "Stay Open"
 **Thu Nov 5, 2026 · 9:30 PM HST**
 

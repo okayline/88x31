@@ -196,7 +196,7 @@ const zoomOf = new WeakMap();   // each button picture bannerImg made -> its des
 {
   const HOLD_MS = 450, HOVER_MS = 1000, HOVER_PAD = 16, TURN_OFF = 180;
   const ZEDGE = 8;   // layers that make its edge (its thickness, .zedge)
-  const FINGER_DEG_PX = 0.75, TILT_MAX = 80;   // degrees per pixel a finger moves: 240px turns it to its back
+  const FINGER_DEG_PX = 0.75, TILT_MAX = 90;   // degrees per pixel a finger moves: 240px turns it to its back; TILT_MAX: a GPU tilts up to edge-on (kura, v0.49.6; Rob's Game has 80)
   const mk = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
   let bigCard = null, bigFlip = null, bigBy = null, held = false, bigTilt = false;   // bigBy: the picture a mouse opened it from; bigTilt: a GPU in 3D
   const gpuKey = (d) => d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
