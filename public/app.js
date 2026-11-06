@@ -191,15 +191,57 @@ function bannerPic(design, scale = 1) {
 // press already picks a button up (the Theme Wall, arranging your wall), a phone keeps that. Series Gamma's GPUs turn in 3D, from
 // their pictures in banners/gamma/gpu/, and a 3D printed button stands up at its print's heights (v0.50.2).
 const zoomOf = new WeakMap();   // each button picture bannerImg made -> its design
+// The card under the big button (v0.51, kura's mockup A, "Floating Panel"): a see-through panel with two lines: the type and its
+// subtype ("Construction — Zone") with the series' sign in its rarity's colour at the right, then the flavour line. Subtypes, flavour
+// lines and series come from the shared item table through /api/cards (loaded once); a button it doesn't know (found buttons,
+// specials) shows its type line alone. The panel turns with the button; the button's edge and back cover the button only.
+let CARDS = {};
+fetch("/api/cards").then((r) => (r.ok ? r.json() : {})).then((j) => { CARDS = (j && j.cards) || {}; }).catch(() => {});
+const SIGN = {   // each series' sign, drawn in a 14 x 14 box: its outline, then its inner lines (the mockup's)
+  Alpha: ["M1 7a6 6 0 1 0 12 0a6 6 0 1 0 -12 0z", "M1 7h12M7 1c-3 3.5 -3 8.5 0 12M7 1c3 3.5 3 8.5 0 12"],   // a globe
+  Beta: ["M1 1h9.5l2.5 2.5v9.5h-12z", "M4 1v4h5v-4M4 13v-4h6v4"],   // a floppy
+  Gamma: ["M2.6 2.5h10.6v7.5h-10.6z", "M1.6 3.1h-1.4M1.6 3.1v8.1M8.4 3.95a2.3 2.3 0 1 0 .01 0M4.3 10v1.3M5.5 10v1.3M6.7 10v1.3M7.9 10v1.3"],   // a graphics card
+};
+const ZCARD_PANEL = 22;   // the panel and the gap above it, in the button's pixels (the big view is 88 wide)
+function cardPanel(d, phone) {
+  const c = CARDS[d.design_id ?? d.id] || {};
+  const type = d.type ? d.type[0].toUpperCase() + d.type.slice(1) : "";
+  const l1 = el("div", { class: "zc-l1" }, el("b", {}, c.subtype && type ? `${type} — ${c.subtype}` : type));
+  const sign = SIGN[c.series || d.series];
+  if (sign) {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "0 0 14 14"); s.setAttribute("class", "zc-sym " + d.rarity);
+    s.innerHTML = sign.map((p) => `<path d="${p}"/>`).join("");
+    l1.append(s);
+  }
+  const l2 = c.flavor ? el("div", { class: "zc-l2" }, `“${c.flavor}”`) : null;
+  // The flavour line: on a computer, it shrinks to fit one line (down to 75% of its size), then goes on two lines at that size. On a
+  // phone the panel is taller and the text bigger (--zf), so the smallest is 80% and a line that's still too long goes on three
+  // (kura: "can we make the text smaller for the longer ones", "two lines ... if it gets long?", "three lines for the phones").
+  // Measured once the big view has put it on the page (the microtask runs after showBig).
+  if (l2) queueMicrotask(() => {
+    const min = phone ? 0.8 : ZCARD_SMALLEST;
+    const over = l2.scrollWidth / (l2.clientWidth || 1);   // at the base size
+    if (over <= 1) return;
+    l2.style.fontSize = `calc(var(--zf, 4) * var(--u) * ${Math.max(min, 0.98 / over).toFixed(3)})`;
+    if (over * min > 0.98) l2.classList.add(over * min > 1.96 && phone ? "three" : "two");
+  });
+  return el("div", { class: "zc-glass" }, l1, l2);
+}
+const ZCARD_SMALLEST = 0.75;
+const ZCARD_PANEL_PHONE = 28;   // the phone's panel: taller, so three lines fit
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
   holdOff: (n) => !!n.closest(".tw-pick, .tw-carried, .tw-mine") || (arranging && !!n.closest("#page-collection")),
   open: (n) => {
     const d = zoomOf.get(n), px = Math.min(innerWidth * 0.86, 440), pic = bannerPic(d, px / 88);   // made at the big size
+    const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
+    const card = (art) => el("div", { class: "zc" }, art, cardPanel(d, phone));
+    const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : "") };
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
-    if (!key) return { face: pic, w: 88, h: 31, width: px + "px", relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
+    if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
     const art = el("div", {}, pic);
-    return { face: art, w: 88, h: 31, width: px + "px", gpu: { key, image: `banners/gamma/gpu/${key}.png`, frames: `banners/gamma/gpu/${key}-frames.png`, art, spin: true } };
+    return { ...v, face: card(art), gpu: { key, image: `banners/gamma/gpu/${key}.png`, frames: `banners/gamma/gpu/${key}-frames.png`, art, spin: true } };
   },
 });
 

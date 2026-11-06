@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.50
+# 88x31 cLuB Changelog — v0.35–v0.51
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51 — "Button Card"
+**Fri Nov 6, 2026 · 6:35 PM HST**
+
+- Holding or hovering a button shows a card under its big view: its type and kind (like "Construction — Zone"), its series' sign in its rarity's colour, and a line from an old web page. Removed: nothing.
 
 ## v0.50.2 — "Stand Up"
 **Thu Nov 5, 2026 · 10:00 PM HST**
