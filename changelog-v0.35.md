@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.49.1 — "Plain Back"
+**Thu Nov 5, 2026 · 8:40 PM HST**
+
+- The back of a big button is just the cLuB's navy stripes. Removed: the yellow "?" on it.
+
 ## v0.49 — "Big Button"
 **Thu Nov 5, 2026 · 8:35 PM HST**
 

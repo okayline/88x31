@@ -190,7 +190,7 @@ function bannerPic(design, scale = 1) {
 // ---------- the big button (v0.49, kura, Nov 5: "can we take robs-game hover tap to zoom behavior, and copy it exactly into club.88x31") ----------
 // Rob's Game's big card (src/page.html showBig() .. zoomable()), on every button picture: press and hold one still for HOLD_MS on a
 // phone (or rest the mouse on it without moving for HOVER_MS) to see the button big; letting go (or moving off) closes it. It turns
-// with your finger or mouse, and past a quarter turn shows its back, the cLuB's face-down card. A hold doesn't also click: the
+// with your finger or mouse, and past a quarter turn shows its back, the cLuB's face-down stripes. A hold doesn't also click: the
 // click after it is swallowed. With it open, the mouse can go sideways until it has turned a half turn (TURN_OFF), and up or down
 // HOVER_PAD px past the button. Series Gamma's GPUs show Rob's Game's 3D models and tilt up and down too. Where a long press already
 // picks a button up (the Theme Wall, arranging your wall), a phone keeps that and doesn't zoom.
@@ -206,9 +206,8 @@ const zoomOf = new WeakMap();   // each button picture bannerImg made -> its des
     hideBig();
     const box = mk("div", "zbox");
     bigFlip = mk("div", "zflip");
-    const face = mk("div", "zface"), back = mk("div", "zback");
-    back.textContent = "?";
-    bigFlip.append(face, back);
+    const face = mk("div", "zface");
+    bigFlip.append(face, mk("div", "zback"));
     for (let k = 0; k < ZEDGE; k++) { const e = mk("div", "zedge"); e.style.setProperty("--k", (k + 0.5) / ZEDGE); bigFlip.append(e); }
     box.append(bigFlip); bigCard = mk("div", "zoom"); bigCard.append(box); document.body.append(bigCard);
     face.append(bannerPic(d, box.clientWidth / 88));
