@@ -4,6 +4,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
 
+## v0.50.2 — "Stand Up"
+**Thu Nov 5, 2026 · 10:00 PM HST**
+
+- The 3D printed buttons (Under Construction, Synthwave, Island Life) stand up in their big view at their print's heights, and tilt up and down like the graphics cards. Removed: nothing.
+
 ## v0.50.1 — "One Shelf"
 **Thu Nov 5, 2026 · 9:55 PM HST**
 
