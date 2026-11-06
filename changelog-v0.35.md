@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.49
+# 88x31 cLuB Changelog — v0.35–v0.50
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.50 — "Shared View"
+**Thu Nov 5, 2026 · 9:35 PM HST**
+
+- Behind the scenes: the big button now comes from one shared place that other games use too, so a change to how it turns changes it everywhere at once. It looks and works the same as before. Removed: the cLuB's own copy of it.
 
 ## v0.49.6 — "Edge On"
 **Thu Nov 5, 2026 · 9:30 PM HST**

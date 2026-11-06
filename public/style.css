@@ -1343,21 +1343,6 @@ body.tw-carrying * { cursor: grabbing !important; }
 #page-collection { margin-bottom: 1.2em; display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: var(--rowgap, 8px) 0; }
 .stamp img.banner { image-rendering: pixelated; }
 
-/* ---------- the big button (v0.49): Rob's Game's big card, for any button picture (app.js showBig) ---------- */
-/* hold a button (hover still with a mouse) to see it big; --u is one of its pixels */
-.zoom { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; background: rgba(20, 26, 48, .45); pointer-events: none; }
-.zoom .zbox { --w: min(86vw, 440px); --u: calc(var(--w) / 88);
-              width: var(--w); height: calc(31 * var(--u)); position: relative; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); perspective: calc(600 * var(--u)); }
-/* it turns with your finger or mouse, and past a quarter turn shows its back: the cLuB's face-down navy stripes (no "?": kura, v0.49.1) */
-.zflip { position: absolute; inset: 0; transform-style: preserve-3d; --zd: calc(1 * var(--u)); }
-.zflip > .zface, .zflip > .zback { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-/* thickness: the front sits --zd/2 in front, the back --zd/2 behind, and ZEDGE layers of a darker navy fill the gap */
-.zflip > .zface { transform: translateZ(calc(var(--zd) / 2)); display: flex; align-items: center; justify-content: center; }
-.zface canvas { width: 100%; height: 100%; image-rendering: pixelated; }   /* a GPU's flat picture; a button is made at the big size already (bannerPic) */
-.zedge { position: absolute; inset: 0; background: #000048; transform: translateZ(calc((var(--k) - .5) * var(--zd))); }
-.zback { transform: rotateY(180deg) translateZ(calc(var(--zd) / 2)); background: repeating-linear-gradient(45deg, #000080 0 8px, #000060 8px 16px); }
-/* a GPU in 3D (GPU_3D in app.js, from Rob's Game): one art pixel is one --u; each face is a pixel texture */
-.gpu3d { position: absolute; left: 0; top: 0; width: calc(88 * var(--u)); height: calc(31 * var(--u)); transform-style: preserve-3d; pointer-events: none; }
-.gpu3d .f { position: absolute; left: 0; top: 0; transform-origin: 0 0; image-rendering: pixelated; }
+/* ---------- the big button (v0.49): its look is the shared /zoom.js's (dungeon-items, v0.50) ---------- */
 /* a long press on a button opens it big, not the phone's picture menu (the info box has the download links) */
 img.banner { -webkit-touch-callout: none; }
