@@ -1383,7 +1383,7 @@ img.banner { -webkit-touch-callout: none; }
 @keyframes ztrace { to { stroke-dashoffset: 0; } }
 .zback .zback-band, .zback .zback-disc:not(.plain) { animation: zglow 2.2s ease-in-out infinite alternate; }
 .zback.beta .zback-disc:not(.plain) { animation: none; }
-@keyframes zglow { to { filter: drop-shadow(0 0 calc(1.2 * var(--u)) rgba(120, 140, 255, .9)); } }
+@keyframes zglow { to { filter: drop-shadow(0 0 calc(1.2 * var(--u)) #8ea0ff) drop-shadow(0 0 calc(2.5 * var(--u)) rgba(120, 140, 255, .9)); } }
 @media (prefers-reduced-motion: reduce) {
   .zback-traces .pl path { animation-duration: 10s !important; }
   .zback .zback-band, .zback .zback-disc:not(.plain) { animation-duration: 12.8s; }
