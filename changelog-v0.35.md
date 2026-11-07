@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51
+# 88x31 cLuB Changelog — v0.35–v0.51.1
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.1 — "Sign Here"
+**Fri Nov 6, 2026 · 6:48 PM HST**
+
+- The button's name shows above its big view, at the right, turning with it. The series sign on its card is a bit bigger and lines up with the type line. Removed: the little grey name popup that came up over the big view when hovering a button.
 
 ## v0.51 — "Button Card"
 **Fri Nov 6, 2026 · 6:35 PM HST**

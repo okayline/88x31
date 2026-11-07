@@ -171,7 +171,7 @@ function bannerPic(design, scale = 1) {
   const img = el("img", {
     src: design.image_key, alt: design.name, width: 88 * scale, height: 31 * scale,
     class: "banner rarity-" + design.rarity + (design.type ? " type-" + design.type : ""),   // type-: Series Gamma's GPUs have no rare frame (v0.48.1)
-  });   // no title: its hover popup came up over the big button (kura, v0.49.2)
+  });   // no title here or on the tiles around it: its hover popup came up over the big button (kura, v0.49.2; the tiles v0.51.1)
   const foil = design.foil && drawn(design.foil), pat = design.pattern && drawn(design.pattern), fx = design.effect && drawn(design.effect);
   if (!foil && !fx) return img;
   // each copy shimmers a little differently, seeded from its own number
@@ -236,7 +236,7 @@ window.DDZoom?.setup({
   open: (n) => {
     const d = zoomOf.get(n), px = Math.min(innerWidth * 0.86, 440), pic = bannerPic(d, px / 88);   // made at the big size
     const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
-    const card = (art) => el("div", { class: "zc" }, art, cardPanel(d, phone));
+    const card = (art) => el("div", { class: "zc" }, el("div", { class: "zc-name" }, d.name), art, cardPanel(d, phone));   // its name above it, at the right, turning with it (v0.51.1, kura's mockup C)
     const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : "") };
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
@@ -917,7 +917,7 @@ async function showSeriesDetail(x) {
     if (seriesOpen !== x.id) return;
     box.textContent = "";
     box.append(el("p", { class: "small center" }, el("b", {}, `Series ${x.name}`), ` · ${designs.length} buttons`),
-      el("div", { class: "wall-grid" }, designs.map((d) => el("a", { href: "#wall/" + d.id, class: "wall-tile", title: `${d.name} (${d.rarity}${d.max_editions ? ", " + d.max_editions + " copies" : ""})` }, bannerImg(d)))));
+      el("div", { class: "wall-grid" }, designs.map((d) => el("a", { href: "#wall/" + d.id, class: "wall-tile" }, bannerImg(d)))));
   } catch (e) { box.textContent = e.message; }
 }
 
@@ -1005,7 +1005,7 @@ async function openInfo(id, scroll = false) {
           const look = { ...d, ...c, name: d.name, image_key: d.image_key, rarity: d.rarity };
           const fin = finishName(look);
           return el("li", {},
-            el("a", { href: `#wall/${d.id}/c/${c.id}`, class: "copy-pic", title: "See this copy" }, bannerImg(look, 0.5)),
+            el("a", { href: `#wall/${d.id}/c/${c.id}`, class: "copy-pic" }, bannerImg(look, 0.5)),
             el("span", {}, el("span", { class: "who-line", title: c.owner || "" }, el("a", { href: "#banner/" + c.id, title: "Open this copy's page" }, `#${c.edition}`), " · ", who(c),
               c.is_bot ? el("span", { class: "bot-badge" }, " [BOT]") : null),
               el("span", { class: "fin" + (fin && fin !== "None" ? " special" : "") }, fin || "First Print")));
@@ -1031,7 +1031,7 @@ function renderSets(owner, r) {
       body.append(el("div", { class: "set-row trophy" },
         el("p", {}, el("b", {}, st.secret ? "★ a secret set" : "★ " + st.name), " ✓ ",
           el("span", { class: "small" }, `finished ${fmtDate(st.claimed_at)}`)),
-        st.designs ? el("div", { class: "set-grid" }, st.designs.map((d) => el("span", { class: "set-item", title: d.name }, bannerImg(d)))) : null,
+        st.designs ? el("div", { class: "set-grid" }, st.designs.map((d) => el("span", { class: "set-item" }, bannerImg(d)))) : null,
         st.reward ? el("p", { class: "small" }, "Reward: ", st.claimed_instance
           ? el("a", { href: "#banner/" + st.claimed_instance }, st.reward.name) : st.reward.name) : null));
       continue;
@@ -1061,7 +1061,7 @@ function renderSets(owner, r) {
       el("summary", {}, el("b", {}, (st.secret ? "★ " : "") + st.name), ` ${st.have}/${st.total} `, status),
       el("div", { class: "set-grid" }, st.designs.map((d) => d.hidden
         ? el("span", { class: "set-item missing", title: "???" }, el("span", { class: "mystery-tile" }, "?"))
-        : el("span", { class: "set-item", title: d.name }, bannerImg(d)))),
+        : el("span", { class: "set-item" }, bannerImg(d)))),
       st.reward ? el("p", { class: "small" }, "Reward: ", st.reward.hidden ? "???" : st.claimed_instance
         ? el("a", { href: "#banner/" + st.claimed_instance }, st.reward.name) : st.reward.name) : null,
       show);
@@ -1093,7 +1093,7 @@ async function loadSummary() {
     : "No trade offers waiting.");
   if (s.guestbook_today) li(el("b", {}, `${s.guestbook_today} new guestbook message${s.guestbook_today === 1 ? "" : "s"}`), " today. ",
     el("a", { href: "#u/" + encodeURIComponent(me.name) }, "Read »"));
-  const pic = (g) => el("a", { href: "#banner/" + g.id, class: "dash-pic", title: label(g) }, bannerImg(g));
+  const pic = (g) => el("a", { href: "#banner/" + g.id, class: "dash-pic" }, bannerImg(g));
   dashExtras(s, list);
   // last gift in and out sit in the right-hand column, under "Visit a page"
   const gifts = $("dash-gifts");
@@ -1194,7 +1194,7 @@ async function setupTradeIn() {
   grid.textContent = "";
   if (!usable.length) grid.append(el("p", { class: "small" }, "No commons or uncommons to trade in right now."));
   for (const b of usable) {
-    const tile = el("button", { type: "button", class: "tile pick-tile", title: `${b.name} ${edition(b)}` }, bannerImg(b), el("span", { class: "small" }, edition(b)));
+    const tile = el("button", { type: "button", class: "tile pick-tile" }, bannerImg(b), el("span", { class: "small" }, edition(b)));
     tile.onclick = () => { picked.has(b.id) ? picked.delete(b.id) : picked.add(b.id); tile.classList.toggle("picked", picked.has(b.id)); update(); };
     grid.append(tile);
   }
@@ -1551,7 +1551,7 @@ function drawCollection() {
   $("zoom-out").disabled = n >= z.max;
   for (const b of colShown) {
     const away = b.locked === AWAY;   // visiting 4Dungeon (v0.36): still theirs, back when it's sent home
-    grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), title: `${b.name} ${edition(b)}${away ? " (away in 4Dungeon)" : ""}`, "data-id": b.id },
+    grid.append(el("a", { href: "#banner/" + b.id, class: "tile" + (away ? " away" : ""), "data-id": b.id },
       bannerImg(b, scale), scale < 1 ? null : el("span", { class: "small" }, edition(b) + (away ? " · away" : ""))));
   }
 }
@@ -3023,7 +3023,6 @@ function twPinBox(p, scale) {
     style: `left:${p.x * scale}px;top:${p.y * scale}px;width:${TW_W * scale}px;height:${TW_H * scale}px` });
   if (p.copy) {
     box.append(bannerImg(p.copy, scale));
-    box.title = `${p.copy.name} #${p.copy.edition} · ${p.name}${p.match ? " · fits the theme" : ""}`;
   } else {
     box.title = `${p.name}'s spot`;
     box.append(el("span", { class: "tw-ghost" }, p.mine ? "your spot" : ""));

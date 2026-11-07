@@ -1355,11 +1355,12 @@ img.banner { -webkit-touch-callout: none; }
 .zc-glass { width: 100%; height: calc(18 * var(--u)); margin-top: calc(4 * var(--u)); padding: calc(1.5 * var(--u)) calc(3.67 * var(--u)) 0;
   box-sizing: border-box; overflow: hidden; border-radius: calc(2.33 * var(--u)); background: rgba(20,32,90,.80); border: 1px solid rgba(190,215,255,.28);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 8px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12); }
-.zc-l1 { display: flex; align-items: center; white-space: nowrap; margin-bottom: calc(.5 * var(--u));
+.zc-l1 { display: flex; align-items: baseline; white-space: nowrap; margin-bottom: calc(.5 * var(--u));
   font: bold calc(4.33 * var(--u)) / calc(5 * var(--u)) Arial, Helvetica, sans-serif; color: #ffff00; letter-spacing: .3px; }
 .zc-l1 b { flex: none; }
 .zc-l2 { font: italic calc(var(--zf, 4) * var(--u)) / calc(6 * var(--u)) "Times New Roman", serif; margin-top: calc(1.5 * var(--u)); color: #dde; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.zc-sym { flex: none; width: calc(5 * var(--u)); height: calc(5 * var(--u)); margin-left: auto; overflow: visible; }
+.zc-sym { flex: none; width: calc(6 * var(--u)); height: calc(6 * var(--u)); margin: calc(-6 * var(--u)) 0 0 auto; overflow: visible;
+  transform: translateY(calc(1.45 * var(--u))); }   /* 6 u (was 5), its middle on the capitals' middle: it sits on the baseline, then down half its height less half a capital (.716 of 4.33 u), whatever the font's line box (v0.51.1) */
 .zc-sym path { fill: var(--rar, #5a6a8a); stroke: var(--rar-edge, #3a4a6b); stroke-width: 1; stroke-linejoin: round; }
 .zc-sym path + path { fill: none; stroke-width: .9; }
 .zc-sym.uncommon { --rar: #8fe0e6; --rar-edge: #3f9aa3; }
@@ -1376,3 +1377,7 @@ img.banner { -webkit-touch-callout: none; }
 .zcard.phone .zedge, .zcard.phone .zback { bottom: calc(28 * var(--u)); }
 .zcard.phone .zc-glass { height: calc(24 * var(--u)); }
 .zcard.phone .zc-l2 { margin-top: calc(3 * var(--u)); }   /* the phone's flavour line sits lower, kura's pick (v0.51) */
+/* the button's name above the big view (v0.51.1, kura's mockup C, turning and at the right): above the card's top-right corner, clear of it */
+.zc { position: relative; }
+.zc-name { position: absolute; right: 0; bottom: calc(100% + 8 * var(--u)); white-space: nowrap; pointer-events: none; letter-spacing: 1px;
+  font: bold calc(6 * var(--u)) / 1 "Comic Sans MS", "Trebuchet MS", sans-serif; color: #ffff00; text-shadow: 2px 2px 0 #ff00ff, 0 0 10px rgba(0,0,0,.8); }
