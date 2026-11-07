@@ -7,7 +7,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ## v0.51.8 — "Globe Back"
 **Fri Nov 6, 2026 · 7:47 PM HST**
 
-- Turn a Series Alpha button over and its back has the series' globe in the middle of the navy stripes, in its rarity's colour. Removed: nothing (the other series keep the plain stripes for now).
+- Turn a Series Alpha button over and its back has the series' globe in its rarity's colour, on a ringed dark disc, across a dark band with light edges, over the navy stripes. Removed: nothing (the other series keep the plain stripes for now).
 
 ## v0.51.7 — "Through the Glass"
 **Fri Nov 6, 2026 · 7:45 PM HST**
