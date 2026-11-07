@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.17
+# 88x31 cLuB Changelog — v0.35–v0.51.18
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.18 — "Flat Siblings"
+**Sat Nov 7, 2026 · 1:20 AM HST**
+
+- The flat RTX 5080 and RTX 5070 buttons now look like the front of their 3D cards, as the 5090's does: the dark bracket, the new fingers, a see-through background. Removed: their old brackets, fingers and black background.
 
 ## v0.51.17 — "New Picture"
 **Sat Nov 7, 2026 · 1:10 AM HST**
