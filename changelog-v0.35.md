@@ -7,12 +7,12 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ## v0.51.9 — "Circuit Back"
 **Fri Nov 6, 2026 · 7:55 PM HST**
 
-- Turn a Series Beta button over and its back is a green and black circuit board: green traces with little pulses of light running along them in to a green-ringed disc with the series' floppy on it, in its rarity's colour. A Series Alpha back's band and ring glow softly in and out. With reduce motion on, both move slower. Removed: the plain navy stripes on Beta backs.
+- Turn a Series Beta button over and its back is a green and black circuit board: green traces with little pulses of light running along them in to a green-ringed disc with the series' floppy on it, in its rarity's colour. The pulses move slower with reduce motion on. Removed: the plain navy stripes on Beta backs.
 
 ## v0.51.8 — "Globe Back"
 **Fri Nov 6, 2026 · 7:47 PM HST**
 
-- Turn a Series Alpha button over and its back has the series' globe in its rarity's colour, on a ringed dark disc, across a dark band with light edges, over the navy stripes. Removed: nothing (the other series keep the plain stripes for now).
+- Turn a Series Alpha button over and its back has the series' globe in its rarity's colour, on a ringed dark disc, across a dark band with light edges, over the navy stripes. The band and ring glow softly in and out (slower with reduce motion on). Removed: nothing (the other series keep the plain stripes for now).
 
 ## v0.51.7 — "Through the Glass"
 **Fri Nov 6, 2026 · 7:45 PM HST**
