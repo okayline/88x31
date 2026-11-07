@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.10
+# 88x31 cLuB Changelog — v0.35–v0.51.11
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.11 — "Cut Out"
+**Fri Nov 6, 2026 · 8:40 PM HST**
+
+- The RTX 5090's big view has no black box around the card any more, front or back: its corners, the gaps by the bracket and the space round the gold fingers are see-through. Removed: the black background round the RTX 5090.
 
 ## v0.51.10 — "Backplate"
 **Fri Nov 6, 2026 · 8:35 PM HST**
