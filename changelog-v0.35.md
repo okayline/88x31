@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.22
+# 88x31 cLuB Changelog — v0.35–v0.51.23
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.23 — "Pocket Size"
+**Sat Nov 7, 2026 · 2:56 AM HST**
+
+- On a phone, the big view of a held button is 70% of its old size. Computers are unchanged. Removed: the phone's bigger size.
 
 ## v0.51.22 — "Rewind"
 **Sat Nov 7, 2026 · 1:45 AM HST**
