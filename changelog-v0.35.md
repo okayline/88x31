@@ -7,7 +7,7 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ## v0.51.7 — "Through the Glass"
 **Fri Nov 6, 2026 · 7:45 PM HST**
 
-- Turn a found button over and you see it from behind, mirrored, in chunky pixels with an old screen's scanlines and a soft band slowly rolling down them (still, with reduce motion on). Removed: the cLuB's navy stripes on the back of found buttons, and their navy edge.
+- Turn a found button over and you see it from behind, mirrored, in chunky pixels with an old screen's scanlines and a soft band slowly rolling down them (four times slower with reduce motion on). The name above a big button is a little smaller. Removed: the cLuB's navy stripes on the back of found buttons, their navy edge, and the bigger name.
 
 ## v0.51.6 — "Dot GIF, Really"
 **Fri Nov 6, 2026 · 7:40 PM HST**

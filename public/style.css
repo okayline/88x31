@@ -1353,7 +1353,7 @@ img.banner { -webkit-touch-callout: none; }
 .zcard .zedge, .zcard .zback { bottom: calc(22 * var(--u)); }
 .zcard .zface { backface-visibility: visible; -webkit-backface-visibility: visible; }   /* the name and the panel show from the back too, mirrored (v0.51.3, kura); the back's stripes still cover the button */
 /* a found button's back (v0.51.7): itself mirrored at half its pixels (app.js foundBack), scanlines over it, and a band rolling down
-   every 6 s (still with reduced motion); its edge a faint tint instead of the navy */
+   every 6 s (24 s with reduced motion); its edge a faint tint instead of the navy */
 .zcard.found .zback { overflow: hidden; background: #101020; }
 .zcard.found .zback .zfb { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
 .zcard.found .zback::before { content: ""; position: absolute; inset: 0; z-index: 1;
@@ -1361,7 +1361,7 @@ img.banner { -webkit-touch-callout: none; }
 .zcard.found .zback::after { content: ""; position: absolute; left: 0; right: 0; top: -40%; height: 40%; z-index: 2;
   background: linear-gradient(transparent, rgba(255,255,255,.2) 45%, rgba(255,255,255,.3) 55%, transparent); animation: zroll 6s linear infinite; }
 @keyframes zroll { to { transform: translateY(350%); } }
-@media (prefers-reduced-motion: reduce) { .zcard.found .zback::after { animation: none; display: none; } }
+@media (prefers-reduced-motion: reduce) { .zcard.found .zback::after { animation-duration: 24s; } }   /* four times slower, like the GPUs' fans */
 .zcard.found .zedge { background: rgba(60,60,70,.06); }
 .zc { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
 .zc-glass { width: 100%; height: calc(18 * var(--u)); margin-top: calc(4 * var(--u)); padding: calc(1.5 * var(--u)) calc(3.67 * var(--u)) 0;
@@ -1392,4 +1392,4 @@ img.banner { -webkit-touch-callout: none; }
 /* the button's name above the big view (v0.51.1, kura's mockup C, turning and at the right): above the card's top-right corner, clear of it */
 .zc { position: relative; }
 .zc-name { position: absolute; right: 0; bottom: calc(100% + 4 * var(--u)); white-space: nowrap; pointer-events: none; letter-spacing: 1px;
-  font: bold calc(6 * var(--u)) / 1 "Comic Sans MS", "Trebuchet MS", sans-serif; color: #ffff00; text-shadow: 2px 2px 0 #ff00ff, 0 0 10px rgba(0,0,0,.8); }
+  font: bold calc(5 * var(--u)) / 1 "Comic Sans MS", "Trebuchet MS", sans-serif; color: #ffff00; text-shadow: 2px 2px 0 #ff00ff, 0 0 10px rgba(0,0,0,.8); }
