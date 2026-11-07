@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.9
+# 88x31 cLuB Changelog — v0.35–v0.51.10
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.10 — "Backplate"
+**Fri Nov 6, 2026 · 8:35 PM HST**
+
+- Turn the RTX 5090 over and you see its real back: the same frame, with the radiator's fins where the fans are on the front. Its frame is dark grey now, front and back, like the real card. Removed: the striped back and the blue edge on the RTX 5090, and its silver frame.
 
 ## v0.51.9 — "Circuit Back"
 **Fri Nov 6, 2026 · 7:55 PM HST**

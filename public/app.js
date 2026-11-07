@@ -269,6 +269,14 @@ function seriesBack(d, series) {
     back.append(c, el("div", { class: "zback-disc" }), s);
   }
 }
+// A graphics card's back (v0.51.10, kura: "true to life pcb/backboards for each GPU"): its own 88 x 31 picture, banners/gamma/gpu/<key>-back.png,
+// drawn from kura's photos and lined up with the front (the front mirrored, as it is seen from behind), on the big view's back panel. The
+// RTX 5090 first; the others keep the stripes until theirs are drawn.
+const GPU_BACKS = new Set(["rtx-5090"]);
+function gpuBack(key) {
+  const back = document.querySelector(".zoom.gpuback .zback");
+  if (back) back.append(el("img", { class: "gback", src: `banners/gamma/gpu/${key}-back.png`, alt: "" }));
+}
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
   holdOff: (n) => !!n.closest(".tw-pick, .tw-carried, .tw-mine") || (arranging && !!n.closest("#page-collection")),
@@ -283,6 +291,7 @@ window.DDZoom?.setup({
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
     const art = el("div", {}, pic);
+    if (GPU_BACKS.has(key)) { v.cls += " gpuback"; queueMicrotask(() => gpuBack(key)); }   // its real back (v0.51.10)
     return { ...v, face: card(art), gpu: { key, image: `banners/gamma/gpu/${key}.png`, frames: `banners/gamma/gpu/${key}-frames.png`, art, spin: true } };
   },
 });

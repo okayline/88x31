@@ -1363,6 +1363,11 @@ img.banner { -webkit-touch-callout: none; }
 @keyframes zroll { to { transform: translateY(350%); } }
 @media (prefers-reduced-motion: reduce) { .zcard.found .zback::after { animation-duration: 24s; } }   /* four times slower, like the GPUs' fans */
 .zcard.found .zedge { background: rgba(60,60,70,.06); }
+/* a graphics card's own back (v0.51.10): its picture fills the back panel, no stripes behind it, and no navy card edge, so the 3D model's
+   sides meet the back with no blue seam */
+.zcard.gpuback .zback { background: none; }
+.zcard.gpuback .zback .gback { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.zcard.gpuback .zedge { display: none; }
 .zback .zc-sym.zback-sign { position: absolute; left: 50%; top: 50%; width: calc(19 * var(--u)); height: calc(19 * var(--u)); margin: 0; transform: translate(-50%, -50%); }   /* Series Alpha's globe on its back (v0.51.8) */
 .zback .zback-band { position: absolute; left: 0; right: 0; top: 50%; height: calc(13 * var(--u)); transform: translateY(-50%); background: #000040;
   box-shadow: 0 calc(-.7 * var(--u)) 0 #5a6ad8, 0 calc(.7 * var(--u)) 0 #5a6ad8; }   /* a dark band across, lit edges */
