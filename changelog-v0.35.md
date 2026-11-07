@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.15
+# 88x31 cLuB Changelog — v0.35–v0.51.16
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.16 — "Little Sibling"
+**Fri Nov 6, 2026 · 11:33 PM HST**
+
+- The RTX 5070's 3D card is rebuilt like the 5090's: a grey bracket against the card with its ports and vents, the new fingers, a darker silver frame, a grey fan hub, and its back painted on it. Removed: the silver bracket, the finger by the bracket, the bright frame and the light fan hub.
 
 ## v0.51.15 — "Silver Twin"
 **Fri Nov 6, 2026 · 10:33 PM HST**

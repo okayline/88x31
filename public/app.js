@@ -283,7 +283,7 @@ window.DDZoom?.setup({
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
     const art = el("div", {}, pic);
-    const back = key === "rtx-5090" || key === "rtx-5080" ? `banners/gamma/gpu/${key}-back.png` : undefined;   // its back picture, on the back of the model (v0.51.13; the 5080 v0.51.15)
+    const back = ["rtx-5090", "rtx-5080", "rtx-5070"].includes(key) ? `banners/gamma/gpu/${key}-back.png` : undefined;   // its back picture, on the back of the model (v0.51.13; the 5080 v0.51.15, the 5070 v0.51.16)
     return { ...v, face: card(art), gpu: { key, image: `banners/gamma/gpu/${key}.png`, frames: `banners/gamma/gpu/${key}-frames.png`, art, spin: true, back } };
   },
 });
