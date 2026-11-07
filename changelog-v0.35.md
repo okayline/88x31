@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.14
+# 88x31 cLuB Changelog — v0.35–v0.51.15
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.15 — "Silver Twin"
+**Fri Nov 6, 2026 · 10:33 PM HST**
+
+- The RTX 5080's 3D card is the RTX 5090's, with a darker silver frame, and its back is painted on it too. Removed: the 5080's old 3D card and pictures (the plain panel where its first fan is).
 
 ## v0.51.14 — "Flat Match"
 **Fri Nov 6, 2026 · 10:14 PM HST**
