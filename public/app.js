@@ -269,10 +269,6 @@ function seriesBack(d, series) {
     back.append(c, el("div", { class: "zback-disc" }), s);
   }
 }
-// A graphics card's back (v0.51.10, kura: "true to life pcb/backboards for each GPU"): its own 88 x 31 picture, banners/gamma/gpu/<key>-back.png,
-// drawn from kura's photos and lined up with the front (the front mirrored, as it is seen from behind). The shared big view draws it on the
-// 3D model's back and leaves the panel behind see-through (v0.51.13). The RTX 5090 first; the others keep the stripes until theirs are drawn.
-const GPU_BACKS = new Set(["rtx-5090"]);
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
   holdOff: (n) => !!n.closest(".tw-pick, .tw-carried, .tw-mine") || (arranging && !!n.closest("#page-collection")),
@@ -287,7 +283,7 @@ window.DDZoom?.setup({
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
     const art = el("div", {}, pic);
-    const back = GPU_BACKS.has(key) ? `banners/gamma/gpu/${key}-back.png` : undefined;   // its real back, on the model (v0.51.13)
+    const back = key === "rtx-5090" ? `banners/gamma/gpu/${key}-back.png` : undefined;   // its back picture, on the back of the model (v0.51.13)
     return { ...v, face: card(art), gpu: { key, image: `banners/gamma/gpu/${key}.png`, frames: `banners/gamma/gpu/${key}-frames.png`, art, spin: true, back } };
   },
 });

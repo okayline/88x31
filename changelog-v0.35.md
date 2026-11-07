@@ -5,9 +5,11 @@ Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 ---
 
 ## v0.51.13 — "Model Back"
-**Fri Nov 6, 2026 · 8:57 PM HST**
+**Fri Nov 6, 2026 · 10:07 PM HST**
 
-- The RTX 5090's back is painted on the 3D card's own parts now, and there's nothing behind the card: where there's no part, you see through. Removed: the back panel with the picture on it, and the black board strips by the fingers and the bracket.
+- No panel behind the graphics cards in the big view: you see the 3D card itself from behind, and the RTX 5090's back is painted on its own parts. Removed: the back panel with the picture on it.
+- The RTX 5090's 3D card, from photos of the real one: its bracket against the card, in the card's grey, with two prongs and darker, thinner ports; a black board joining the fingers to the card; the fingers reshaped; and the fan hubs in the frame's grey, shaded as before. Removed: the silver three-prong bracket, the finger by the bracket, and the light fan hubs.
+- Fixed: places where you could see through the edges of the 3D cards. Removed: those gaps.
 
 ## v0.51.12 — "Board and Bracket"
 **Fri Nov 6, 2026 · 8:45 PM HST**
