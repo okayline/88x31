@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.3
+# 88x31 cLuB Changelog — v0.35–v0.51.4
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.4 — "Closer"
+**Fri Nov 6, 2026 · 7:23 PM HST**
+
+- The button's name sits closer above its big view, half the space it had. Removed: the bigger gap.
 
 ## v0.51.3 — "Both Sides"
 **Fri Nov 6, 2026 · 7:20 PM HST**
