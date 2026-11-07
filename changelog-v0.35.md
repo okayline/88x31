@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.4
+# 88x31 cLuB Changelog — v0.35–v0.51.5
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.5 — "Dot GIF"
+**Fri Nov 6, 2026 · 7:35 PM HST**
+
+- A found button's name above its big view ends in ".gif", like the file it was found as. Removed: nothing.
 
 ## v0.51.4 — "Closer"
 **Fri Nov 6, 2026 · 7:23 PM HST**
