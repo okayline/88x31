@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.1
+# 88x31 cLuB Changelog — v0.35–v0.51.2
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.2 — "No Popups"
+**Fri Nov 6, 2026 · 7:06 PM HST**
+
+- Removed: the grey name popup over the big view on the pages it was still showing on (like the Wall of Buttons and trades). Added: nothing.
 
 ## v0.51.1 — "Sign Here"
 **Fri Nov 6, 2026 · 6:48 PM HST**

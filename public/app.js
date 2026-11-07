@@ -79,6 +79,8 @@ function el(tag, props = {}, ...kids) {
     else e.setAttribute(k, v);
   }
   for (const k of kids.flat()) if (k != null) e.append(k.nodeType ? k : String(k));
+  // no hover label on anything holding a button picture: the browser's grey popup came up over the big view (kura, v0.49.2, v0.51.2)
+  if (e.hasAttribute("title") && [...e.querySelectorAll("*")].some((n) => zoomOf.has(n))) e.removeAttribute("title");
   return e;
 }
 
