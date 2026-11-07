@@ -250,13 +250,21 @@ function foundBack(d) {
 }
 // A Series Alpha button's back (v0.51.8, kura: "let's just put the globe sign on the stripes we have now"): the cLuB's navy stripes
 // with the series' globe in the middle, in its rarity's colour, as on its card. The other series keep the plain stripes for now.
-function seriesBack(d) {
-  const back = document.querySelector(".zoom .zback"), sign = SIGN.Alpha;
+function seriesBack(d, series) {
+  const back = document.querySelector(".zoom .zback");
   if (!back) return;
   const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   s.setAttribute("viewBox", "0 0 14 14"); s.setAttribute("class", "zc-sym zback-sign " + d.rarity);
-  s.innerHTML = sign.map((p) => `<path d="${p}"/>`).join("");
-  back.append(el("div", { class: "zback-disc" }), el("div", { class: "zback-band" }), el("div", { class: "zback-disc plain" }), s);   // the ringed disc, the band over it (so the ring only shows above and below it, kura), the disc again without its ring over the band's edges, the globe (v0.51.8, kura's pick: #4 + #5)
+  s.innerHTML = SIGN[series].map((p) => `<path d="${p}"/>`).join("");
+  if (series === "Alpha") back.append(el("div", { class: "zback-disc" }), el("div", { class: "zback-band" }), el("div", { class: "zback-disc plain" }), s);   // the ringed disc, the band over it (so the ring only shows above and below it, kura), the disc again without its ring over the band's edges, the globe (v0.51.8, kura's pick: #4 + #5)
+  else {   // Beta (v0.51.9, kura's pick "B"): green and black stripes, a circuit board's traces running in to a green-ringed disc, the floppy on it
+    back.classList.add("beta");
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    c.setAttribute("viewBox", "0 0 88 31"); c.setAttribute("preserveAspectRatio", "none"); c.setAttribute("class", "zback-traces");
+    c.innerHTML = '<g fill="none" stroke="#3fe06a" stroke-width=".6" stroke-linejoin="round"><path d="M0 6h14l5 5h12M0 25h10l4-4h17M0 15.5h31M88 6h-14l-5 5h-12M88 25h-10l-4-4h-17M88 15.5h-31M30 0v4l3 3M58 0v4l-3 3M30 31v-4l3-3M58 31v-4l-3-3"/></g>'
+      + '<g fill="#3fe06a"><circle cx="19" cy="11" r=".9"/><circle cx="14" cy="21" r=".9"/><circle cx="69" cy="11" r=".9"/><circle cx="74" cy="21" r=".9"/><circle cx="30" cy="1" r=".8"/><circle cx="58" cy="30" r=".8"/></g>';
+    back.append(c, el("div", { class: "zback-disc" }), s);
+  }
 }
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
@@ -266,7 +274,7 @@ window.DDZoom?.setup({
     const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
     const found = d.tier === "archive" || /^\/?api\/img/.test(d.image_key || "");   // copies carry no tier; only found buttons' pictures come from api/img (v0.51.6)
     if (found) queueMicrotask(() => foundBack(d));   // its back: itself seen through from behind (v0.51.7)
-    else if ((CARDS[d.design_id ?? d.id]?.series || d.series) === "Alpha") queueMicrotask(() => seriesBack(d));   // its series' sign on its back (v0.51.8)
+    else { const sr = CARDS[d.design_id ?? d.id]?.series || d.series; if (sr === "Alpha" || sr === "Beta") queueMicrotask(() => seriesBack(d, sr)); }   // its series' back (Alpha v0.51.8, Beta v0.51.9)
     const card = (art) => el("div", { class: "zc" }, el("div", { class: "zc-name" }, found ? d.name + ".gif" : d.name), art, cardPanel(d, phone));   // its name above it, at the right, turning with it (v0.51.1, kura's mockup C); a found button's with .gif, as found (v0.51.5)
     const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : "") + (found ? " found" : ""), tilt: true };   // every button tilts up and down (v0.51.3)
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
