@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.13
+# 88x31 cLuB Changelog — v0.35–v0.51.14
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.14 — "Flat Match"
+**Fri Nov 6, 2026 · 10:14 PM HST**
+
+- The RTX 5090's flat button looks like its new 3D card from the front: the dark grey frame, the grey fan hubs, the grey bracket against the card, and the new fingers, with nothing behind it. Removed: the silver frame and bracket, the light fan hubs, the old fingers, and the black background.
 
 ## v0.51.13 — "Model Back"
 **Fri Nov 6, 2026 · 10:07 PM HST**
