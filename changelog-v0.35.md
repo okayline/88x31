@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.16
+# 88x31 cLuB Changelog — v0.35–v0.51.17
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.17 — "New Picture"
+**Sat Nov 7, 2026 · 1:10 AM HST**
+
+- When a button's picture is redrawn, the ledger now says so: "a button got a new picture", with the new picture's fingerprint. Removed: nothing.
 
 ## v0.51.16 — "Little Sibling"
 **Fri Nov 6, 2026 · 11:33 PM HST**

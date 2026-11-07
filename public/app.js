@@ -2445,6 +2445,7 @@ const ADMIN_SAYS = {
   series_run: "changed a series' print run",
   remove_design: "a button was removed by request",
   restore_design: "a removed button came back",
+  new_picture: "a button got a new picture",
   block_uploader: "someone's button finding was paused",
   unblock_uploader: "someone's button finding was switched back on",
 };
