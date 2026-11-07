@@ -1380,10 +1380,10 @@ img.banner { -webkit-touch-callout: none; }
 .zback-traces .pl path { fill: none; stroke: #b6ffc8; stroke-width: .9; stroke-linecap: round; stroke-dasharray: 8 92; stroke-dashoffset: 100;
   filter: drop-shadow(0 0 .8px #3fe06a); animation: ztrace linear infinite; }
 .zback-traces .dot circle { fill: #3fe06a; }
-@keyframes ztrace { to { stroke-dashoffset: 0; } }
+@keyframes ztrace { 0% { stroke-dashoffset: 100; opacity: 0; } 15%, 85% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }   /* each pulse fades in at the edge and out into the disc */
 .zback .zback-band, .zback .zback-disc:not(.plain) { animation: zglow 2.2s ease-in-out infinite alternate; }
 .zback.beta .zback-disc:not(.plain) { animation: none; }
-@keyframes zglow { to { filter: drop-shadow(0 0 calc(1.2 * var(--u)) #8ea0ff) drop-shadow(0 0 calc(2.5 * var(--u)) rgba(120, 140, 255, .9)); } }
+@keyframes zglow { to { filter: drop-shadow(0 0 calc(1.2 * var(--u)) rgba(142, 160, 255, .95)) drop-shadow(0 0 calc(1.8 * var(--u)) rgba(120, 140, 255, .5)); } }
 @media (prefers-reduced-motion: reduce) {
   .zback-traces .pl path { animation-duration: 10s !important; }
   .zback .zback-band, .zback .zback-disc:not(.plain) { animation-duration: 12.8s; }
