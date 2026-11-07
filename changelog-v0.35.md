@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.7
+# 88x31 cLuB Changelog — v0.35–v0.51.8
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.8 — "Globe Back"
+**Fri Nov 6, 2026 · 7:47 PM HST**
+
+- Turn a Series Alpha button over and its back has the series' globe in the middle of the navy stripes, in its rarity's colour. Removed: nothing (the other series keep the plain stripes for now).
 
 ## v0.51.7 — "Through the Glass"
 **Fri Nov 6, 2026 · 7:45 PM HST**

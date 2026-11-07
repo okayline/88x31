@@ -248,6 +248,16 @@ function foundBack(d) {
   };
   im.src = "/" + String(d.image_key || "").replace(/^\/+/, "");
 }
+// A Series Alpha button's back (v0.51.8, kura: "let's just put the globe sign on the stripes we have now"): the cLuB's navy stripes
+// with the series' globe in the middle, in its rarity's colour, as on its card. The other series keep the plain stripes for now.
+function seriesBack(d) {
+  const back = document.querySelector(".zoom .zback"), sign = SIGN.Alpha;
+  if (!back) return;
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 14 14"); s.setAttribute("class", "zc-sym zback-sign " + d.rarity);
+  s.innerHTML = sign.map((p) => `<path d="${p}"/>`).join("");
+  back.append(s);
+}
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
   holdOff: (n) => !!n.closest(".tw-pick, .tw-carried, .tw-mine") || (arranging && !!n.closest("#page-collection")),
@@ -256,6 +266,7 @@ window.DDZoom?.setup({
     const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
     const found = d.tier === "archive" || /^\/?api\/img/.test(d.image_key || "");   // copies carry no tier; only found buttons' pictures come from api/img (v0.51.6)
     if (found) queueMicrotask(() => foundBack(d));   // its back: itself seen through from behind (v0.51.7)
+    else if ((CARDS[d.design_id ?? d.id]?.series || d.series) === "Alpha") queueMicrotask(() => seriesBack(d));   // its series' sign on its back (v0.51.8)
     const card = (art) => el("div", { class: "zc" }, el("div", { class: "zc-name" }, found ? d.name + ".gif" : d.name), art, cardPanel(d, phone));   // its name above it, at the right, turning with it (v0.51.1, kura's mockup C); a found button's with .gif, as found (v0.51.5)
     const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : "") + (found ? " found" : ""), tilt: true };   // every button tilts up and down (v0.51.3)
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];

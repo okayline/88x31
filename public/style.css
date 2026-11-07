@@ -1363,6 +1363,7 @@ img.banner { -webkit-touch-callout: none; }
 @keyframes zroll { to { transform: translateY(350%); } }
 @media (prefers-reduced-motion: reduce) { .zcard.found .zback::after { animation-duration: 24s; } }   /* four times slower, like the GPUs' fans */
 .zcard.found .zedge { background: rgba(60,60,70,.06); }
+.zback .zc-sym.zback-sign { position: absolute; left: 50%; top: 50%; width: calc(19 * var(--u)); height: calc(19 * var(--u)); margin: 0; transform: translate(-50%, -50%); }   /* Series Alpha's globe on its back (v0.51.8) */
 .zc { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
 .zc-glass { width: 100%; height: calc(18 * var(--u)); margin-top: calc(4 * var(--u)); padding: calc(1.5 * var(--u)) calc(3.67 * var(--u)) 0;
   box-sizing: border-box; overflow: hidden; border-radius: calc(2.33 * var(--u)); background: rgba(20,32,90,.80); border: 1px solid rgba(190,215,255,.28);
