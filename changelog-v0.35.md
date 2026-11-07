@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.12
+# 88x31 cLuB Changelog — v0.35–v0.51.13
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.13 — "Model Back"
+**Fri Nov 6, 2026 · 8:57 PM HST**
+
+- The RTX 5090's back is drawn on the 3D card itself now, so it turns with the card, and the panel behind the card is see-through. Removed: the back panel with the picture on it.
 
 ## v0.51.12 — "Board and Bracket"
 **Fri Nov 6, 2026 · 8:45 PM HST**
