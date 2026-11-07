@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.11
+# 88x31 cLuB Changelog — v0.35–v0.51.12
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.12 — "Board and Bracket"
+**Fri Nov 6, 2026 · 8:45 PM HST**
+
+- The RTX 5090's back: its bracket matches the 3D model's, with no lip at the top; a strip of black board joins the gold fingers to the card; and black board with two screws joins the bracket to the card. Removed: the lip at the bracket's top and the gaps.
 
 ## v0.51.11 — "Cut Out"
 **Fri Nov 6, 2026 · 8:40 PM HST**
