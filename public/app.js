@@ -232,14 +232,32 @@ function cardPanel(d, phone) {
 }
 const ZCARD_SMALLEST = 0.75;
 const ZCARD_PANEL_PHONE = 28;   // the phone's panel: taller, so three lines fit
+// A found button's back (v0.51.7, kura's pick of the mockups): the button itself, mirrored as if seen through from behind, at half its
+// pixels (44 x 16, drawn without smoothing so they stay square), in colour, with a CRT's scanlines and a soft band rolling down
+// slowly over them (style.css .zcard.found). Drawn once the big view has put its back on the page (the microtask runs after showBig).
+function foundBack(d) {
+  const back = document.querySelector(".zoom.found .zback");
+  if (!back) return;
+  const im = new Image();
+  im.onload = () => {
+    if (!back.isConnected) return;
+    const c = document.createElement("canvas"); c.width = 44; c.height = 16; c.className = "zfb";
+    const x = c.getContext("2d"); x.imageSmoothingEnabled = false;
+    x.translate(44, 0); x.scale(-1, 1); x.drawImage(im, 0, 0, 44, 16);
+    back.prepend(c);
+  };
+  im.src = "/" + String(d.image_key || "").replace(/^\/+/, "");
+}
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
   holdOff: (n) => !!n.closest(".tw-pick, .tw-carried, .tw-mine") || (arranging && !!n.closest("#page-collection")),
   open: (n) => {
     const d = zoomOf.get(n), px = Math.min(innerWidth * 0.86, 440), pic = bannerPic(d, px / 88);   // made at the big size
     const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
-    const card = (art) => el("div", { class: "zc" }, el("div", { class: "zc-name" }, d.tier === "archive" || /^\/?api\/img/.test(d.image_key || "") ? d.name + ".gif" : d.name), art, cardPanel(d, phone));   // its name above it, at the right, turning with it (v0.51.1, kura's mockup C); a found button's with .gif, as found (v0.51.5; v0.51.6: copies carry no tier, so also by its picture coming from api/img, which only found buttons' do)
-    const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : ""), tilt: true };   // every button tilts up and down (v0.51.3)
+    const found = d.tier === "archive" || /^\/?api\/img/.test(d.image_key || "");   // copies carry no tier; only found buttons' pictures come from api/img (v0.51.6)
+    if (found) queueMicrotask(() => foundBack(d));   // its back: itself seen through from behind (v0.51.7)
+    const card = (art) => el("div", { class: "zc" }, el("div", { class: "zc-name" }, found ? d.name + ".gif" : d.name), art, cardPanel(d, phone));   // its name above it, at the right, turning with it (v0.51.1, kura's mockup C); a found button's with .gif, as found (v0.51.5)
+    const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : "") + (found ? " found" : ""), tilt: true };   // every button tilts up and down (v0.51.3)
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
     const art = el("div", {}, pic);

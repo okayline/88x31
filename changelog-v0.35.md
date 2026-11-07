@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.6
+# 88x31 cLuB Changelog — v0.35–v0.51.7
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.7 — "Through the Glass"
+**Fri Nov 6, 2026 · 7:45 PM HST**
+
+- Turn a found button over and you see it from behind, mirrored, in chunky pixels with an old screen's scanlines and a soft band slowly rolling down them (still, with reduce motion on). Removed: the cLuB's navy stripes on the back of found buttons, and their navy edge.
 
 ## v0.51.6 — "Dot GIF, Really"
 **Fri Nov 6, 2026 · 7:40 PM HST**
