@@ -256,7 +256,7 @@ function seriesBack(d) {
   const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   s.setAttribute("viewBox", "0 0 14 14"); s.setAttribute("class", "zc-sym zback-sign " + d.rarity);
   s.innerHTML = sign.map((p) => `<path d="${p}"/>`).join("");
-  back.append(el("div", { class: "zback-band" }), el("div", { class: "zback-disc" }), s);   // a dark band across, a dark disc with a ring, the globe on it (v0.51.8, kura's pick: #4 + #5)
+  back.append(el("div", { class: "zback-disc" }), el("div", { class: "zback-band" }), el("div", { class: "zback-disc plain" }), s);   // the ringed disc, the band over it (so the ring only shows above and below it, kura), the disc again without its ring over the band's edges, the globe (v0.51.8, kura's pick: #4 + #5)
 }
 window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
