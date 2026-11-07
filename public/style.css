@@ -1374,6 +1374,20 @@ img.banner { -webkit-touch-callout: none; }
 .zback.beta .zback-traces { position: absolute; inset: 0; width: 100%; height: 100%; }
 .zback.beta .zback-disc { background: #021806; box-shadow: 0 0 0 calc(.7 * var(--u)) #3fe06a; }
 .zback.beta .zc-sym.zback-sign { width: calc(17 * var(--u)); height: calc(17 * var(--u)); }
+/* the traces: dim green lines, a bright pulse running along each in to the disc; Alpha's band and ring glow softly in and out (v0.51.9).
+   Four times slower with reduced motion, like the GPUs' fans */
+.zback-traces .tr path { fill: none; stroke: #1f8a3c; stroke-width: .6; stroke-linejoin: round; }
+.zback-traces .pl path { fill: none; stroke: #b6ffc8; stroke-width: .9; stroke-linecap: round; stroke-dasharray: 8 92; stroke-dashoffset: 100;
+  filter: drop-shadow(0 0 .8px #3fe06a); animation: ztrace linear infinite; }
+.zback-traces .dot circle { fill: #3fe06a; }
+@keyframes ztrace { to { stroke-dashoffset: 0; } }
+.zback .zback-band, .zback .zback-disc:not(.plain) { animation: zglow 3.2s ease-in-out infinite alternate; }
+.zback.beta .zback-disc:not(.plain) { animation: none; }
+@keyframes zglow { to { filter: drop-shadow(0 0 calc(1.2 * var(--u)) rgba(120, 140, 255, .9)); } }
+@media (prefers-reduced-motion: reduce) {
+  .zback-traces .pl path { animation-duration: 10s !important; }
+  .zback .zback-band, .zback .zback-disc:not(.plain) { animation-duration: 12.8s; }
+}
 .zc { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
 .zc-glass { width: 100%; height: calc(18 * var(--u)); margin-top: calc(4 * var(--u)); padding: calc(1.5 * var(--u)) calc(3.67 * var(--u)) 0;
   box-sizing: border-box; overflow: hidden; border-radius: calc(2.33 * var(--u)); background: rgba(20,32,90,.80); border: 1px solid rgba(190,215,255,.28);
