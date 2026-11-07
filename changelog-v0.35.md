@@ -1,8 +1,19 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.18
+# 88x31 cLuB Changelog — v0.35–v0.51.20
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.20 — "Glow Up"
+**Sat Nov 7, 2026 · 1:30 AM HST**
+
+- Four Series Alpha rares redrawn: Lava Lamp Blacklight, CD-ROM Rainbow, Have a Nice Day Gold and Virtual Pet Golden Egg. Each change is on the ledger. Removed: their old pictures.
+- Three new Series Alpha rares: Black Light Lava, Nice Day Coin and Virtual Pet Hatchling.
+
+## v0.51.19 — "Frosted"
+**Sat Nov 7, 2026 · 1:14 AM HST**
+
+- The flat RTX 5090, 5080 and 5070 buttons sit on a frosted glass panel. Removed: their see-through background.
 
 ## v0.51.18 — "Flat Siblings"
 **Sat Nov 7, 2026 · 1:20 AM HST**

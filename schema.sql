@@ -716,3 +716,13 @@ CREATE INDEX IF NOT EXISTS idx_instances_to_move ON instances(id) WHERE registry
 CREATE INDEX IF NOT EXISTS idx_instances_to_spend ON instances(id) WHERE registry_copy > 0 AND registry_spent = 0 AND consumed = 1;
 CREATE INDEX IF NOT EXISTS idx_designs_to_retire ON designs(id) WHERE registry_item IS NOT NULL AND registry_retired = 0 AND status IN ('frozen', 'removed');
 CREATE INDEX IF NOT EXISTS idx_instances_away ON instances(id) WHERE locked = -1;
+
+-- v0.51.20: three new Series Alpha rares, the second designs of the remade Lava Lamp Blacklight, Have a Nice Day Gold and
+-- Virtual Pet Golden Egg (kura, Nov 7). Rares have no copy cap of their own (v0.31). Additive only, re-runnable (INSERT OR IGNORE,
+-- by series name). Push first (so the GIFs are live), then:
+--   npx wrangler d1 execute 88x31-db --remote --file=migrations/036_alpha_new_rares.sql
+INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_title, source_author, source_url, license, tier, series_id) SELECT 'Black Light Lava', 'banners/black-light-lava.gif', '1a0de1a6ae5e83f52b4e9699f96410cbbceb2298f180f25e953287192f0ea1b2', 'neon', 'rare', '{"variant_of": "Lava Lamp", "variant": "Black Light"}', NULL, 'active', strftime('%s','now'), 'Black Light Lava', '88x31', NULL, 'Original', 'original', id FROM series WHERE name = 'Alpha';
+INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_title, source_author, source_url, license, tier, series_id) SELECT 'Nice Day Coin', 'banners/nice-day-coin.gif', 'b3fd316f55291bd6a233ab6434a5f0400a0cb46528f85e2a177a9f188a878593', 'guestbook', 'rare', '{"variant_of": "Have a Nice Day", "variant": "Coin"}', NULL, 'active', strftime('%s','now'), 'Nice Day Coin', '88x31', NULL, 'Original', 'original', id FROM series WHERE name = 'Alpha';
+INSERT OR IGNORE INTO designs (name, image_key, image_hash, type, rarity, stats, max_editions, status, created_at, source_title, source_author, source_url, license, tier, series_id) SELECT 'Virtual Pet Hatchling', 'banners/virtual-pet-hatchling.gif', '7d783c4934a34ca3696f63615d77f01876ac658cc7ad321a33018c599ea30113', 'guestbook', 'rare', '{"variant_of": "Virtual Pet", "variant": "Hatchling"}', NULL, 'active', strftime('%s','now'), 'Virtual Pet Hatchling', '88x31', NULL, 'Original', 'original', id FROM series WHERE name = 'Alpha';
+-- Fair Play's odds are cached: let them refresh with the new button counts right away.
+DELETE FROM meta WHERE key = 'odds';
