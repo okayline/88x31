@@ -1,8 +1,14 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.21
+# 88x31 cLuB Changelog — v0.35–v0.51.22
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.22 — "Rewind"
+**Sat Nov 7, 2026 · 1:45 AM HST**
+
+- Three Series Beta rares redrawn: Be Kind Rewind, Hi-Speed Dubbing and Boom Box. Each change is on the ledger. Removed: their old pictures.
+- A new Series Beta rare: Boomin' Nite.
 
 ## v0.51.21 — "Just the Frame"
 **Sat Nov 7, 2026 · 1:27 AM HST**
