@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.2
+# 88x31 cLuB Changelog — v0.35–v0.51.3
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.3 — "Both Sides"
+**Fri Nov 6, 2026 · 7:20 PM HST**
+
+- Turned over, a big button still shows its name and the card under it, mirrored, as if seen through from behind. Every button tilts up and down in its big view, not just the graphics cards and 3D printed ones. Removed: the name and card disappearing from the back, and flat buttons only turning sideways.
 
 ## v0.51.2 — "No Popups"
 **Fri Nov 6, 2026 · 7:06 PM HST**

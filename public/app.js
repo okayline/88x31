@@ -239,7 +239,7 @@ window.DDZoom?.setup({
     const d = zoomOf.get(n), px = Math.min(innerWidth * 0.86, 440), pic = bannerPic(d, px / 88);   // made at the big size
     const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
     const card = (art) => el("div", { class: "zc" }, el("div", { class: "zc-name" }, d.name), art, cardPanel(d, phone));   // its name above it, at the right, turning with it (v0.51.1, kura's mockup C)
-    const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : "") };
+    const v = { w: 88, h: 31 + zp, width: px + "px", cls: "zcard" + (phone ? " phone" : ""), tilt: true };   // every button tilts up and down (v0.51.3)
     const key = d.type === "hardware" && (d.image_key || "").match(/gamma-([a-z0-9-]+)\.gif$/)?.[1];
     if (!key) return { ...v, face: card(pic), relief: { image: d.image_key, art: pic, source: "88x31", key: d.design_id ?? d.id } };   // a 3D printed button stands up (v0.50.2)
     const art = el("div", {}, pic);

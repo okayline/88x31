@@ -1351,6 +1351,7 @@ img.banner { -webkit-touch-callout: none; }
    line. Sizes in --u (the big view's button pixel), from the mockup's 264 px wide button (3 px a pixel). The button's edge and back
    stop above the panel (22 pixels: ZCARD_PANEL in app.js). */
 .zcard .zedge, .zcard .zback { bottom: calc(22 * var(--u)); }
+.zcard .zface { backface-visibility: visible; -webkit-backface-visibility: visible; }   /* the name and the panel show from the back too, mirrored (v0.51.3, kura); the back's stripes still cover the button */
 .zc { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
 .zc-glass { width: 100%; height: calc(18 * var(--u)); margin-top: calc(4 * var(--u)); padding: calc(1.5 * var(--u)) calc(3.67 * var(--u)) 0;
   box-sizing: border-box; overflow: hidden; border-radius: calc(2.33 * var(--u)); background: rgba(20,32,90,.80); border: 1px solid rgba(190,215,255,.28);
