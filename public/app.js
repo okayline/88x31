@@ -273,8 +273,11 @@ window.DDZoom?.setup({
   find: (t) => { for (let n = t; n && n !== document.body; n = n.parentElement) if (zoomOf.has(n)) return n; return null; },
   holdOff: (n) => !!n.closest(".tw-pick, .tw-carried, .tw-mine") || (arranging && !!n.closest("#page-collection")),
   open: (n) => {
-    const phone = innerWidth < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
-    const d = zoomOf.get(n), px = Math.min(innerWidth * 0.86, 440) * (phone ? 0.7 : 1), pic = bannerPic(d, px / 88);   // made at the big size; 70% on a phone (v0.51.23, kura)
+    // sized by the screen, not the page: a page wider than a phone's screen shows zoomed out, its innerWidth bigger than the screen,
+    // and the card came out at a computer's size there (the Buttons page, kura, v0.51.24). zs: how far it's zoomed (1 = not)
+    const vv = window.visualViewport, zs = vv ? vv.scale : 1, sw = (vv ? vv.width : innerWidth) * zs;
+    const phone = sw < 600, zp = phone ? ZCARD_PANEL_PHONE : ZCARD_PANEL;
+    const d = zoomOf.get(n), px = Math.min(sw * 0.86, 440) * (phone ? 0.7 : 1) / zs, pic = bannerPic(d, px / 88);   // made at the big size; 70% on a phone (v0.51.23, kura)
     const found = d.tier === "archive" || /^\/?api\/img/.test(d.image_key || "");   // copies carry no tier; only found buttons' pictures come from api/img (v0.51.6)
     if (found) queueMicrotask(() => foundBack(d));   // its back: itself seen through from behind (v0.51.7)
     else { const sr = CARDS[d.design_id ?? d.id]?.series || d.series; if (sr === "Alpha" || sr === "Beta") queueMicrotask(() => seriesBack(d, sr)); }   // its series' back (Alpha v0.51.8, Beta v0.51.9)
