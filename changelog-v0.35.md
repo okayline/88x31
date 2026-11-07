@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.5
+# 88x31 cLuB Changelog — v0.35–v0.51.6
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.6 — "Dot GIF, Really"
+**Fri Nov 6, 2026 · 7:40 PM HST**
+
+- Fixed: a found button's name in its big view ended in ".gif" only on some pages; now it does everywhere, your own copies too. Removed: the names without it.
 
 ## v0.51.5 — "Dot GIF"
 **Fri Nov 6, 2026 · 7:35 PM HST**
