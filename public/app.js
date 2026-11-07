@@ -264,7 +264,7 @@ function seriesBack(d, series) {
     // each trace drawn twice: dim, and a short bright pulse running along it in to the disc, each at its own pace (v0.51.9: a signal on the board)
     const T = ["M0 6h14l5 5h12", "M0 25h10l4-4h17", "M0 15.5h31", "M88 6h-14l-5 5h-12", "M88 25h-10l-4-4h-17", "M88 15.5h-31", "M30 0v4l3 3", "M58 0v4l-3 3", "M30 31v-4l3-3", "M58 31v-4l-3-3"];
     c.innerHTML = '<g class="tr">' + T.map((t) => `<path d="${t}"/>`).join("") + '</g><g class="pl">'
-      + T.map((t, i) => `<path d="${t}" pathLength="100" style="animation-duration:${(2.2 + (i * 7 % 10) / 5).toFixed(1)}s;animation-delay:-${(i * 0.37 % 2).toFixed(2)}s"/>`).join("") + '</g>'
+      + T.map((t, i) => `<path d="${t}" pathLength="100" style="animation-duration:${(1.5 + (i * 7 % 10) / 7.5).toFixed(1)}s;animation-delay:-${(i * 0.37 % 2).toFixed(2)}s"/>`).join("") + '</g>'
       + '<g class="dot"><circle cx="19" cy="11" r=".9"/><circle cx="14" cy="21" r=".9"/><circle cx="69" cy="11" r=".9"/><circle cx="74" cy="21" r=".9"/><circle cx="30" cy="1" r=".8"/><circle cx="58" cy="30" r=".8"/></g>';
     back.append(c, el("div", { class: "zback-disc" }), s);
   }
