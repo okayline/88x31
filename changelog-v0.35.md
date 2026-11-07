@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.20
+# 88x31 cLuB Changelog — v0.35–v0.51.21
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.21 — "Just the Frame"
+**Sat Nov 7, 2026 · 1:27 AM HST**
+
+- The flat RTX 5090, 5080 and 5070 buttons keep only the glass panel's outline; inside it is see-through. Removed: the panel's fill and its streak.
 
 ## v0.51.20 — "Glow Up"
 **Sat Nov 7, 2026 · 1:30 AM HST**
