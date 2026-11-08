@@ -12,3 +12,8 @@ database_id = "47bef71e-4a6f-42e7-814e-0a5a53e273dc"
 [[services]]
 binding = "ACCOUNTS"
 service = "dungeon-items"
+
+# Files the site keeps outside the database (R2 bucket "88x31").
+[[r2_buckets]]
+binding = "DISKS"
+bucket_name = "88x31"

@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.26
+# 88x31 cLuB Changelog — v0.35–v0.51.27
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.27 — "Shelf Space"
+**Sun Nov 8, 2026 · 4:25 AM HST**
+
+- The site has a place to keep files outside its database, for something coming later. Nothing you see changes. Removed: nothing.
 
 ## v0.51.26 — "Just Right"
 **Sat Nov 7, 2026 · 3:09 AM HST**
