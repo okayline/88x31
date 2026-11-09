@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.27
+# 88x31 cLuB Changelog — v0.35–v0.51.28
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.28 — "Latest Drop"
+**Sun Nov 8, 2026 · 8:10 PM HST**
+
+- The green scrolling line at the top now starts with the latest drop, Series Gamma. Removed: its old "LATEST DROP: BETA SERIES".
 
 ## v0.51.27 — "Shelf Space"
 **Sun Nov 8, 2026 · 4:25 AM HST**
