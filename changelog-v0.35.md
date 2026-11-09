@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.35
+# 88x31 cLuB Changelog — v0.35–v0.51.36
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.36 — "Steady Dice"
+**Sun Nov 8, 2026 · 10:33 PM HST**
+
+- The free pack's name sits in a fixed box, so rolling a shorter or longer name no longer moves the 🎲 and ✓ under your finger. Removed: the name box that grew and shrank with the name.
 
 ## v0.51.35 — "Roll a Name"
 **Sun Nov 8, 2026 · 10:23 PM HST**

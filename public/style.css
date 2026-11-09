@@ -716,7 +716,10 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .freepack-box .pull-row { margin: 6px 0; }
 .sig-form { text-align: center; margin: 8px 0 0; }
 .sig-line { display: inline-flex; align-items: baseline; gap: 6px; font-style: italic; }
-.sig-name { border-bottom: 2px solid currentColor; font: italic 20px "Comic Sans MS", "Brush Script MT", cursive; padding: 0 4px; }
+/* a fixed box, so rolling a shorter or longer name never moves the dice or the check under your finger (v0.51.36) */
+.sig-name { display: inline-block; width: 10.5em; max-width: 48vw; text-align: center; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; vertical-align: bottom; border-bottom: 2px solid currentColor;
+  font: italic 20px "Comic Sans MS", "Brush Script MT", cursive; padding: 0 4px; }
 .sig-dice { border: 0; background: transparent; font-size: 20px; cursor: pointer; padding: 0 2px; }
 .sig-check { border: 0; background: transparent; color: #66ff66; font-size: 22px; cursor: pointer; padding: 0 4px; }
 .fp-human { display: flex; justify-content: center; margin-top: 6px; }
