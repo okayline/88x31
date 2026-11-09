@@ -2,7 +2,7 @@
 
 ## This repo
 
-The 88x31 cLuB: a daily-visit collecting game where the creatures are 88x31 web buttons (packs, foils, trades, fusion). Live at 88x31.app. Every copy is numbered, never reused, and written into a public hash-chained ledger.
+The 88x31 cLuB: a daily-visit collecting game where the creatures are 88x31 web buttons (packs, foils, trades, fusion). Live at club.88x31.app. Every copy is numbered, never reused, and written into a public hash-chained ledger.
 
 **Layout** (the README has more)
 - `public/` is the site. `functions/api/` is the API, one file per route (Cloudflare Pages Functions). `lib/` is the game: packs, pulls, trades, fusion, sets, rings and Theme Walls, bots, the ledger, the shared registry mirror and accounts.
