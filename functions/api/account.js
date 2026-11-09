@@ -1,8 +1,18 @@
+// POST   /api/account  { action: "reroll" }   -> { user: { id, name } }   a new name from the lists (names can't be typed)
 // DELETE /api/account  { confirm: "<your name>" }
 // Deletes the logged-in player's account, all-or-nothing (lib/accounts.js deleteAccount says exactly what goes).
 import { json, readJson, currentUser, endSession } from "../../lib/auth.js";
-import { deleteAccount } from "../../lib/accounts.js";
+import { deleteAccount, rerollName } from "../../lib/accounts.js";
 import { acc } from "../../lib/shared.js";
+
+export async function onRequestPost({ request, env }) {
+  const me = await currentUser(env, request);
+  if (!me) return json({ error: "Not logged in." }, 401);
+  const { action } = await readJson(request);
+  if (action !== "reroll") return json({ error: "Unknown action." }, 400);
+  const r = await rerollName(env, me);
+  return r.error ? json({ error: r.error }, r.status || 400) : json(r);
+}
 
 export async function onRequestDelete({ request, env }) {
   const me = await currentUser(env, request);

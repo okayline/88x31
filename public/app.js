@@ -2724,6 +2724,8 @@ $("ledger-older-btn").onclick = async () => {
 
 async function showCodes() {
   showView("view-codes");
+  $("my-name").textContent = me ? me.name : "";
+  $("reroll-msg").textContent = "";
   showPasskeys();
   showCarry();
   const { codes } = await api("/api/codes");
@@ -2839,6 +2841,20 @@ $("new-code").onclick = async () => {
   catch (e) { say(e.message); }
 };
 
+// a new name from the lists (names can't be typed); your page's address changes with it
+$("reroll-name").onclick = async () => {
+  const b = $("reroll-name"), msg = $("reroll-msg");
+  msg.textContent = ""; b.disabled = true;
+  try {
+    const r = await api("/api/account", { method: "POST", body: { action: "reroll" } });
+    me = { ...me, name: r.user.name };
+    $("my-name").textContent = me.name;
+    document.querySelectorAll(".my-page-link").forEach((a) => (a.href = "#u/" + encodeURIComponent(me.name)));
+    msg.textContent = "You're " + me.name + " now!";
+  } catch (e) { msg.textContent = e.message; }
+  finally { b.disabled = false; }
+};
+
 $("delete-account").onclick = async () => {
   say("");
   const typed = await askText(`This deletes your account for good. Type your name (${me.name}) to confirm:`, "", { ok: "Delete forever", cancel: "No, keep it" });
@@ -2907,30 +2923,38 @@ async function renderFreePack() {
       el("p", { class: "center" }, tile), fpOops);
     return;
   }
-  // waiting: the card, and the signature line
-  const name = el("input", { name: "name", maxlength: "20", autocomplete: "off", "aria-label": "Your name", class: "sig-input" });
+  // waiting: the card, and the signature line. Names are rolled from the lists, never typed (Nov 8, 2026): the dice
+  // ask for another free name, the check signs with the one showing.
+  let rolled = st.roll || "";
+  const name = el("b", { class: "sig-name" }, rolled || "…");
+  const dice = el("button", { type: "button", class: "sig-dice", title: "Roll another name", "aria-label": "Roll another name" }, "🎲");
   const check = el("button", { type: "submit", class: "sig-check", title: "Sign it!", "aria-label": "Sign it" }, "✓");
-  check.hidden = true;
-  name.oninput = () => { check.hidden = !name.value.trim(); };
+  check.hidden = !rolled;
   const human = el("div", { class: "fp-human" });
   // what went wrong shows right under the signature line, where you're looking
   const oops = el("p", { class: "center sig-oops", role: "alert", "aria-live": "polite" });
-  const form = el("form", { class: "sig-form" }, el("label", { class: "sig-line" }, "Your name: ", name, check), oops, human);
-  name.addEventListener("input", () => { oops.textContent = ""; });
+  const form = el("form", { class: "sig-form" }, el("p", { class: "sig-line" }, "Your name: ", name, " ", dice, " ", check), oops, human);
+  dice.onclick = async () => {
+    oops.textContent = "";
+    dice.disabled = true;
+    try { rolled = (await api("/api/freepack", { method: "POST", body: { action: "name", except: rolled } })).name; name.textContent = rolled; check.hidden = false; }
+    catch (err) { oops.textContent = err.message; }
+    finally { dice.disabled = false; }
+  };
   form.onsubmit = async (e) => {
     e.preventDefault();
-    if (!name.value.trim() || check.disabled) return;
+    if (!rolled || check.disabled) return;
     oops.textContent = "";
-    check.disabled = true;           // greyed out while it signs, so it can't be pressed twice
+    check.disabled = dice.disabled = true;   // greyed out while it signs, so it can't be pressed twice
     check.textContent = "…";
     try {
-      const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: name.value, turnstile: fpToken, came_from: cameFrom } });
+      const r = await api("/api/freepack", { method: "POST", body: { action: "sign", name: rolled, turnstile: fpToken, came_from: cameFrom } });
       me = r.user;
       afterCode = "u/" + encodeURIComponent(r.user.name); // land on your new page once the code is saved
       showCode(r.code, r.user.name);
     } catch (err) {
       oops.textContent = err.message;
-      check.disabled = false;
+      check.disabled = dice.disabled = false;
       check.textContent = "✓";
       if (window.turnstile) { try { window.turnstile.reset(); } catch {} fpToken = null; }
     }

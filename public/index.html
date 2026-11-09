@@ -446,6 +446,11 @@
 
     <!-- save codes -->
     <div id="view-codes" class="view panel" hidden>
+      <h2>&raquo; My Name &laquo;</h2>
+      <p>You're <b id="my-name"></b>. <button id="reroll-name">&#127922; Roll a new name</button></p>
+      <p class="small">Names come from the word lists, like in every 88x31 game. A new name gives your page a new address, so old links to it stop working.</p>
+      <p class="add-status" id="reroll-msg" aria-live="polite"></p>
+
       <h2>&raquo; My Carry &laquo;</h2>
       <p class="small">The one copy you carry into every 88x31 game: a button, a 4Dungeon find, a Dawn Baton. Pin another and every game carries it from then on. Keep a 1-of-1 from a pack and it gets a mark.</p>
       <p id="carry-now"></p>
@@ -514,7 +519,7 @@
 
   <!-- the footer every game shows (dungeon-items src/footer.js): "~*~88x31~*~ · § ≡ version" (data-copy="no": no 🄯), added to the end of this spot; the page above is plain HTML, so the spot is shown at once. (v0.51.30) The "Best viewed" line sits in front of it, on the same line -->
   <div id="ddfoot">Best viewed in 800x600 with any browser &middot; Last updated: Nov 2026 &middot; </div>
-  <script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.51.34" data-copy="no"></script>
+  <script src="https://dungeon-items.ddddungeon.workers.dev/footer.js" data-version="v0.51.35" data-copy="no"></script>
 
 </main>
 <!-- in-game dialog window -->

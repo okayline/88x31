@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.34
+# 88x31 cLuB Changelog — v0.35–v0.51.35
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.35 — "Roll a Name"
+**Sun Nov 8, 2026 · 10:23 PM HST**
+
+- Names are rolled, not typed: signing the free pack shows a name from the word lists every 88x31 game uses ("Neon Modem"), with 🎲 to roll another. Members can roll a new name under My Name (it gives your page a new address). Names you already have stay. Removed: typing your name, and the old sign-up form's route.
 
 ## v0.51.34 — "Its Marks"
 **Sun Nov 8, 2026 · 8:58 PM HST**

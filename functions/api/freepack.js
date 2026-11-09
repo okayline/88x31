@@ -1,10 +1,12 @@
 // The front-page free pack (lib/freepack.js).
 // GET  /api/freepack                          -> { state: none|waiting|claimed, card?, name?, sitekey? }
 // POST /api/freepack { action: "open" }       -> { card }   (sets the anonymous free-pack cookie)
-// POST /api/freepack { action: "sign", name, turnstile?, came_from? } -> { user, code, instance_id }  (logs in)
+// POST /api/freepack { action: "name", except? }  -> { name }   (another free name from the lists, for the dice)
+// POST /api/freepack { action: "sign", name, turnstile?, came_from? } -> { user, code, instance_id }  (logs in; name must be from the lists)
 import { json, readJson, currentUser } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
 import { freePackState, openFreePack, signFreePack } from "../../lib/freepack.js";
+import { freeName } from "../../lib/names.js";
 
 export async function onRequestGet({ request, env }) {
   if (await currentUser(env, request)) return json({ state: "member" });
@@ -18,6 +20,10 @@ export async function onRequestPost({ request, env }) {
     const r = await openFreePack(env, request);
     if (r.error) return json(r, 400);
     return json({ card: r.card }, 200, r.cookie ? { "set-cookie": r.cookie } : {});
+  }
+  if (body.action === "name") {
+    const name = await freeName(env, body.except);
+    return name ? json({ name }) : json({ error: "Couldn't find a free name. Try again!" }, 409);
   }
   if (body.action === "sign") {
     const r = await signFreePack(env, request, body.name, body.turnstile, body.came_from);

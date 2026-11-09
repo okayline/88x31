@@ -716,8 +716,8 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 .freepack-box .pull-row { margin: 6px 0; }
 .sig-form { text-align: center; margin: 8px 0 0; }
 .sig-line { display: inline-flex; align-items: baseline; gap: 6px; font-style: italic; }
-.sig-input { border: 0; border-bottom: 2px solid currentColor; background: transparent; color: inherit;
-  font: italic 20px "Comic Sans MS", "Brush Script MT", cursive; width: 11em; padding: 0 4px; outline: none; }
+.sig-name { border-bottom: 2px solid currentColor; font: italic 20px "Comic Sans MS", "Brush Script MT", cursive; padding: 0 4px; }
+.sig-dice { border: 0; background: transparent; font-size: 20px; cursor: pointer; padding: 0 2px; }
 .sig-check { border: 0; background: transparent; color: #66ff66; font-size: 22px; cursor: pointer; padding: 0 4px; }
 .fp-human { display: flex; justify-content: center; margin-top: 6px; }
 /* printing the save code: just the card */
@@ -726,7 +726,6 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
   body.printing-code #code-card .center button { display: none; }
 }
 .sig-line { white-space: nowrap; max-width: 100%; }
-.sig-input { width: 9em; max-width: 55vw; }
 .fp-note { margin-top: 2px; }
 
 /* Wall of Buttons: show / order choices */
@@ -741,7 +740,7 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 /* signing the free pack: what went wrong, right under the line */
 .sig-oops { color: #ff6666; font-weight: bold; min-height: 1em; margin: 4px 0; }
 .sig-oops:empty { display: none; }
-.sig-check:disabled { opacity: .45; cursor: wait; filter: grayscale(1); }
+.sig-check:disabled, .sig-dice:disabled { opacity: .45; cursor: wait; filter: grayscale(1); }
 
 .card-finish { color: #ff99ff; font-weight: bold; }
 
