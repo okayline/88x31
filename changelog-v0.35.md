@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.36
+# 88x31 cLuB Changelog — v0.35–v0.51.37
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.37 — "Clean Goodbye"
+**Sun Nov 8, 2026 · 10:39 PM HST**
+
+- When the webmaster deletes a player, their link to the shared 88x31 account is removed too, the same as when players delete their own account. Removed: nothing.
 
 ## v0.51.36 — "Steady Dice"
 **Sun Nov 8, 2026 · 10:33 PM HST**
