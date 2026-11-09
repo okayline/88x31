@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.30
+# 88x31 cLuB Changelog — v0.35–v0.51.31
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.31 — "Plug and Play"
+**Sun Nov 8, 2026 · 8:25 PM HST**
+
+- Opening a Series Gamma pack installs a new graphics card: a little monitor's screen goes from 16 colours to True Color while you hold.
+- Opening a Series Alpha pack defragments drive C:, packing its blocks together while you hold.
+- Removed: the MS-DOS unzip window for Alpha and Gamma packs (limited packs keep it).
 
 ## v0.51.30 — "Fine Print"
 **Sun Nov 8, 2026 · 8:15 PM HST**

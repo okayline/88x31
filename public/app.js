@@ -3437,7 +3437,8 @@ async function showRings() {
 // ---------- hold to open, and tearing pouches (v0.32) ----------
 // Clicking a pack opens a little 90s window; hold "Open Pack" (or Space) until the bar fills.
 // Let go early and it drains back: nothing opens. Each kind of pack has its own loader:
-//   daily = dial-up · ~*~cLuB~*~ = download · welcome & free = setup · Alpha, Gamma & limited = MS-DOS · Beta = cassette
+//   daily = dial-up · ~*~cLuB~*~ = download · welcome & free = setup · limited & other series = MS-DOS · Beta = cassette
+//   (v0.51.31) Alpha = Disk Defragmenter · Gamma = New Hardware Found
 // Crimped pouches (series and limited packs) can also be torn open: drag across the top.
 const HOLD_MS = 1600, DRAIN_MS = 500;
 function loaderKind(p) {
@@ -3446,6 +3447,8 @@ function loaderKind(p) {
   if (p.special) return "dos";
   const s = (p.series || "").toLowerCase();
   if (s === "beta") return "tape";
+  if (s === "gamma") return "hardware";
+  if (s === "alpha") return "defrag";
   if (s) return "dos";
   return "download";
 }
@@ -3455,7 +3458,10 @@ const LOADER = {
   setup: { title: "~*~cLuB~*~ Pack Setup", lines: [[0, "Setup is ready to unpack your ~*~cLuB~*~ pack."], [.1, "Setup is copying your buttons..."], [.55, "Checking for holos..."], [.97, "Setup is complete! Welcome 2 the cLuB!"]] },
   dos: { title: "MS-DOS Prompt", lines: [] },
   tape: { title: "Series Beta · Side A", lines: [] },
+  hardware: { title: "New Hardware Found", lines: [[0, "Installing driver..."], [.5, "Setting colours..."], [1, "Your new card is ready!"]] },
+  defrag: { title: "Defragmenting Drive C:", lines: [[0, "Reading drive C:..."], [.06, "Moving buttons together..."], [.85, "Updating the drive..."], [1, "Your new buttons are ready!"]] },
 };
+const DEFRAG_CELLS = 24 * 4;   // the drive map: 24 blocks across, 4 rows
 const CASSETTE_SVG = `<svg class="ho-cassette" viewBox="0 0 300 190" role="img" aria-label="A cassette tape winding from one reel to the other">
 <rect x="4" y="4" width="292" height="182" rx="12" fill="#2a2a30" stroke="#0e0e12" stroke-width="3"/>
 <circle cx="16" cy="16" r="4" fill="#55555f"/><circle cx="284" cy="16" r="4" fill="#55555f"/><circle cx="16" cy="174" r="4" fill="#55555f"/><circle cx="284" cy="174" r="4" fill="#55555f"/>
@@ -3484,10 +3490,28 @@ function holdToOpen(p, anchor = null) {
     if (kind === "tape") { art = el("div", { class: "ho-tape" }); art.innerHTML = CASSETTE_SVG; }
     if (kind === "dialup") art = el("div", { class: "ho-modem", "aria-hidden": "true" }, [0, 1, 2, 3, 4].map(() => el("span")));
     const term = kind === "dos" ? el("div", { class: "ho-term" + (p.special ? " gold" : "") }) : null;
+    // (v0.51.31) Gamma: a little monitor whose screen climbs from 16 colours to True Color, the status beside it
+    const screens = {};
+    if (kind === "hardware") {
+      const screen = el("div", { class: "hw-screen" }, ...["c16", "c256", "cTrue"].map((c) => (screens[c] = el("div", { class: "layer " + c }))));
+      screens.c88 = el("div", { class: "layer c88" }); screens.c88.innerHTML = "~*~<br>cLuB<br>~*~"; screen.append(screens.c88);
+      art = el("div", { class: "hw-top" }, el("div", { class: "hw-mon", "aria-hidden": "true" }, el("div", { class: "hw-bezel" }, screen), el("div", { class: "hw-stand" })),
+        el("div", { class: "hw-text" }, el("b", {}, "~*~cLuB~*~ Graphics Card"), status));
+    }
+    // (v0.51.31) Alpha: a drive map whose blocks get packed together as you hold, then the cLuB's end screen over it
+    let cells = [], start = [], used = 0, dfDone = null;
+    if (kind === "defrag") {
+      start = Array.from({ length: DEFRAG_CELLS }, () => { const r = Math.random(); return r < .38 ? "u" : r < .62 ? "f" : "e"; });
+      used = start.filter((c) => c !== "e").length;
+      cells = start.map(() => el("i"));
+      dfDone = el("div", { class: "df-done" }, "~*~ cLuB ~*~");
+      art = el("div", { class: "df-map", "aria-hidden": "true" }, el("div", { class: "df-grid" }, ...cells, dfDone),
+        el("div", { class: "df-legend" }, ...[["#0000a8", "buttons"], ["#e00000", "scattered"], ["#fff", "free"], ["#ffff00", "moving"]].map(([c, t]) => el("span", { style: "--c:" + c }, t))));
+    }
     const win = el("div", { class: "ho-win" + (kind === "dos" && p.special ? " gold" : ""), role: "dialog", "aria-modal": "true", "aria-label": L.title },
       el("div", { class: "ho-tb" }, el("span", {}, kind === "dos" && p.special_no ? `${limitedName(p)} #${p.special_no}` : L.title), close),
-      el("div", { class: "ho-body" }, art, term, kind !== "dos" ? status : null,
-        kind === "tape" ? null : el("div", { class: "ho-well" + (kind === "download" ? "" : " blocks") }, fill),
+      el("div", { class: "ho-body" }, art, term, kind !== "dos" && kind !== "hardware" ? status : null,
+        kind === "tape" || kind === "defrag" ? null : el("div", { class: "ho-well" + (kind === "download" ? "" : " blocks") }, fill),
         el("div", { class: "ho-pct" }, pct, side),
         el("div", { class: "ho-row" }, btn, el("span", { class: "small" }, "hold, don't click"))));
     const shade = el("div", { class: "ho-shade" }, win);
@@ -3513,6 +3537,21 @@ function holdToOpen(p, anchor = null) {
       if (kind === "dos") {
         side.textContent = p.special_no ? `#${p.special_no} of ${p.special_limit || 25}` : "3 files";
         term.textContent = `C:\\CLUB> pkunzip ${dosFile}\n` + files.slice(0, Math.floor(v * 3.2)).map((f) => `  Inflating: ${f}`).join("\n") + (v >= 1 ? "\nC:\\CLUB> " : "") + "_";
+      }
+      if (kind === "hardware") {
+        const mode = v >= 1 ? "c88" : v > .7 ? "cTrue" : v > .4 ? "c256" : v > .08 ? "c16" : null;
+        for (const [c, l] of Object.entries(screens)) l.classList.toggle("on", c === mode);
+        side.textContent = v >= 1 ? "1024 x 768" : v > .7 ? "True Color (24 bit)" : v > .4 ? "256 colours" : v > .08 ? "16 colours" : "";
+      }
+      if (kind === "defrag") {
+        const k = Math.floor(v * DEFRAG_CELLS);   // everything before the cursor is tidied: buttons packed at the front, free space after
+        cells.forEach((c, i) => {
+          let s = i < k ? (i < used ? "u" : "e") : start[i];
+          if (v > 0 && v < 1 && (i === k || (holding && i === k + 1))) s = i === k && holding ? "w" : "r";
+          c.className = s;
+        });
+        side.textContent = `cluster ${String(Math.floor(v * 1024)).padStart(4, "0")} of 1024`;
+        dfDone.classList.toggle("on", v >= 1);
       }
       if (kind === "tape") {
         const R2 = 676, r2 = 144, q = (sel) => art.querySelector(sel);
