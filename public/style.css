@@ -243,8 +243,6 @@ h3 { margin: 10px 0 6px; font-size: 15px; color: var(--link); }
 .grid.arranging .tile { cursor: grab; border: 2px dashed #ffff00; padding: 2px; touch-action: none; user-select: none; }
 .grid.arranging .tile.dragging { opacity: 0.5; cursor: grabbing; }
 .use-box { margin: 10px 0; padding: 8px; border: 2px dashed var(--edge); }
-.use-box summary { cursor: pointer; font-weight: bold; color: var(--ink); }   /* (v0.51.32) folded: one line until clicked */
-.use-box:not([open]) { padding: 4px 8px; }
 .flavor { margin-top: 0; font-style: italic; color: #ccc; }   /* (v0.51.32) the button's flavour line, under its big picture */
 .btn-link { display: inline-block; padding: 3px 10px; color: #000 !important; background: var(--edge); border: 2px outset #fff; text-decoration: none; font: bold 14px Arial, Helvetica, sans-serif; }
 .snippet { font-size: 12px; }

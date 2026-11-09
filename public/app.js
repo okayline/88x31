@@ -1672,9 +1672,9 @@ function useBox(b) {
   const code = el("textarea", { class: "snippet", rows: "3", readonly: "readonly" });
   code.rows = 2;
   code.value = `<a href="${origin}/#banner/${b.id}"><img src="${mine ? file.replace(".gif", "-" + b.edition + ".gif") : origin + "/" + b.image_key}" width="88" height="31" alt="${b.name}"></a>`;
-  // (v0.51.32) folded into one line at the bottom of the page; a click opens it
-  return el("details", { class: "use-box" },
-    el("summary", {}, "» Use this button on your site «"),
+  // (v0.51.32) at the bottom of the page, always open; (v0.51.33) not folded
+  return el("div", { class: "use-box" },
+    el("h2", {}, "» Use this button on your site «"),
     el("p", { class: "sign-buttons" },
       mine ? el("a", { class: "btn-link", href: `/api/download?id=${b.id}` }, "Download my copy (signed)") : null,
       el("a", { class: "btn-link", href: "/" + b.image_key, download: file }, mine ? "Plain picture" : "Download the picture")),

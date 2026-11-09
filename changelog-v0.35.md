@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.32
+# 88x31 cLuB Changelog — v0.35–v0.51.33
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.33 — "Open Box"
+**Sun Nov 8, 2026 · 8:47 PM HST**
+
+- "Use this button" is always open again, still at the bottom of a button's page. Removed: its fold.
 
 ## v0.51.32 — "Whole Story"
 **Sun Nov 8, 2026 · 8:55 PM HST**
