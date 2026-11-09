@@ -198,7 +198,7 @@ const zoomOf = new WeakMap();   // each button picture bannerImg made -> its des
 // lines and series come from the shared item table through /api/cards (loaded once); a button it doesn't know (found buttons,
 // specials) shows its type line alone. The panel turns with the button; the button's edge and back cover the button only.
 let CARDS = {};
-fetch("/api/cards").then((r) => (r.ok ? r.json() : {})).then((j) => { CARDS = (j && j.cards) || {}; }).catch(() => {});
+const cardsReady = fetch("/api/cards").then((r) => (r.ok ? r.json() : {})).then((j) => { CARDS = (j && j.cards) || {}; }).catch(() => {});   // (v0.51.32) a button's page waits for it
 const SIGN = {   // each series' sign, drawn in a 14 x 14 box: its outline, then its inner lines (the mockup's)
   Alpha: ["M1 7a6 6 0 1 0 12 0a6 6 0 1 0 -12 0z", "M1 7h12M7 1c-3 3.5 -3 8.5 0 12M7 1c3 3.5 3 8.5 0 12"],   // a globe
   Beta: ["M1 1h9.5l2.5 2.5v9.5h-12z", "M4 1v4h5v-4M4 13v-4h6v4"],   // a floppy
@@ -1670,9 +1670,11 @@ function useBox(b) {
   const mine = me && b.owner && b.owner.toLowerCase() === me.name.toLowerCase();
   const file = b.image_key.split("/").pop();
   const code = el("textarea", { class: "snippet", rows: "3", readonly: "readonly" });
+  code.rows = 2;
   code.value = `<a href="${origin}/#banner/${b.id}"><img src="${mine ? file.replace(".gif", "-" + b.edition + ".gif") : origin + "/" + b.image_key}" width="88" height="31" alt="${b.name}"></a>`;
-  return el("div", { class: "use-box" },
-    el("h2", {}, "» Use this button «"),
+  // (v0.51.32) folded into one line at the bottom of the page; a click opens it
+  return el("details", { class: "use-box" },
+    el("summary", {}, "» Use this button on your site «"),
     el("p", { class: "sign-buttons" },
       mine ? el("a", { class: "btn-link", href: `/api/download?id=${b.id}` }, "Download my copy (signed)") : null,
       el("a", { class: "btn-link", href: "/" + b.image_key, download: file }, mine ? "Plain picture" : "Download the picture")),
@@ -1865,12 +1867,49 @@ async function showVisitors(grid, mine, seq) {
   grid.after(box);
 }
 
+// (v0.51.32) A copy's lines from the shared registry, for its Travel Log: its marks ("was found under a full moon") and its trips
+// to other games. Its birth and its moves here are left out: this game's own ledger has those in full (the registry only gets a
+// summary, lib/registry.js). The words come from dungeon-items /mark-words.js, loaded on this page only, once (kura: "i'd rather
+// run a script on one page, than read/write or change the registry"). The registry out of reach: no lines, the page still shows.
+const REG_GAME = { "88x31": "88x31", "4dungeon": "4Dungeon" };
+let markWordsReady = null;
+const loadMarkWords = () => markWordsReady || (markWordsReady = new Promise((done) => {
+  const s = document.createElement("script");
+  s.src = "https://dungeon-items.ddddungeon.workers.dev/mark-words.js";
+  s.onload = s.onerror = () => done();
+  document.head.append(s);
+}));
+async function registryLines(b) {
+  if (!b.registry_item || !(b.registry_copy > 0)) return [];
+  let d;
+  try { [d] = await Promise.all([api(`/api/registry/copy?item=${b.registry_item}&copy=${b.registry_copy}`), loadMarkWords()]); } catch { return []; }
+  const words = (m) => (window.DDMarkWords && window.DDMarkWords.markWords(m)) || "got a mark: " + String(m.value).replace(/_/g, " ");
+  const and = (xs) => (xs.length > 1 ? xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1] : xs[0]);
+  const game = (g) => REG_GAME[g] || g;
+  const mine = (c) => c && c.item === b.registry_item && c.copy === b.registry_copy;
+  const out = [];
+  for (const e of (d && d.entries) || []) {
+    let r; try { r = JSON.parse(e.record); } catch { continue; }
+    const where = r.game && r.game !== "88x31" ? ` (in ${game(r.game)})` : "";
+    let text = null;
+    if (r.k === "mark") {   // one mark, one mark many copies share, or several marks at once: only this copy's
+      const ms = Array.isArray(r.marks) ? r.marks.filter((m) => m && Array.isArray(m.copies) && m.copies.some(mine))
+        : Array.isArray(r.copies) ? (r.copies.some(mine) ? [r] : []) : [r];
+      if (ms.length) text = "It " + and(ms.map(words)) + where;
+    } else if (r.k === "move" && r.from !== r.to) text = `Travelled from ${game(r.from)} to ${game(r.to)}`;
+    else if (r.k === "spend" && r.game !== "88x31") text = "Used up" + where;
+    if (text) out.push({ at: e.at, text, id: e.id, hash: e.hash });
+  }
+  return out;
+}
 async function showBanner(id) {
   const seq = ++loadSeq;
   showView("view-banner");
   $("banner-body").textContent = "Loading...";
   const { banner: b, design_entry: de, foil_entry: fe, history, chain } = await api("/api/banner?id=" + encodeURIComponent(id));
+  const [, reg] = await Promise.all([cardsReady, registryLines(b)]);
   if (seq !== loadSeq) return;
+  const card = CARDS[b.design_id] || {};   // (v0.51.32) its subtype and flavour line, as on the big view's card
   const box = $("banner-body");
   box.textContent = "";
   const fp = (hash, ledgerId) => hash
@@ -1880,16 +1919,16 @@ async function showBanner(id) {
   box.append(
     el("h2", {}, `» ${b.name} ${edition(b)} «`),
     el("p", { class: "center" }, bannerImg(b, 3)),
+    card.flavor ? el("p", { class: "center flavor" }, `“${card.flavor}”`) : null,
     variantLine(b),
     foilLine(b, fe),
     b.status === "removed" ? el("p", {}, el("b", {}, "Removed by request."), " This copy and its travel log stay, but the art is gone.") : null,
-    el("p", {}, b.series ? `Series ${b.series} · ` : "", `Type: ${b.type} · Rarity: `, rarityTag(b.rarity),
+    el("p", {}, b.series ? `Series ${b.series} · ` : "", `Type: ${b.type}${card.subtype ? " — " + card.subtype : ""} · Rarity: `, rarityTag(b.rarity),
       b.max_editions ? ` · ${b.minted} of ${b.max_editions} copies made` : ` · ${b.minted} copies so far`),
     ownedLine(b, history),
     travelBox(b, () => showBanner(id)),
 
     el("h2", {}, "» Credits «"),
-    b.tier === "original" && b.status !== "removed" ? useBox(b) : null,
     b.status === "removed" ? null : credit(b) || el("p", { class: "small" }, "No credit recorded."),
     tierNote(b, b.webmaster),
     adminBox(b.design_id, b.name, b.status, b.found_by, () => showBanner(id)),
@@ -1903,11 +1942,12 @@ async function showBanner(id) {
       de ? `${fmtStamp(de.created_at)} as ledger entry #${de.id}` : "not sealed yet"),
     de ? el("p", { class: "small" }, "Design fingerprint: ", el("span", { class: "hash" }, de.hash)) : null,
     el("p", { class: "small" }, "Artwork fingerprint: ", el("span", { class: "hash" }, b.image_hash)),
-    b.registry_item && b.registry_copy > 0 ? el("p", { class: "small" }, "Shared item registry: ",
-      el("a", { href: `/registry?item=${b.registry_item}&copy=${b.registry_copy}` }, `${b.name} (item ${b.registry_item}, copy #${b.registry_copy})`)) : null,
+    b.registry_item && b.registry_copy > 0 ? el("p", { class: "small" },   // (v0.51.32) one small line: its record on the shared registry
+      el("a", { href: `/registry?item=${b.registry_item}&copy=${b.registry_copy}` }, `Registry record: item ${b.registry_item}, copy #${b.registry_copy} »`)) : null,
 
     el("h2", {}, "» Travel Log «"),
-    el("ol", { class: "log" }, history.map((h) => el("li", {},
+    // (v0.51.32) this game's own steps and the registry's lines (registryLines), in time order
+    el("ol", { class: "log" }, [...history.map((h) => ({ t: h.created_at, li: el("li", {},
       `${fmtStamp(h.created_at)}: ${HOW[h.reason] || h.reason}`,
       h.reason === "fusion"
         ? (h.to_name ? ` by ${h.to_name}: came out shinier` : " → used up")
@@ -1916,8 +1956,12 @@ async function showBanner(id) {
         ? [" ", el("a", { href: "#pack/" + h.ref_id }, `#${h.ref_id}`), ` → ${h.to_name || "a former player"}`]
         : [h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
            ` → ${h.to_name || "a former player"}`],
-      fp(h.hash, h.ledger_id)))),
-    fuseBox(b));
+      fp(h.hash, h.ledger_id)) })),
+      ...reg.map((x) => ({ t: x.at, li: el("li", { class: "reg-line" }, `${fmtStamp(x.at)}: ${x.text}.`,
+        el("span", { class: "hash small", title: x.hash }, ` [registry #${x.id} · ${String(x.hash).slice(0, 12)}…]`)) }))]
+      .sort((a, c) => a.t - c.t).map((x) => x.li)),
+    fuseBox(b),
+    b.tier === "original" && b.status !== "removed" ? useBox(b) : null);
 }
 
 // ---------- sealed packs ----------

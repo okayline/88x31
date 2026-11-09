@@ -1,8 +1,15 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.31
+# 88x31 cLuB Changelog — v0.35–v0.51.32
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.32 — "Whole Story"
+**Sun Nov 8, 2026 · 8:55 PM HST**
+
+- A button's page shows its flavour line and subtype, and its Travel Log now includes its marks and trips to other games from the shared registry. The registry link is one small line.
+- "Use this button" is folded into one line at the bottom of the page; click it to open.
+- Removed: the open "Use this button" box under Credits, and the longer registry line.
 
 ## v0.51.31 — "Plug and Play"
 **Sun Nov 8, 2026 · 8:25 PM HST**
