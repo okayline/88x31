@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.37
+# 88x31 cLuB Changelog — v0.35–v0.51.38
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.38 — "One Run Only"
+**Mon Nov 9, 2026 · 1:01 AM HST**
+
+- Series Gamma is limited to its 100-copy print run, so it has no Limited pack. Gamma's Fair Play card shows just its Series pack. Removed: Gamma's Special Pack (its picture and counter on Fair Play, and the webmaster's option to give one).
 
 ## v0.51.37 — "Clean Goodbye"
 **Sun Nov 8, 2026 · 10:39 PM HST**

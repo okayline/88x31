@@ -6,7 +6,7 @@ import { json } from "../../lib/auth.js";
 import {
   ODDS_PER_1000, SPECIAL_ODDS_PER_1000, PULLS_PER_DAY, BONUS_CHANCE, FOUND_CHANCE, CRAWLER_SERIES_CHANCE,
   SERIES_WEIGHTS, MAX_ACTIVE_SERIES, PATTERN_CHANCE, EFFECT_CHANCE, FUSE_EFFECT_CHANCE, TOP_EFFECT, FREE_HOLD,
-  finishes, seriesPrinted, SERIES_PACK, packOnlyIds,
+  finishes, seriesPrinted, SERIES_PACK, packOnlyIds, hasLimited,
 } from "../../lib/game.js";
 import { EARNED_KEEP } from "../../lib/packs.js";
 import { BOARD_DAYS, MAX_OPEN, REQUEST_PACKS_PER_DAY, REQUESTABLE } from "../../lib/board.js";
@@ -83,7 +83,8 @@ export async function onRequestGet({ env }) {
       // the whole game before series existed, so its copies go back further than its release date)
       released_at: Math.min(s.released_at ?? Infinity, s.first_copy ?? Infinity) === Infinity ? null : Math.min(s.released_at ?? Infinity, s.first_copy ?? Infinity),
       left: s.print_run != null ? Math.max(0, s.print_run - s.printed) : null, out_of_print: !!s.out_of_print,
-      special_name: s.special_name || "Special", special_limit: limit, special_made: made, special_left: Math.max(0, limit - made),
+      // (v0.51.38) a series with no Limited pack (Gamma) sends limited: false and no special_* numbers
+      ...(hasLimited(s.name) ? { special_name: s.special_name || "Special", special_limit: limit, special_made: made, special_left: Math.max(0, limit - made) } : { limited: false }),
       pack_share: rank >= 0 ? pct(SERIES_WEIGHTS[rank] ?? 0, wTotal) : 0,   // % of cLuB cards in daily and ~*~ cLuB ~*~ packs
       buttons: Object.fromEntries(sizes.filter((z) => z.series_id === s.id).map((z) => [z.rarity, { count: z.buttons, cap: z.cap }])),
     };

@@ -10,7 +10,7 @@
 //   { action: "assign", design_id, series_id }    put a cLuB original into a series
 import { json, readJson, currentUser, now } from "../../lib/auth.js";
 import { sealSafe } from "../../lib/ledger.js";
-import { MAX_ACTIVE_SERIES, seriesPrinted, recountStatement } from "../../lib/game.js";
+import { MAX_ACTIVE_SERIES, seriesPrinted, recountStatement, hasLimited } from "../../lib/game.js";
 
 export async function onRequestGet({ request, env }) {
   const me = await currentUser(env, request);
@@ -38,7 +38,8 @@ export async function onRequestGet({ request, env }) {
   const list = results.filter((s) => s.status !== "upcoming" || admin).map((s) => {
     const r = runs[s.id] || {};
     return { ...s, printed: r.printed ?? 0, print_run: r.print_run ?? null, out_of_print: !!r.out_of_print,
-      special_name: r.special_name || null, special_limit: r.special_limit ?? 25, special_made: specials[s.id] || 0 };
+      special_name: r.special_name || null, special_limit: r.special_limit ?? 25, special_made: specials[s.id] || 0,
+      limited: hasLimited(s.name) };   // (v0.51.38) false: no Limited pack (Gamma)
   });
   if (admin) {
     // cLuB originals not in any series yet (to put into one)
@@ -47,7 +48,7 @@ export async function onRequestGet({ request, env }) {
     ).all()).results;
     return json({ series: list, loose, max_active: MAX_ACTIVE_SERIES });
   }
-  return json({ series: list.map(({ id, name, status, printed, print_run, out_of_print, special_name }) => ({ id, name, status, printed, print_run, out_of_print, special_name })) });
+  return json({ series: list.map(({ id, name, status, printed, print_run, out_of_print, special_name, limited }) => ({ id, name, status, printed, print_run, out_of_print, special_name, limited })) });
 }
 
 export async function onRequestPost({ request, env }) {

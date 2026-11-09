@@ -922,10 +922,10 @@ async function loadSeriesPanel() {
       el("td", { class: "run-cell" }, x.print_run
         ? [el("span", { class: "run-bar", title: `${pct}% printed` }, el("span", { style: `width:${pct}%` })), ` ${x.printed} / ${x.print_run}`]
         : `${x.printed} printed · no run`),
-      el("td", {}, el("span", { class: "small" }, `${x.special_name || "Special"} Packs: ${x.special_made} / ${x.special_limit}`)),
+      el("td", {}, el("span", { class: "small" }, x.limited === false ? "no Limited pack" : `${x.special_name || "Special"} Packs: ${x.special_made} / ${x.special_limit}`)),
       el("td", { class: "nw" }, el("button", { type: "button", class: "mini series-look", "data-id": x.id, onclick: () => showSeriesDetail(x) }, "Look"),
         " ", el("button", { type: "button", class: "mini", onclick: () => setRun(x) }, "Run"),
-        " ", el("button", { type: "button", class: "mini", onclick: () => setSpecial(x) }, "Pack name"),
+        x.limited === false ? null : [" ", el("button", { type: "button", class: "mini", onclick: () => setSpecial(x) }, "Pack name")],
         x.status === "upcoming" ? [" ", el("button", { type: "button", class: "mini", onclick: () => release(x) }, "Release")] : null)));
   }
   // cLuB originals that aren't in a series yet
@@ -2382,6 +2382,7 @@ async function setupGivePacks() {
     const x = giveSeries.find((g) => String(g.id) === form.series.value);
     $("givepacks-hint").textContent = !form.special.checked ? ""
       : !x ? "Pick a series: special packs belong to one."
+      : x.limited === false ? `Series ${x.name} has no Limited pack.`
       : `${x.name} ${x.special_name || "Special"} Packs: ${x.special_limit - x.special_made} of ${x.special_limit} left`;
   };
   form.special.onchange = hint; form.series.onchange = hint; hint();
@@ -2395,6 +2396,7 @@ async function setupGivePacks() {
     const x = giveSeries.find((g) => String(g.id) === form.series.value);
     const kind = form.series.value.startsWith("kind:") ? form.series.value.slice(5) : null;   // (v0.37) a Single or a Welcome pack
     if (special && !x) return gSay("Special packs belong to a series. Pick one!");
+    if (special && x.limited === false) return gSay(`Series ${x.name} has no Limited pack.`);
     const who = everyone ? (special ? "EVERYONE (people only)" : "EVERYONE (bots too)") : name;
     const what = special ? `${x.name} ${x.special_name || "Special"} Pack` : kind === "single" ? "~*~cLuB~*~ Single" : kind === "welcome" ? "Welcome pack" : "sealed pack";
     if (!(await ask(`Give ${count} ${what}${count === 1 ? "" : "s"} to ${who}?`, { ok: "Give!" }))) return;
@@ -2639,9 +2641,10 @@ async function showFair() {
   const cap = (r) => r[0].toUpperCase() + r.slice(1);
 
   // what "Limited" means, and each series' limited pack by name (v0.34.11)
-  const named = o.series.filter((s) => s.special_name);
+  // (v0.51.38) only the series that have one (Gamma has no Limited pack: limited: false)
+  const named = o.series.filter((s) => s.limited !== false && s.special_name);
   const limitedNote = el("p", { class: "small" }, el("b", {}, "Limited packs: "),
-    `every series has one Limited pack, a numbered run of ${named[0]?.special_limit || 25}, with a guaranteed rare and better foils.`,
+    `a series' Limited pack is a numbered run of ${named[0]?.special_limit || 25}, with a guaranteed rare and better foils.`,
     named.length ? [" ", ...named.flatMap((s, i) => [i ? " · " : "", `Series ${s.name}: `, el("b", {}, `${s.special_name} Pack`)])] : []);
 
   // rarity chances, per card
@@ -2686,20 +2689,20 @@ async function showFair() {
   const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
   const lineup = (b) => Object.keys(RN).filter((r) => b[r]).map((r) => plural(b[r].count, RN[r])
     + (r === "prototype" && b[r].cap ? ` (${b[r].cap} copies each)` : r === "ultra" && b[r].cap === 1 ? " (1 of 1)" : "")).join(" · ");
-  $("fair-runs").replaceChildren(...(o.series.length ? o.series.map((s) => el("div", { class: "fair-series" },
+  $("fair-runs").replaceChildren(...(o.series.length ? o.series.map((s, _, __, lim = s.limited !== false) => el("div", { class: "fair-series" },
     el("div", { class: "fs-packs" },
       el("figure", {}, still({ id: 0, series: s.name }), el("figcaption", { class: "small" }, "Series pack")),
-      el("figure", {}, still({ id: 0, series: s.name, special: 1, special_no: 1, special_name: s.special_name, special_limit: s.special_limit }, `only ${s.special_limit} ever`),
-        el("figcaption", { class: "small" }, `${s.special_name} Pack`, el("br"), el("b", { class: "limited-tag" }, `LIMITED · only ${s.special_limit} ever`)))),
+      lim ? el("figure", {}, still({ id: 0, series: s.name, special: 1, special_no: 1, special_name: s.special_name, special_limit: s.special_limit }, `only ${s.special_limit} ever`),
+        el("figcaption", { class: "small" }, `${s.special_name} Pack`, el("br"), el("b", { class: "limited-tag" }, `LIMITED · only ${s.special_limit} ever`))) : null),
     el("div", { class: "fs-info" },
       el("h3", {}, `Series ${s.name} `, s.out_of_print ? el("span", { class: "series-status st-oop" }, "out of print")
         : el("span", { class: "series-status st-active" }, "in print")),
       s.released_at ? el("p", { class: "small fs-date" }, `Came out ${new Date(s.released_at * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`) : null,
       s.print_run != null ? el("p", {}, bar(s.printed, s.print_run), ` ${s.left} of ${s.print_run} copies left`) : el("p", {}, `${s.printed} copies printed · no print run limit`),
-      el("p", {}, bar(s.special_made, s.special_limit), ` Limited packs (${s.special_name}): ${s.special_left} of ${s.special_limit} left`),
+      lim ? el("p", {}, bar(s.special_made, s.special_limit), ` Limited packs (${s.special_name}): ${s.special_left} of ${s.special_limit} left`) : null,
       Object.keys(s.buttons || {}).length ? el("p", { class: "small" }, "In this series: ", lineup(s.buttons)) : null,
       s.pack_share ? el("p", { class: "small" }, `${pctTxt(s.pack_share)} of the cLuB's own cards in daily and ~*~cLuB~*~ packs come from Series ${s.name}.`) : null,
-      el("p", { class: "small" }, `Series packs hold ${(o.packs.sealed_by_series?.[s.name] || o.packs.sealed).cards} Series ${s.name} buttons, keep ${(o.packs.sealed_by_series?.[s.name] || o.packs.sealed).keep}. Its Limited pack, the ${s.special_name} Pack: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.`)))) : [el("p", {}, "No series yet!")]));
+      el("p", { class: "small" }, `Series packs hold ${(o.packs.sealed_by_series?.[s.name] || o.packs.sealed).cards} Series ${s.name} buttons, keep ${(o.packs.sealed_by_series?.[s.name] || o.packs.sealed).keep}.` + (lim ? ` Its Limited pack, the ${s.special_name} Pack: one guaranteed rare, better odds and foils, numbered #1 to #${s.special_limit}.` : ""))))) : [el("p", {}, "No series yet!")]));
 }
 
 // "Show older entries": 100 more each time, all the way back to entry #1
