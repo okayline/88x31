@@ -2,6 +2,7 @@
 // its full travel log (each step with its ledger fingerprint), and the chain status.
 import { json } from "../../lib/auth.js";
 import { sealSafe, verifyLedger } from "../../lib/ledger.js";
+import { STEP_MARKS } from "../../lib/registry.js";
 
 export async function onRequestGet({ request, env }) {
   const id = Number(new URL(request.url).searchParams.get("id"));
@@ -42,5 +43,5 @@ export async function onRequestGet({ request, env }) {
     "SELECT id, hash, created_at FROM ledger WHERE kind = 'foil' AND ref_id = ?"
   ).bind(id).first() : null;
   const chain = await verifyLedger(env);
-  return json({ banner, design_entry, foil_entry, history, chain: { ok: chain.ok, entries: chain.entries } });
+  return json({ banner, design_entry, foil_entry, history, chain: { ok: chain.ok, entries: chain.entries }, step_marks: STEP_MARKS });
 }

@@ -228,6 +228,7 @@ h3 { margin: 10px 0 6px; font-size: 15px; color: var(--link); }
 .credits li { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .credits .credit { display: inline; }
 .hash { font-family: "Courier New", Courier, monospace; word-break: break-all; color: #00ff00; }
+.log .hash { word-break: normal; }   /* (v0.51.34) a Travel Log seal ("[registry #396 · f987f2bb140c…]") breaks only at its spaces */
 #ledger-ok.ok, .ok-text { color: #00ff00; }
 #ledger-ok.bad, .bad-text { color: #ff6666; }
 .danger-head { margin-top: 20px; color: #ff6666; }

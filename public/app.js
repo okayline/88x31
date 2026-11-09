@@ -1867,9 +1867,10 @@ async function showVisitors(grid, mine, seq) {
   grid.after(box);
 }
 
-// (v0.51.32) A copy's lines from the shared registry, for its Travel Log: its marks ("was found under a full moon") and its trips
-// to other games. Its birth and its moves here are left out: this game's own ledger has those in full (the registry only gets a
-// summary, lib/registry.js). The words come from dungeon-items /mark-words.js, loaded on this page only, once (kura: "i'd rather
+// (v0.51.32) A copy's lines from the shared registry: its trips to other games, for its Travel Log, and (v0.51.34) its marks
+// ("was found under a full moon"), as one line under it, with no date (a mark's entry is dated when this game's sync wrote it,
+// often days later). Its birth and its moves here are left out, and so are marks that only retell a step of this game's own
+// Travel Log (stepMarks: lib/registry.js STEP_MARKS, through /api/banner): this game's ledger has those in full. The words come from dungeon-items /mark-words.js, loaded on this page only, once (kura: "i'd rather
 // run a script on one page, than read/write or change the registry"). The registry out of reach: no lines, the page still shows.
 const REG_GAME = { "88x31": "88x31", "4dungeon": "4Dungeon" };
 let markWordsReady = null;
@@ -1879,35 +1880,39 @@ const loadMarkWords = () => markWordsReady || (markWordsReady = new Promise((don
   s.onload = s.onerror = () => done();
   document.head.append(s);
 }));
-async function registryLines(b) {
-  if (!b.registry_item || !(b.registry_copy > 0)) return [];
+async function registryLines(b, stepMarks = []) {
+  const out = { lines: [], marks: [] };
+  if (!b.registry_item || !(b.registry_copy > 0)) return out;
   let d;
-  try { [d] = await Promise.all([api(`/api/registry/copy?item=${b.registry_item}&copy=${b.registry_copy}`), loadMarkWords()]); } catch { return []; }
+  try { [d] = await Promise.all([api(`/api/registry/copy?item=${b.registry_item}&copy=${b.registry_copy}`), loadMarkWords()]); } catch { return out; }
   const words = (m) => (window.DDMarkWords && window.DDMarkWords.markWords(m)) || "got a mark: " + String(m.value).replace(/_/g, " ");
   const and = (xs) => (xs.length > 1 ? xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1] : xs[0]);
   const game = (g) => REG_GAME[g] || g;
   const mine = (c) => c && c.item === b.registry_item && c.copy === b.registry_copy;
-  const out = [];
-  for (const e of (d && d.entries) || []) {
+  const skip = new Set(stepMarks), seen = new Set();
+  for (const e of [...((d && d.entries) || [])].reverse()) {   // oldest first, so the marks read in the order they were made
     let r; try { r = JSON.parse(e.record); } catch { continue; }
     const where = r.game && r.game !== "88x31" ? ` (in ${game(r.game)})` : "";
-    let text = null;
     if (r.k === "mark") {   // one mark, one mark many copies share, or several marks at once: only this copy's
       const ms = Array.isArray(r.marks) ? r.marks.filter((m) => m && Array.isArray(m.copies) && m.copies.some(mine))
         : Array.isArray(r.copies) ? (r.copies.some(mine) ? [r] : []) : [r];
-      if (ms.length) text = "It " + and(ms.map(words)) + where;
-    } else if (r.k === "move" && r.from !== r.to) text = `Travelled from ${game(r.from)} to ${game(r.to)}`;
-    else if (r.k === "spend" && r.game !== "88x31") text = "Used up" + where;
-    if (text) out.push({ at: e.at, text, id: e.id, hash: e.hash });
+      for (const m of ms) {
+        if ((r.game || "88x31") === "88x31" && skip.has(m.value)) continue;
+        const w = words(m) + where;
+        if (!seen.has(w)) { seen.add(w); out.marks.push(w); }
+      }
+    } else if (r.k === "move" && r.from !== r.to) out.lines.push({ at: e.at, text: `Travelled from ${game(r.from)} to ${game(r.to)}`, id: e.id, hash: e.hash });
+    else if (r.k === "spend" && r.game !== "88x31") out.lines.push({ at: e.at, text: "Used up" + where, id: e.id, hash: e.hash });
   }
+  out.marks = out.marks.length ? "Its marks: it " + and(out.marks) + "." : "";
   return out;
 }
 async function showBanner(id) {
   const seq = ++loadSeq;
   showView("view-banner");
   $("banner-body").textContent = "Loading...";
-  const { banner: b, design_entry: de, foil_entry: fe, history, chain } = await api("/api/banner?id=" + encodeURIComponent(id));
-  const [, reg] = await Promise.all([cardsReady, registryLines(b)]);
+  const { banner: b, design_entry: de, foil_entry: fe, history, chain, step_marks } = await api("/api/banner?id=" + encodeURIComponent(id));
+  const [, reg] = await Promise.all([cardsReady, registryLines(b, step_marks)]);
   if (seq !== loadSeq) return;
   const card = CARDS[b.design_id] || {};   // (v0.51.32) its subtype and flavour line, as on the big view's card
   const box = $("banner-body");
@@ -1957,9 +1962,10 @@ async function showBanner(id) {
         : [h.from_name ? ` from ${h.from_name}` : (GIFTY.includes(h.reason) ? " from a former player" : ""),
            ` → ${h.to_name || "a former player"}`],
       fp(h.hash, h.ledger_id)) })),
-      ...reg.map((x) => ({ t: x.at, li: el("li", { class: "reg-line" }, `${fmtStamp(x.at)}: ${x.text}.`,
+      ...reg.lines.map((x) => ({ t: x.at, li: el("li", { class: "reg-line" }, `${fmtStamp(x.at)}: ${x.text}.`,
         el("span", { class: "hash small", title: x.hash }, ` [registry #${x.id} · ${String(x.hash).slice(0, 12)}…]`)) }))]
       .sort((a, c) => a.t - c.t).map((x) => x.li)),
+    reg.marks ? el("p", { class: "marks-line" }, reg.marks) : null,
     fuseBox(b),
     b.tier === "original" && b.status !== "removed" ? useBox(b) : null);
 }

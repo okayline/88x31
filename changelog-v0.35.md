@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.33
+# 88x31 cLuB Changelog — v0.35–v0.51.34
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.34 — "Its Marks"
+**Sun Nov 8, 2026 · 8:58 PM HST**
+
+- A button's marks are one line under its Travel Log ("Its marks: it was found under a new moon and is a First Print…"), without dates. Marks that only repeat a Travel Log step are left out. The seals in the Travel Log break only at spaces. Removed: one dated Travel Log line per mark.
 
 ## v0.51.33 — "Open Box"
 **Sun Nov 8, 2026 · 8:47 PM HST**
