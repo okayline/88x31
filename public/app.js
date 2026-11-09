@@ -2159,8 +2159,10 @@ $("packs-zoom-out").onclick = () => zoomPacks(true);
 const packsGrid = $("packs-grid");
 let scrubbed = false;   // (v0.45.10) a finger just dragged along the row; the click that may follow it doesn't open anything
 let touchX = null;      // (v0.45.11) where the finger came down; it has to move a little before it counts as a drag
+let mouseDown = false;   // (v0.51.29) a mouse: hovering already lifts a pack to the top, so its first click opens it
 const toFront = (e) => {
-  if (!packsOut) return;
+  if (e.type === "pointerdown") mouseDown = e.pointerType === "mouse";
+  if (!packsOut || mouseDown) return;
   if (e.type === "click" && scrubbed) { scrubbed = false; e.preventDefault(); e.stopPropagation(); return; }
   const slot = e.target.closest(".pack-slot");
   if (!slot || slot === packsGrid.lastElementChild || slot.classList.contains("front")) return;

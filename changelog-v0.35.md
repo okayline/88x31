@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.28
+# 88x31 cLuB Changelog — v0.35–v0.51.29
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.29 — "First Click"
+**Sun Nov 8, 2026 · 8:12 PM HST**
+
+- With your packs lined up in one row, a mouse click on a pack opens it the first time. Phones still tap once to bring a pack forward and again to open it. Removed: the extra click a mouse needed.
 
 ## v0.51.28 — "Latest Drop"
 **Sun Nov 8, 2026 · 8:10 PM HST**
