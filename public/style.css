@@ -357,6 +357,8 @@ body.on-page #view-page > .panel:first-child > .pub-last { order: 2; margin-top:
 #dialog-input { width: 100%; }
 .dialog-buttons { display: flex; justify-content: center; gap: 10px; margin: 0 0 12px; }
 
+#ddfoot { margin-top: 14px; }   /* (v0.51.30) room under the webring, where the "Best viewed" lines used to be */
+
 /* ---------- moving bits ---------- */
 
 .marquee {

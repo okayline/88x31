@@ -1,8 +1,13 @@
-# 88x31 cLuB Changelog — v0.35–v0.51.29
+# 88x31 cLuB Changelog — v0.35–v0.51.30
 
 Newest first. Times are Hawaii time (HST). Older entries: `changelog-v0.34.md`.
 
 ---
+
+## v0.51.30 — "Fine Print"
+**Sun Nov 8, 2026 · 8:15 PM HST**
+
+- The "Best viewed" line is now part of the small line at the bottom right, in front of the version, and says Nov 2026. Removed: the centred two-line block and "Made with Notepad".
 
 ## v0.51.29 — "First Click"
 **Sun Nov 8, 2026 · 8:12 PM HST**
